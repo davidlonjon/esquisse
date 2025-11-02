@@ -90,3 +90,29 @@ typings/
 
 # Electron-Forge
 out/
+
+# Build directories
+dist/
+build/
+
+# Testing
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+
+# Database files (local development)
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

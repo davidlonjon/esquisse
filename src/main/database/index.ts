@@ -1,0 +1,129 @@
+import { app } from 'electron';
+import fs from 'fs';
+import path from 'path';
+
+import initSqlJs, { Database } from 'sql.js';
+
+let db: Database | null = null;
+let dbPath: string | null = null;
+
+/**
+ * Save database to file
+ */
+function saveDatabase(): void {
+  if (db && dbPath) {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(dbPath, buffer);
+  }
+}
+
+/**
+ * Initialize the database connection and create tables if they don't exist
+ */
+export async function initializeDatabase(): Promise<Database> {
+  if (db) {
+    return db;
+  }
+
+  try {
+    console.log('Initializing sql.js...');
+
+    // Initialize sql.js
+    const SQL = await initSqlJs({
+      locateFile: (file) => {
+        // In development, use node_modules path
+        // In production, the file will be packaged with the app
+        const wasmPath =
+          process.env.NODE_ENV === 'development'
+            ? path.join(process.cwd(), 'node_modules/sql.js/dist', file)
+            : path.join(process.resourcesPath, 'sql.js', file);
+
+        console.log('Loading sql.js wasm from:', wasmPath);
+        return wasmPath;
+      },
+    });
+
+    console.log('sql.js initialized successfully');
+
+    // Get the user data path (platform-specific)
+    const userDataPath = app.getPath('userData');
+    dbPath = path.join(userDataPath, 'esquisse.db');
+
+    // Ensure the directory exists
+    if (!fs.existsSync(userDataPath)) {
+      fs.mkdirSync(userDataPath, { recursive: true });
+    }
+
+    console.log('Database path:', dbPath);
+
+    // Load existing database or create new one
+    if (fs.existsSync(dbPath)) {
+      const buffer = fs.readFileSync(dbPath);
+      db = new SQL.Database(buffer);
+    } else {
+      db = new SQL.Database();
+    }
+
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON');
+
+    // Read and execute schema
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf-8');
+
+    // Execute schema (split by semicolons and execute each statement)
+    const statements = schema
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    for (const statement of statements) {
+      try {
+        db.run(statement);
+      } catch (error) {
+        // Ignore errors for statements that create tables that already exist
+        if (!(error as Error).message.includes('already exists')) {
+          console.error('Error executing statement:', statement, error);
+        }
+      }
+    }
+
+    // Save database after initialization
+    saveDatabase();
+
+    console.log('Database initialized successfully');
+
+    return db;
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get the database instance
+ */
+export function getDatabase(): Database {
+  if (!db) {
+    throw new Error('Database not initialized. Call initializeDatabase() first.');
+  }
+  return db;
+}
+
+/**
+ * Close the database connection
+ */
+export function closeDatabase(): void {
+  if (db) {
+    saveDatabase();
+    db.close();
+    db = null;
+    console.log('Database connection closed');
+  }
+}
+
+/**
+ * Export saveDatabase for use in other modules
+ */
+export { saveDatabase };
