@@ -38,6 +38,36 @@ const createWindow = () => {
     mainWindow?.show();
   });
 
+  // Set Content Security Policy based on environment
+  // In production: Strict CSP without unsafe directives
+  // In development: Relaxed CSP to allow Vite HMR (Hot Module Replacement)
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const isProduction = !MAIN_WINDOW_VITE_DEV_SERVER_URL;
+
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          isProduction
+            ? // Strict CSP for production - no unsafe directives
+              "default-src 'self'; " +
+              "script-src 'self'; " +
+              "style-src 'self'; " +
+              "img-src 'self' data:; " +
+              "font-src 'self' data:; " +
+              "connect-src 'self';"
+            : // Relaxed CSP for development - allows Vite HMR
+              "default-src 'self'; " +
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data:; " +
+              "font-src 'self' data:; " +
+              "connect-src 'self' ws: wss:;", // WebSocket for HMR
+        ],
+      },
+    });
+  });
+
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
