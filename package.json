@@ -1,8 +1,8 @@
 {
   "name": "esquisse",
-  "productName": "esquisse",
+  "productName": "Esquisse",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "A minimalist, local-first journaling desktop application",
   "main": ".vite/build/index.js",
   "scripts": {
     "start": "electron-forge start",
