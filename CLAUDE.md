@@ -11,7 +11,7 @@ Esquisse is a minimalist, local-first journaling desktop application built with 
 ### Development
 
 ```bash
-npm start                 # Start Electron app in development mode with hot reload
+npm start                 # Start Electron app in development mode with hot reload (Vite HMR)
 npm run type-check        # Run TypeScript type checking without emitting files
 ```
 
@@ -21,6 +21,7 @@ npm run type-check        # Run TypeScript type checking without emitting files
 npm test                  # Run unit tests in watch mode with Vitest
 npm run test:run          # Run unit tests once (useful for CI or pre-commit)
 npm run test:ui           # Open Vitest UI for interactive test debugging
+npm run test:coverage     # Run tests with coverage reporting (generates coverage report)
 npm run test:e2e          # Run end-to-end tests with Playwright
 ```
 
@@ -28,7 +29,8 @@ npm run test:e2e          # Run end-to-end tests with Playwright
 
 ```bash
 npm run lint              # Run ESLint on TypeScript files
-npm run lint:fix          # Auto-fix ESLint errors
+npm run lint:fix          # Auto-fix ESLint errors where possible
+npm run lint:strict       # Run ESLint with zero warnings allowed (fails on any warning, useful for CI/CD)
 npm run format            # Format code with Prettier
 npm run format:check      # Check code formatting without modifying files
 ```
@@ -38,6 +40,14 @@ npm run format:check      # Check code formatting without modifying files
 ```bash
 npm run package           # Package app without creating installers
 npm run make              # Create platform-specific distributables (DMG, EXE, etc.)
+npm run publish           # Publish the app (requires configuration)
+```
+
+### Maintenance
+
+```bash
+npm run clean             # Remove all build artifacts and caches (.vite, out, dist, node_modules/.vite)
+npm run rebuild           # Clean and reinstall dependencies from scratch (useful when dependencies act weird)
 ```
 
 ## Architecture

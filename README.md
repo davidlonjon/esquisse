@@ -156,27 +156,35 @@ npm run package
 
 ### Development
 
-- `npm start` - Start development mode
-- `npm run type-check` - Run TypeScript type checking
+- `npm start` - Start Electron app in development mode with hot reload (Vite HMR)
+- `npm run type-check` - Run TypeScript type checking without emitting files
 
 ### Code Quality
 
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
+- `npm run lint` - Run ESLint on TypeScript files
+- `npm run lint:fix` - Auto-fix ESLint errors where possible
+- `npm run lint:strict` - Run ESLint with zero warnings allowed (fails on any warning, useful for CI/CD)
 - `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+- `npm run format:check` - Check code formatting without modifying files
 
 ### Testing
 
-- `npm test` - Run unit tests in watch mode
-- `npm run test:run` - Run unit tests once
-- `npm run test:ui` - Open Vitest UI
-- `npm run test:e2e` - Run end-to-end tests
+- `npm test` - Run unit tests in watch mode with Vitest
+- `npm run test:run` - Run unit tests once (useful for CI or pre-commit)
+- `npm run test:ui` - Open Vitest UI for interactive test debugging
+- `npm run test:coverage` - Run tests with coverage reporting (generates coverage report)
+- `npm run test:e2e` - Run end-to-end tests with Playwright
 
-### Building
+### Building & Distribution
 
-- `npm run package` - Package the app
-- `npm run make` - Create distributable installers
+- `npm run package` - Package the app without creating installers
+- `npm run make` - Create platform-specific distributables (DMG for macOS, EXE for Windows, etc.)
+- `npm run publish` - Publish the app (requires configuration)
+
+### Maintenance
+
+- `npm run clean` - Remove all build artifacts and caches (.vite, out, dist, node_modules/.vite)
+- `npm run rebuild` - Clean and reinstall dependencies from scratch (useful when dependencies act weird)
 
 ## Architecture
 
