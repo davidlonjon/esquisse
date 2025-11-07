@@ -34,21 +34,13 @@ function App() {
         // Set the current journal
         setCurrentJournal(journal);
 
-        // Load the most recent entry for this journal
-        const entries = await window.api.getAllEntries(journal.id);
-
-        if (entries.length > 0) {
-          const mostRecentEntry = entries[0];
-          setCurrentEntry(mostRecentEntry);
-          setContent(mostRecentEntry.content);
-        } else {
-          // Create a new blank entry
-          const newEntry = await window.api.createEntry({
-            journalId: journal.id,
-            content: '',
-          });
-          setCurrentEntry(newEntry);
-        }
+        // Always create a new blank entry when the app opens
+        const newEntry = await window.api.createEntry({
+          journalId: journal.id,
+          content: '',
+        });
+        setCurrentEntry(newEntry);
+        setContent('');
 
         setIsInitialized(true);
       } catch (error) {
