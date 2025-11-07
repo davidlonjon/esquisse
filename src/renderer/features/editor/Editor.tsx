@@ -86,7 +86,7 @@ export function Editor({
 
   // Update content when it changes externally (not from user typing)
   useEffect(() => {
-    if (editor && content && content !== editor.getHTML()) {
+    if (editor && content !== editor.getHTML()) {
       const { from, to } = editor.state.selection;
       editor.commands.setContent(content, { emitUpdate: false });
       // Restore cursor position if possible
@@ -97,6 +97,17 @@ export function Editor({
       }
     }
   }, [content, editor]);
+
+  // Ensure editor is focused and editable
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      // Make sure editor is editable and focused
+      editor.setEditable(true);
+      setTimeout(() => {
+        editor.commands.focus('start');
+      }, 100);
+    }
+  }, [editor]);
 
   // Show loading state while editor initializes
   if (!editor) {

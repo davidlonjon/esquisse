@@ -28,6 +28,22 @@
 .editor-content .tiptap {
   outline: none;
   min-height: 70vh;
+  caret-color: #06b6d4; /* Blue-green cursor (cyan-500) */
+  font-size: 16px;
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+/* Enhanced cursor visibility when focused */
+.editor-content .tiptap:focus {
+  caret-color: #06b6d4;
+}
+
+/* When editor is empty, show an inviting cursor area with bigger cursor */
+.editor-content .tiptap.is-editor-empty p:first-child {
+  min-height: 2em;
+  font-size: 18px;
+  line-height: 2;
 }
 
 /* Selection */
