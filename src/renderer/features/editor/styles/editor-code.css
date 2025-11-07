@@ -3,7 +3,7 @@
  */
 
 /* Inline code */
-.editor-content .tiptap code {
+.editor-content code {
   background: hsl(var(--muted));
   padding: 0.2em 0.4em;
   border-radius: 0.25em;
@@ -12,7 +12,7 @@
 }
 
 /* Code blocks */
-.editor-content .tiptap pre {
+.editor-content pre {
   background: hsl(var(--muted));
   padding: 1em;
   border-radius: 0.5em;
@@ -20,7 +20,7 @@
   overflow-x: auto;
 }
 
-.editor-content .tiptap pre code {
+.editor-content pre code {
   background: transparent;
   padding: 0;
   font-size: 0.875em;

@@ -3,7 +3,7 @@
  * Dims inactive paragraphs to highlight the active one
  */
 
-.editor-content .tiptap.focus-mode p:not(.is-active) {
+.editor-content.focus-mode p:not(.is-active) {
   opacity: 0.3;
   transition: opacity 0.2s ease;
 }
