@@ -19,7 +19,21 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/renderer/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@main/*": ["./src/main/*"],
+      "@preload/*": ["./src/preload/*"],
+      "@features/*": ["./src/renderer/features/*"],
+      "@components/*": ["./src/renderer/components/*"],
+      "@ui/*": ["./src/renderer/components/ui/*"],
+      "@layout/*": ["./src/renderer/components/layout/*"],
+      "@hooks/*": ["./src/renderer/hooks/*"],
+      "@services/*": ["./src/renderer/services/*"],
+      "@providers/*": ["./src/renderer/providers/*"],
+      "@config/*": ["./src/renderer/config/*"],
+      "@lib/*": ["./src/renderer/lib/*"],
+      "@styles/*": ["./src/renderer/styles/*"],
+      "@pages/*": ["./src/renderer/pages/*"],
+      "@test/*": ["./src/test/*"]
     }
   },
   "include": ["src/**/*", "forge.env.d.ts"],

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { AUTO_SAVE_DELAY } from '../components/Editor/constants';
+import { AUTO_SAVE_DELAY } from '@features/editor';
 
 export interface UseAutoSaveOptions {
   /** Delay in milliseconds before saving (default: AUTO_SAVE_DELAY constant) */

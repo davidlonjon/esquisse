@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
-import { Editor } from './components/Editor/Editor';
-import { ThemeProvider } from './components/theme-provider';
-import { useAutoSave } from './hooks/useAutoSave';
-import { useEntryStore } from './store/entries';
-import { useJournalStore } from './store/journals';
+import { Editor } from '@features/editor';
+import { useEntryStore } from '@features/entries';
+import { useJournalStore } from '@features/journals';
+import { useAutoSave } from '@hooks/useAutoSave';
+import { ThemeProvider } from '@providers/theme-provider';
 
 function App() {
   const [content, setContent] = useState<string>('');
