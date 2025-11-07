@@ -35,7 +35,8 @@
         "newlines-between": "always",
         "alphabetize": { "order": "asc", "caseInsensitive": true }
       }
-    ]
+    ],
+    "import/no-named-as-default": "off"
   },
   "settings": {
     "react": {

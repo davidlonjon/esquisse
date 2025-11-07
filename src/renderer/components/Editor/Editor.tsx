@@ -1,10 +1,8 @@
-/* eslint-disable import/no-named-as-default */
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-/* eslint-enable import/no-named-as-default */
 import { useEffect } from 'react';
 
 import {
