@@ -1,0 +1,27 @@
+/**
+ * Code and pre-formatted text styles
+ */
+
+/* Inline code */
+.editor-content .tiptap code {
+  background: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Code blocks */
+.editor-content .tiptap pre {
+  background: hsl(var(--muted));
+  padding: 1em;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+
+.editor-content .tiptap pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.875em;
+}

@@ -1,0 +1,10 @@
+/**
+ * Editor styles entry point
+ * Imports all modular CSS files
+ */
+
+@import url('./editor-base.css');
+@import url('./editor-typography.css');
+@import url('./editor-code.css');
+@import url('./editor-media.css');
+@import url('./editor-focus-mode.css');

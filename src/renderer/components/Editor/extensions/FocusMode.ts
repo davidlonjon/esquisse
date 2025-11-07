@@ -2,10 +2,7 @@ import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 
-export interface FocusModeOptions {
-  className: string;
-  mode: 'paragraph' | 'sentence';
-}
+import type { FocusModeOptions } from '../types';
 
 /**
  * FocusMode Extension
@@ -32,7 +29,7 @@ export const FocusMode = Extension.create<FocusModeOptions>({
           init() {
             return DecorationSet.empty;
           },
-          apply(tr, oldState) {
+          apply(tr, _oldState) {
             // Get the current selection
             const { $from } = tr.selection;
             const decorations: Decoration[] = [];
@@ -46,8 +43,6 @@ export const FocusMode = Extension.create<FocusModeOptions>({
                 }
 
                 if (depth > 0) {
-                  const start = $from.start(depth);
-                  const end = $from.end(depth);
                   const nodeStart = $from.before(depth);
                   const nodeEnd = $from.after(depth);
 

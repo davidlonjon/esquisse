@@ -1,0 +1,23 @@
+/**
+ * Media styles
+ * Links and images
+ */
+
+/* Links */
+.editor-content .tiptap .editor-link {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editor-content .tiptap .editor-link:hover {
+  text-decoration: none;
+}
+
+/* Images */
+.editor-content .tiptap .editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+}

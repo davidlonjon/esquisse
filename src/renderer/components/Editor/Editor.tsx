@@ -1,30 +1,35 @@
+/* eslint-disable import/no-named-as-default */
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+/* eslint-enable import/no-named-as-default */
 import { useEffect } from 'react';
 
+import {
+  DEFAULT_PLACEHOLDER,
+  EDITOR_FOCUS_DELAY,
+  HEADING_LEVELS,
+  TYPEWRITER_OFFSET,
+} from './constants';
 import { FocusMode } from './extensions/FocusMode';
 import { TypewriterScroll } from './extensions/TypewriterScroll';
+import type { EditorProps } from './types';
 
-import './Editor.css';
+import './styles/index.css';
 
-interface EditorProps {
-  content?: string;
-  placeholder?: string;
-  onChange?: (content: string) => void;
-  onSave?: (content: string) => void;
-  focusMode?: boolean;
-  typewriterMode?: boolean;
-}
-
+/**
+ * Editor component
+ * A minimalist rich text editor with iA Writer-inspired design
+ * Features: focus mode, typewriter scrolling, auto-save, Markdown shortcuts
+ */
 export function Editor({
   content = '',
-  placeholder = 'Start writing...',
+  placeholder = DEFAULT_PLACEHOLDER,
   onChange,
   onSave,
-  focusMode = true,
+  focusMode: _focusMode = true,
   typewriterMode = true,
 }: EditorProps) {
   const editor = useEditor(
@@ -32,7 +37,7 @@ export function Editor({
       extensions: [
         StarterKit.configure({
           heading: {
-            levels: [1, 2, 3],
+            levels: HEADING_LEVELS,
           },
         }),
         Placeholder.configure({
@@ -51,7 +56,7 @@ export function Editor({
         }),
         TypewriterScroll.configure({
           enabled: typewriterMode,
-          offset: 0.5,
+          offset: TYPEWRITER_OFFSET,
         }),
       ],
       content,
@@ -59,7 +64,6 @@ export function Editor({
         attributes: {
           class: 'editor-content',
           spellcheck: 'true',
-          style: 'min-height: 70vh; outline: none;',
         },
       },
       onUpdate: ({ editor }) => {
@@ -76,7 +80,7 @@ export function Editor({
               console.warn('[Editor] Failed to focus:', error);
             }
           }
-        }, 200);
+        }, EDITOR_FOCUS_DELAY);
       },
     },
     []
@@ -113,30 +117,8 @@ export function Editor({
   };
 
   return (
-    <div
-      className="editor-container"
-      onKeyDown={handleKeyDown}
-      style={{
-        width: '100%',
-        height: '100vh',
-        padding: '2rem',
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: '#ffffff',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '700px',
-          fontFamily: "'IBM Plex Mono', 'Courier New', Courier, monospace",
-          fontSize: '16px',
-          lineHeight: '1.75',
-          color: '#0a0a0a',
-        }}
-      >
-        <EditorContent editor={editor} />
-      </div>
+    <div className="editor-container" onKeyDown={handleKeyDown}>
+      <EditorContent editor={editor} />
     </div>
   );
 }

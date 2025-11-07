@@ -11,9 +11,8 @@ function App() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { journals, currentJournal, loadJournals, createJournal, setCurrentJournal } =
-    useJournalStore();
-  const { currentEntry, createEntry, updateEntry, setCurrentEntry } = useEntryStore();
+  const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
+  const { currentEntry, updateEntry, setCurrentEntry } = useEntryStore();
 
   // Initialize journal and entry on mount
   useEffect(() => {
@@ -59,11 +58,11 @@ function App() {
     };
 
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-save functionality
+  // Auto-save functionality (uses AUTO_SAVE_DELAY constant by default)
   const { isSaving, lastSaved, trigger } = useAutoSave({
-    delay: 2000, // Save 2 seconds after user stops typing
     onSave: async (htmlContent) => {
       try {
         if (!currentEntry) return;

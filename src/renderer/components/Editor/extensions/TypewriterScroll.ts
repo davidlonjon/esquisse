@@ -1,10 +1,7 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-export interface TypewriterScrollOptions {
-  enabled: boolean;
-  offset: number; // Percentage of viewport height to center cursor (0.5 = center)
-}
+import type { TypewriterScrollOptions } from '../types';
 
 /**
  * TypewriterScroll Extension
@@ -49,9 +46,8 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
               const cursorTop = coords.top;
               const scrollDiff = cursorTop - targetY;
 
-              // Smooth scroll to keep cursor at target position
+              // Smooth scroll to keep cursor at target position (>50px threshold)
               if (Math.abs(scrollDiff) > 50) {
-                // Only scroll if diff is significant
                 window.scrollTo({
                   top: currentScroll + scrollDiff,
                   behavior: 'smooth',

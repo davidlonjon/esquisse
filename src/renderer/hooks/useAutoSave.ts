@@ -1,23 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { AUTO_SAVE_DELAY } from '../components/Editor/constants';
+
 export interface UseAutoSaveOptions {
-  delay?: number; // Delay in milliseconds before saving
+  /** Delay in milliseconds before saving (default: AUTO_SAVE_DELAY constant) */
+  delay?: number;
+  /** Callback to save content */
   onSave: (content: string) => void | Promise<void>;
+  /** Enable/disable auto-save */
   enabled?: boolean;
 }
 
 export interface UseAutoSaveReturn {
+  /** Whether a save operation is in progress */
   isSaving: boolean;
+  /** Timestamp of last successful save */
   lastSaved: Date | null;
+  /** Trigger a save operation (debounced) */
   trigger: (content: string) => void;
 }
 
 /**
  * Hook for auto-saving content with debouncing
  * Waits for user to stop typing before saving
+ *
+ * @example
+ * ```tsx
+ * const { isSaving, lastSaved, trigger } = useAutoSave({
+ *   delay: 2000,
+ *   onSave: async (content) => {
+ *     await api.saveEntry(content);
+ *   },
+ * });
+ * ```
  */
 export function useAutoSave({
-  delay = 2000,
+  delay = AUTO_SAVE_DELAY,
   onSave,
   enabled = true,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
