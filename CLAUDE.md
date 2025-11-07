@@ -52,46 +52,91 @@ npm run rebuild           # Clean and reinstall dependencies from scratch (usefu
 
 ## Architecture
 
+### Feature-First Structure
+
+The codebase follows a **feature-first architecture** where code is organized by domain/feature rather than technical layer. This promotes scalability and maintainability.
+
+**Key Principles:**
+
+- Features are self-contained with components, hooks, stores, types, and styles
+- Clear separation between main, preload, and renderer processes
+- Modular IPC handlers organized by domain
+- Path aliases for clean imports
+
 ### Multi-Process Structure
 
 This is an Electron app with three distinct processes:
 
-1. **Main Process** (`src/main/`) - Node.js environment, has access to Electron APIs and filesystem
-2. **Preload Script** (`src/preload/`) - Runs before renderer, bridges main and renderer via contextBridge
-3. **Renderer Process** (`src/renderer/`) - Browser environment running React app
+1. **Main Process** (`src/main/`)
+   - Node.js environment with filesystem and Electron API access
+   - **`core/window/`**: Window management (config, CSP, lifecycle, IPC)
+   - **`modules/{domain}/`**: Domain-specific IPC handlers (journal, entry, settings)
+   - **`database/`**: SQLite operations and schema
+   - **`services/`**: Business logic layer (future)
+
+2. **Preload Script** (`src/preload/`)
+   - Bridges main ↔ renderer securely via contextBridge
+   - **`api/`**: Modular API exports by domain (journal, entry, settings, window)
+
+3. **Renderer Process** (`src/renderer/`)
+   - React application in browser context
+   - **`features/{domain}/`**: Feature-first organization (editor, journals, entries, settings)
+   - **`components/`**: Shared components (ui, layout)
+   - **`providers/`**: React context providers
+   - **`pages/`**: Page components (for routing when added)
 
 ### IPC Communication Pattern
 
-All communication between main and renderer processes follows a strict type-safe pattern:
+All communication follows a modular, type-safe pattern:
 
-1. **Define types first**: Add channel names to `IPC_CHANNELS` and method signatures to `ElectronAPI` in `src/shared/ipc-types.ts`
-2. **Implement main handler**: Add `ipcMain.handle()` in `src/main/index.ts` that calls database functions
-3. **Expose in preload**: Add method to `electronAPI` object in `src/preload/index.ts` that calls `ipcRenderer.invoke()`
-4. **Use in renderer**: Access via `window.api.*` with full TypeScript support
+1. **Define types**: `src/shared/types/{domain}.types.ts`
+2. **Define channels**: `src/shared/ipc/channels.ts`
+3. **Update API interface**: `src/shared/ipc/api.types.ts`
+4. **Implement main handler**: `src/main/modules/{domain}/{domain}.ipc.ts`
+5. **Create preload API**: `src/preload/api/{domain}.api.ts`
+6. **Use in renderer**: `window.api.*` with full TypeScript support
 
-Example flow for a new IPC channel:
+Example flow for adding a new IPC channel:
 
 ```typescript
-// 1. src/shared/ipc-types.ts
+// 1. src/shared/types/custom.types.ts
+export interface CustomData {
+  id: string;
+  value: string;
+}
+
+// 2. src/shared/ipc/channels.ts
 export const IPC_CHANNELS = {
   CUSTOM_ACTION: 'custom:action',
 };
+
+// 3. src/shared/ipc/api.types.ts
 export interface ElectronAPI {
-  customAction: (data: string) => Promise<void>;
+  customAction: (data: CustomData) => Promise<void>;
 }
 
-// 2. src/main/index.ts
-ipcMain.handle(IPC_CHANNELS.CUSTOM_ACTION, async (_, data) => {
-  // Implement logic
-});
+// 4. src/main/modules/custom/custom.ipc.ts
+import { ipcMain } from 'electron';
+import { IPC_CHANNELS } from '@shared/ipc';
 
-// 3. src/preload/index.ts
-const electronAPI: ElectronAPI = {
-  customAction: (data) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOM_ACTION, data),
+export function registerCustomHandlers(): void {
+  ipcMain.handle(IPC_CHANNELS.CUSTOM_ACTION, async (_event, data) => {
+    // Implement logic
+  });
+}
+
+// 5. src/preload/api/custom.api.ts
+import { ipcRenderer } from 'electron';
+import { IPC_CHANNELS } from '@shared/ipc';
+import type { CustomData } from '@shared/types';
+
+export const customAPI = {
+  customAction: (data: CustomData): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CUSTOM_ACTION, data),
 };
 
-// 4. src/renderer/ - anywhere in React
-await window.api.customAction('data');
+// 6. src/renderer/ - anywhere in React
+await window.api.customAction({ id: '1', value: 'test' });
 ```
 
 ### Database Layer
@@ -113,12 +158,12 @@ Zustand stores provide reactive state in the renderer process. Each store:
 
 - Calls `window.api.*` methods to communicate with main process
 - Manages local state, loading states, and errors
-- Located in `src/renderer/store/`
+- Located in `src/renderer/features/{domain}/` alongside related code
 
 Pattern:
 
 ```typescript
-// Stores handle both local state and IPC communication
+// src/renderer/features/journals/journals.store.ts
 const useJournalStore = create<JournalState>((set) => ({
   journals: [],
   isLoading: false,
@@ -132,12 +177,42 @@ const useJournalStore = create<JournalState>((set) => ({
 
 ### TypeScript Path Aliases
 
-Two aliases are configured for cleaner imports:
+Comprehensive path aliases are configured for cleaner imports:
 
-- `@/*` → `./src/renderer/*` (renderer code only)
-- `@shared/*` → `./src/shared/*` (code shared between main and renderer)
+```typescript
+// Renderer
+import { Editor } from '@features/editor';
+import { Button } from '@ui/button';
+import { ErrorBoundary } from '@layout/ErrorBoundary';
+import { useAutoSave } from '@hooks/useAutoSave';
+import { ThemeProvider } from '@providers/theme-provider';
 
-Configured in both `tsconfig.json` and `vitest.config.ts`.
+// Shared
+import { Journal } from '@shared/types';
+import { IPC_CHANNELS } from '@shared/ipc';
+
+// Main process
+import { createMainWindow } from '@main/core/window';
+
+// Preload
+import { journalAPI } from '@preload/api/journal.api';
+```
+
+**Available aliases:**
+
+- `@features/*` → `./src/renderer/features/*`
+- `@components/*` → `./src/renderer/components/*`
+- `@ui/*` → `./src/renderer/components/ui/*`
+- `@layout/*` → `./src/renderer/components/layout/*`
+- `@hooks/*` → `./src/renderer/hooks/*`
+- `@providers/*` → `./src/renderer/providers/*`
+- `@pages/*` → `./src/renderer/pages/*`
+- `@lib/*` → `./src/renderer/lib/*`
+- `@shared/*` → `./src/shared/*`
+- `@main/*` → `./src/main/*`
+- `@preload/*` → `./src/preload/*`
+
+Configured in `tsconfig.json`, `vite.*.config.ts`, and `vitest.config.ts`.
 
 ## Build System
 
