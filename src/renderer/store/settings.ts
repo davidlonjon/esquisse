@@ -46,7 +46,6 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'esquisse-settings',
-      partialState: true,
     }
   )
 );

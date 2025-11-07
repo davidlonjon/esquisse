@@ -1,0 +1,161 @@
+/* Editor Container */
+.editor-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  background: hsl(var(--background));
+}
+
+/* Editor Content */
+.editor-content {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.75;
+  color: hsl(var(--foreground));
+  outline: none;
+}
+
+/* Tiptap Editor Styles */
+.editor-content .tiptap {
+  outline: none;
+  min-height: 70vh;
+}
+
+/* Placeholder */
+.editor-content .tiptap.is-editor-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.editor-content .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+/* Typography */
+.editor-content .tiptap h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.editor-content .tiptap h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+.editor-content .tiptap h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+.editor-content .tiptap p {
+  margin-bottom: 1em;
+}
+
+.editor-content .tiptap ul,
+.editor-content .tiptap ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.editor-content .tiptap li {
+  margin-bottom: 0.25em;
+}
+
+.editor-content .tiptap blockquote {
+  border-left: 3px solid hsl(var(--border));
+  padding-left: 1em;
+  margin: 1.5em 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.editor-content .tiptap code {
+  background: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.editor-content .tiptap pre {
+  background: hsl(var(--muted));
+  padding: 1em;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+
+.editor-content .tiptap pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.875em;
+}
+
+/* Links */
+.editor-content .tiptap .editor-link {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editor-content .tiptap .editor-link:hover {
+  text-decoration: none;
+}
+
+/* Images */
+.editor-content .tiptap .editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+}
+
+/* Focus Mode - Dimmed paragraphs (will be enhanced with custom extension) */
+.editor-content .tiptap.focus-mode p:not(.is-active) {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+/* Selection */
+.editor-content .tiptap ::selection {
+  background: hsl(var(--primary) / 0.2);
+}
+
+/* Strong and emphasis */
+.editor-content .tiptap strong {
+  font-weight: 700;
+}
+
+.editor-content .tiptap em {
+  font-style: italic;
+}
+
+/* Horizontal rule */
+.editor-content .tiptap hr {
+  border: none;
+  border-top: 2px solid hsl(var(--border));
+  margin: 2em 0;
+}

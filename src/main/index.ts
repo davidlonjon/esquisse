@@ -52,16 +52,16 @@ const createWindow = () => {
             ? // Strict CSP for production - no unsafe directives
               "default-src 'self'; " +
               "script-src 'self'; " +
-              "style-src 'self'; " +
+              "style-src 'self' https://fonts.googleapis.com; " +
               "img-src 'self' data:; " +
-              "font-src 'self' data:; " +
+              "font-src 'self' data: https://fonts.gstatic.com; " +
               "connect-src 'self';"
             : // Relaxed CSP for development - allows Vite HMR
               "default-src 'self'; " +
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-              "style-src 'self' 'unsafe-inline'; " +
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "img-src 'self' data:; " +
-              "font-src 'self' data:; " +
+              "font-src 'self' data: https://fonts.gstatic.com; " +
               "connect-src 'self' ws: wss:;", // WebSocket for HMR
         ],
       },

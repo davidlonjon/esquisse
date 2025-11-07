@@ -30,7 +30,8 @@ export function getSettings(): Settings {
       try {
         settings[key as keyof Settings] = JSON.parse(value);
       } catch {
-        settings[key as keyof Settings] = value as Settings[keyof Settings];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        settings[key as keyof Settings] = value as any;
       }
     }
   }

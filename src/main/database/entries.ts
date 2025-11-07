@@ -62,7 +62,7 @@ export function getAllEntries(journalId?: string): Entry[] {
         entry[col] = row[idx];
       }
     });
-    entries.push(entry as Entry);
+    entries.push(entry as unknown as Entry);
   }
 
   return entries;
@@ -92,7 +92,7 @@ export function getEntryById(id: string): Entry | null {
     }
   });
 
-  return entry as Entry;
+  return entry as unknown as Entry;
 }
 
 /**
@@ -170,7 +170,7 @@ export function searchEntries(query: string): Entry[] {
         entry[col] = row[idx];
       }
     });
-    entries.push(entry as Entry);
+    entries.push(entry as unknown as Entry);
   }
 
   return entries;

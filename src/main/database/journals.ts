@@ -52,7 +52,7 @@ export function getAllJournals(): Journal[] {
     columns.forEach((col, idx) => {
       journal[col] = row[idx];
     });
-    journals.push(journal as Journal);
+    journals.push(journal as unknown as Journal);
   }
 
   return journals;
@@ -78,7 +78,7 @@ export function getJournalById(id: string): Journal | null {
     journal[col] = row[idx];
   });
 
-  return journal as Journal;
+  return journal as unknown as Journal;
 }
 
 /**
@@ -108,7 +108,9 @@ export function updateJournal(id: string, updates: Partial<Journal>): Journal {
   values.push(now);
   values.push(id);
 
-  db.run(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`, values);
+  // Filter out undefined values and cast to SqlValue[]
+  const sqlValues = values.filter((v) => v !== undefined) as (string | null)[];
+  db.run(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`, sqlValues);
 
   saveDatabase();
 
