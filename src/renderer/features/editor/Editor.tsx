@@ -100,7 +100,7 @@ export function Editor({
 
   // Show loading state while editor initializes
   if (!editor) {
-    return <div style={{ padding: '2rem' }}>Loading editor...</div>;
+    return <div className="p-8 text-muted-foreground">Loading editor...</div>;
   }
 
   // Keyboard shortcuts
