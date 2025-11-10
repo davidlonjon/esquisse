@@ -9,9 +9,10 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem 1rem;
+  padding: 50vh 1.5rem;
   overflow-y: auto;
   background: hsl(var(--background));
+  scroll-behavior: smooth;
 }
 
 .editor-content {

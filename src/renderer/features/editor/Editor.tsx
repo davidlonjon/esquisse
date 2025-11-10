@@ -10,6 +10,7 @@ import {
   EDITOR_FOCUS_DELAY,
   HEADING_LEVELS,
   TYPEWRITER_OFFSET,
+  TYPEWRITER_THRESHOLD,
 } from './constants';
 import { FocusMode } from './extensions/FocusMode';
 import { TypewriterScroll } from './extensions/TypewriterScroll';
@@ -65,6 +66,7 @@ export function Editor({
         TypewriterScroll.configure({
           enabled: typewriterMode,
           offset: TYPEWRITER_OFFSET,
+          threshold: TYPEWRITER_THRESHOLD,
         }),
       ],
       content,

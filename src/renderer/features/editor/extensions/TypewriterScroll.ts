@@ -15,11 +15,12 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
     return {
       enabled: true,
       offset: 0.5, // Center the cursor
+      threshold: 4,
     };
   },
 
   addProseMirrorPlugins() {
-    const { enabled, offset } = this.options;
+    const { enabled, offset, threshold = 4 } = this.options;
 
     if (!enabled) {
       return [];
@@ -28,30 +29,85 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
     return [
       new Plugin({
         key: new PluginKey('typewriterScroll'),
-        view() {
+        view(editorView) {
+          const scrollSelector = '.editor-container';
+          const pluginThreshold = threshold;
+
+          const centerCursor = () => {
+            const { selection } = editorView.state;
+            if (!selection.empty) {
+              return;
+            }
+
+            let coords;
+            try {
+              coords = editorView.coordsAtPos(selection.from);
+            } catch {
+              return;
+            }
+
+            const scrollElement =
+              (editorView.dom.closest(scrollSelector) as HTMLElement | null) ??
+              document.scrollingElement ??
+              document.documentElement;
+
+            const isElement = scrollElement instanceof HTMLElement;
+            const containerHeight = isElement ? scrollElement.clientHeight : window.innerHeight;
+            const targetY = containerHeight * offset;
+
+            const cursorOffset = isElement
+              ? coords.top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop
+              : coords.top + window.scrollY;
+
+            // Check if cursor is already close enough to target position in viewport
+            const scrollDiff = coords.top - targetY;
+
+            if (Math.abs(scrollDiff) <= pluginThreshold) {
+              return;
+            }
+
+            const maxScroll = isElement
+              ? scrollElement.scrollHeight - scrollElement.clientHeight
+              : document.documentElement.scrollHeight - window.innerHeight;
+
+            // Calculate scroll position to center cursor at targetY
+            const nextScroll = Math.max(0, Math.min(cursorOffset - targetY, maxScroll));
+
+            if (isElement) {
+              scrollElement.scrollTop = nextScroll;
+            } else {
+              window.scrollTo({ top: nextScroll });
+            }
+          };
+
+          let rafId: number | null = null;
+
+          const scheduleCenter = () => {
+            if (rafId !== null) {
+              cancelAnimationFrame(rafId);
+            }
+            rafId = requestAnimationFrame(() => {
+              rafId = null;
+              centerCursor();
+            });
+          };
+
+          scheduleCenter();
+
           return {
-            update(view) {
-              // Get the cursor position
-              const { from } = view.state.selection;
-              const coords = view.coordsAtPos(from);
+            update(view, prevState) {
+              const selectionUnchanged = view.state.selection.eq(prevState.selection);
+              const docUnchanged = view.state.doc.eq(prevState.doc);
 
-              if (!coords) return;
+              if (selectionUnchanged && docUnchanged) {
+                return;
+              }
 
-              // Get viewport dimensions
-              const viewportHeight = window.innerHeight;
-              const targetY = viewportHeight * offset;
-
-              // Calculate scroll position
-              const currentScroll = window.scrollY;
-              const cursorTop = coords.top;
-              const scrollDiff = cursorTop - targetY;
-
-              // Smooth scroll to keep cursor at target position (>50px threshold)
-              if (Math.abs(scrollDiff) > 50) {
-                window.scrollTo({
-                  top: currentScroll + scrollDiff,
-                  behavior: 'smooth',
-                });
+              scheduleCenter();
+            },
+            destroy() {
+              if (rafId !== null) {
+                cancelAnimationFrame(rafId);
               }
             },
           };
