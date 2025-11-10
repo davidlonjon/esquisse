@@ -28,6 +28,7 @@
   font-weight: 400;
   overflow-x: hidden;
   overflow-wrap: break-word;
+  text-align: left;
 }
 
 /* ProseMirror contenteditable element */
@@ -36,7 +37,7 @@
   overflow: hidden visible;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  overflow-wrap: break-word;
+  text-align: left;
 }
 
 /* Enhanced cursor visibility when focused */

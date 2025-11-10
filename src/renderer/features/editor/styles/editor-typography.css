@@ -31,6 +31,7 @@
 /* Paragraphs */
 .editor-content p {
   margin-bottom: 1em;
+  text-align: left;
 }
 
 /* Lists */
