@@ -1,0 +1,37 @@
+{
+  "app": {
+    "initializing": "Initialisation...",
+    "errors": {
+      "apiUnavailableTitle": "Erreur",
+      "apiUnavailableMessage": "L'API Electron n'est pas disponible. Le script preload n'a peut-être pas été chargé.",
+      "initialize": "Impossible d'initialiser : {{message}}",
+      "save": "Impossible d'enregistrer : {{message}}"
+    }
+  },
+  "editor": {
+    "placeholder": "Commencez à écrire..."
+  },
+  "hud": {
+    "today": "Aujourd'hui · {{date}}",
+    "words": "Mots · {{count}}",
+    "session": "Session",
+    "snapshotSaved": "Instantané enregistré · {{time}}",
+    "snapshotPending": "Instantané en attente",
+    "keyboard": {
+      "button": "Raccourcis clavier",
+      "title": "Raccourcis clavier",
+      "subtitle": "Restez dans le flux sans quitter le clavier.",
+      "close": "Fermer",
+      "shortcut": {
+        "search": {
+          "label": "Recherche",
+          "description": "Ouvrir la recherche globale"
+        },
+        "commandPalette": {
+          "label": "Palette de commandes",
+          "description": "Accéder à n'importe quelle action"
+        }
+      }
+    }
+  }
+}

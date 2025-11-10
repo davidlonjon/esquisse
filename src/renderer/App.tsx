@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Editor } from '@features/editor';
 import { useEntryStore } from '@features/entries';
@@ -15,6 +16,7 @@ function App() {
   const [content, setContent] = useState<string>('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const { t, i18n } = useTranslation();
   const hudVisible = useEdgeReveal();
   const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
 
@@ -53,7 +55,8 @@ function App() {
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize:', error);
-        setApiError(`Failed to initialize: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        setApiError(i18n.t('app.errors.initialize', { message }));
       }
     };
 
@@ -71,7 +74,8 @@ function App() {
         await updateEntry(currentEntry.id, { content: htmlContent });
       } catch (error) {
         console.error('Failed to save:', error);
-        setApiError(`Failed to save: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        setApiError(i18n.t('app.errors.save', { message }));
       }
     },
     enabled: isInitialized && !!currentEntry,
@@ -90,7 +94,8 @@ function App() {
       await updateEntry(currentEntry.id, { content: htmlContent });
     } catch (error) {
       console.error('Failed to save:', error);
-      setApiError(`Failed to save: ${error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      setApiError(i18n.t('app.errors.save', { message }));
     }
   };
 
@@ -98,21 +103,34 @@ function App() {
     return getWordCountFromHTML(content);
   }, [content]);
 
-  const dateLabel = useMemo(() => {
-    const now = new Date();
-    return `Today · ${now.toLocaleDateString(undefined, {
+  const dateFormatter = useMemo(() => {
+    return new Intl.DateTimeFormat(i18n.language, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-    })}`;
-  }, []);
+    });
+  }, [i18n.language]);
 
-  const snapshotLabel = lastSaved
-    ? `Snapshot saved · ${lastSaved.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`
-    : 'Snapshot pending';
+  const dateLabel = useMemo(() => {
+    return t('hud.today', { date: dateFormatter.format(new Date()) });
+  }, [dateFormatter, t]);
+
+  const timeFormatter = useMemo(() => {
+    return new Intl.DateTimeFormat(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [i18n.language]);
+
+  const snapshotLabel = useMemo(() => {
+    if (!lastSaved) {
+      return t('hud.snapshotPending');
+    }
+
+    return t('hud.snapshotSaved', { time: timeFormatter.format(lastSaved) });
+  }, [lastSaved, t, timeFormatter]);
+
+  const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
 
   // Check if the Electron API is available
   if (window.api === undefined) {
@@ -120,10 +138,10 @@ function App() {
       <ThemeProvider defaultTheme="system" storageKey="esquisse-theme">
         <div className="flex h-screen w-screen flex-col items-center justify-center p-8">
           <div className="max-w-md rounded-lg border border-destructive bg-destructive/10 p-6">
-            <h2 className="mb-2 text-lg font-semibold text-destructive">Error</h2>
-            <p className="text-sm">
-              Electron API not available. Preload script may have failed to load.
-            </p>
+            <h2 className="mb-2 text-lg font-semibold text-destructive">
+              {t('app.errors.apiUnavailableTitle')}
+            </h2>
+            <p className="text-sm">{t('app.errors.apiUnavailableMessage')}</p>
           </div>
         </div>
       </ThemeProvider>
@@ -135,7 +153,7 @@ function App() {
     return (
       <ThemeProvider defaultTheme="system" storageKey="esquisse-theme">
         <div className="flex h-screen w-screen flex-col items-center justify-center">
-          <p className="text-muted-foreground">Initializing...</p>
+          <p className="text-muted-foreground">{t('app.initializing')}</p>
         </div>
       </ThemeProvider>
     );
@@ -148,7 +166,7 @@ function App() {
           showTop={hudVisible}
           showBottom={hudVisible}
           dateLabel={dateLabel}
-          wordCountLabel={`Words · ${wordCount}`}
+          wordCountLabel={wordCountLabel}
           sessionLabel={formatDuration(sessionSeconds)}
           snapshotLabel={snapshotLabel}
         />
@@ -158,6 +176,7 @@ function App() {
           onSave={handleManualSave}
           focusMode={true}
           typewriterMode={true}
+          placeholder={t('editor.placeholder')}
         />
 
         {/* Error display */}

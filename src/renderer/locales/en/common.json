@@ -1,0 +1,37 @@
+{
+  "app": {
+    "initializing": "Initializing...",
+    "errors": {
+      "apiUnavailableTitle": "Error",
+      "apiUnavailableMessage": "Electron API not available. Preload script may have failed to load.",
+      "initialize": "Failed to initialize: {{message}}",
+      "save": "Failed to save: {{message}}"
+    }
+  },
+  "editor": {
+    "placeholder": "Start writing..."
+  },
+  "hud": {
+    "today": "Today · {{date}}",
+    "words": "Words · {{count}}",
+    "session": "Session",
+    "snapshotSaved": "Snapshot saved · {{time}}",
+    "snapshotPending": "Snapshot pending",
+    "keyboard": {
+      "button": "Keyboard shortcuts",
+      "title": "Keyboard Shortcuts",
+      "subtitle": "Keep the flow without leaving the keyboard.",
+      "close": "Close",
+      "shortcut": {
+        "search": {
+          "label": "Search",
+          "description": "Open global search"
+        },
+        "commandPalette": {
+          "label": "Command Palette",
+          "description": "Jump to any action"
+        }
+      }
+    }
+  }
+}

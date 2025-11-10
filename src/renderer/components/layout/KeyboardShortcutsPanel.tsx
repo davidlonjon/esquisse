@@ -11,6 +11,9 @@ export interface ShortcutItem {
 interface KeyboardShortcutsPanelProps {
   shortcuts: ShortcutItem[];
   onClose: () => void;
+  title: string;
+  description: string;
+  closeLabel: string;
 }
 
 const ShortcutBadge = ({ combo }: { combo: string }) => (
@@ -19,7 +22,13 @@ const ShortcutBadge = ({ combo }: { combo: string }) => (
   </span>
 );
 
-export function KeyboardShortcutsPanel({ shortcuts, onClose }: KeyboardShortcutsPanelProps) {
+export function KeyboardShortcutsPanel({
+  shortcuts,
+  onClose,
+  title,
+  description,
+  closeLabel,
+}: KeyboardShortcutsPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   useOnClickOutside(panelRef, onClose, true);
 
@@ -32,17 +41,15 @@ export function KeyboardShortcutsPanel({ shortcuts, onClose }: KeyboardShortcuts
       >
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-foreground">Keyboard Shortcuts</p>
-            <p className="text-xs text-muted-foreground">
-              Keep the flow without leaving the keyboard.
-            </p>
+            <p className="text-sm font-semibold text-foreground">{title}</p>
+            <p className="text-xs text-muted-foreground">{description}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full border border-border/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
           >
-            Close
+            {closeLabel}
           </button>
         </div>
 
