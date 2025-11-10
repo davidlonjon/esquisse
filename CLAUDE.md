@@ -198,6 +198,14 @@ import { createMainWindow } from '@main/core/window';
 import { journalAPI } from '@preload/api/journal.api';
 ```
 
+### Localization
+
+- i18next + react-i18next power renderer translations; initialization lives in `src/renderer/lib/i18n.ts`.
+- Language detection checks `localStorage` then the browser/OS locale, with English as fallback.
+- Translation bundles sit under `src/renderer/locales/{locale}/common.json`. Always update EN + FR versions when adding keys.
+- Components should call `useTranslation()` instead of hard-coding strings. See `App.tsx` and `OverlayHUD.tsx` for patterns (interpolation, formatting, etc.).
+- The keyboard shortcut modal (`KeyboardShortcutsPanel`) and HUD already consume translated labels; reuse those helpers when adding new HUD items or overlays.
+
 **Available aliases:**
 
 - `@features/*` → `./src/renderer/features/*`

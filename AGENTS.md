@@ -283,6 +283,14 @@ import { Button } from '@ui/button';
 - `vite.renderer.config.mjs`: Renderer build
 - `vitest.config.ts`: Test environment
 
+## Localization
+
+- Renderer strings are powered by i18next/`react-i18next` (`src/renderer/lib/i18n.ts`). The instance auto-detects language from `localStorage` then the OS/browser locale, defaulting to English.
+- Translation bundles live under `src/renderer/locales/{locale}/common.json`. Every new key must at least exist in `en` and `fr`.
+- `src/renderer/index.tsx` wraps the app with `I18nextProvider`, so components call `useTranslation()` for text. Do **not** hardcode strings directly.
+- HUD overlays, shortcut panels, and `App.tsx` already use translation keys—follow those patterns (including interpolation with `t('hud.snapshotSaved', { time })`).
+- To add a locale: create a new folder under `locales`, update the `resources` and `supportedLngs` arrays in `lib/i18n.ts`, and optionally expose a UI toggle that calls `i18n.changeLanguage('<locale>')`.
+
 ## State Management
 
 ### Zustand Stores
