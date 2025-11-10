@@ -1,4 +1,7 @@
 import clsx from 'clsx';
+import { useEffect, useMemo, useState } from 'react';
+
+import { KeyboardShortcutsPanel, type ShortcutItem } from '@layout/KeyboardShortcutsPanel';
 
 interface OverlayHUDProps {
   showTop: boolean;
@@ -7,8 +10,7 @@ interface OverlayHUDProps {
   wordCountLabel: string;
   sessionLabel: string;
   snapshotLabel: string;
-  searchShortcut?: string;
-  commandShortcut?: string;
+  shortcuts?: ShortcutItem[];
 }
 
 const HUDPill = ({ label }: { label: string }) => (
@@ -17,12 +19,10 @@ const HUDPill = ({ label }: { label: string }) => (
   </div>
 );
 
-const HUDShortcut = ({ combo, label }: { combo: string; label: string }) => (
-  <div className="flex items-center gap-2 rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
-    <span className="rounded bg-muted/30 px-1.5 py-0.5 font-semibold text-foreground">{combo}</span>
-    <span>{label}</span>
-  </div>
-);
+const DEFAULT_SHORTCUTS: ShortcutItem[] = [
+  { combo: '⌘K', label: 'Search', description: 'Open global search' },
+  { combo: '⌘P', label: 'Command Palette', description: 'Jump to any action' },
+];
 
 export function OverlayHUD({
   showTop,
@@ -31,9 +31,28 @@ export function OverlayHUD({
   wordCountLabel,
   sessionLabel,
   snapshotLabel,
-  searchShortcut = '⌘K',
-  commandShortcut = '⌘P',
+  shortcuts,
 }: OverlayHUDProps) {
+  const shortcutList = useMemo(() => shortcuts ?? DEFAULT_SHORTCUTS, [shortcuts]);
+  const [isShortcutOpen, setIsShortcutOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggleShortcutPanel = (event: KeyboardEvent) => {
+      const isMetaCombo = event.metaKey || event.ctrlKey;
+      if (isMetaCombo && (event.key === '/' || event.key === '?')) {
+        event.preventDefault();
+        setIsShortcutOpen((prev) => !prev);
+      }
+
+      if (event.key === 'Escape') {
+        setIsShortcutOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleToggleShortcutPanel);
+    return () => window.removeEventListener('keydown', handleToggleShortcutPanel);
+  }, []);
+
   return (
     <>
       <div
@@ -47,9 +66,17 @@ export function OverlayHUD({
           <HUDPill label={wordCountLabel} />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <HUDShortcut combo={searchShortcut} label="Search" />
-          <HUDShortcut combo={commandShortcut} label="Command Palette" />
+        <div className="pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setIsShortcutOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition hover:border-border"
+          >
+            <span className="rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold text-foreground">
+              ⌘/
+            </span>
+            <span>Keyboard shortcuts</span>
+          </button>
         </div>
       </div>
 
@@ -66,6 +93,10 @@ export function OverlayHUD({
 
         <HUDPill label={snapshotLabel} />
       </div>
+
+      {isShortcutOpen && (
+        <KeyboardShortcutsPanel shortcuts={shortcutList} onClose={() => setIsShortcutOpen(false)} />
+      )}
     </>
   );
 }
