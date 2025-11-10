@@ -92,7 +92,8 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
             });
           };
 
-          scheduleCenter();
+          // Initial centering with a small delay to ensure DOM is ready
+          setTimeout(scheduleCenter, 100);
 
           return {
             update(view, prevState) {
