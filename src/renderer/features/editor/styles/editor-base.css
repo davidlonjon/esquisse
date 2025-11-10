@@ -28,11 +28,23 @@
   font-weight: 400;
   overflow-x: hidden;
   overflow-wrap: break-word;
+}
+
+/* ProseMirror contenteditable element */
+.editor-content .ProseMirror {
+  outline: none;
+  overflow: hidden visible;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 /* Enhanced cursor visibility when focused */
 .editor-content:focus {
+  caret-color: #06b6d4;
+}
+
+.editor-content .ProseMirror:focus {
   caret-color: #06b6d4;
 }
 
