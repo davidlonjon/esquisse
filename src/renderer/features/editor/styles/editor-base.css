@@ -15,7 +15,8 @@
   scroll-behavior: auto;
 }
 
-.editor-content {
+.editor-content,
+.ProseMirror {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
@@ -23,30 +24,20 @@
   font-size: 16px;
   line-height: 1.75;
   color: hsl(var(--foreground));
-  outline: none;
-  caret-color: #06b6d4; /* Blue-green cursor (cyan-500) */
+  outline: none !important;
+  caret-color: #06b6d4 !important; /* Blue-green cursor (cyan-500) */
   font-weight: 400;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
+  overflow-y: visible;
   overflow-wrap: break-word;
-  text-align: left;
-}
-
-/* ProseMirror contenteditable element */
-.editor-content .ProseMirror {
-  outline: none;
-  overflow: hidden visible;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
-  text-align: left;
+  text-align: left !important;
 }
 
 /* Enhanced cursor visibility when focused */
-.editor-content:focus {
-  caret-color: #06b6d4;
-}
-
-.editor-content .ProseMirror:focus {
-  caret-color: #06b6d4;
+.editor-content:focus,
+.ProseMirror:focus {
+  caret-color: #06b6d4 !important;
 }
 
 /* When editor is empty, show an inviting cursor area with bigger cursor */
