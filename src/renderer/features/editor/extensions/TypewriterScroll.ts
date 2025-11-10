@@ -53,13 +53,15 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
 
             const isElement = scrollElement instanceof HTMLElement;
             const containerHeight = isElement ? scrollElement.clientHeight : window.innerHeight;
+
+            // Target: center of the visible container area
             const targetY = containerHeight * offset;
 
             const cursorOffset = isElement
               ? coords.top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop
               : coords.top + window.scrollY;
 
-            // Check if cursor is already close enough to target position in viewport
+            // How far cursor is from target center position
             const scrollDiff = coords.top - targetY;
 
             if (Math.abs(scrollDiff) <= pluginThreshold) {
@@ -70,7 +72,7 @@ export const TypewriterScroll = Extension.create<TypewriterScrollOptions>({
               ? scrollElement.scrollHeight - scrollElement.clientHeight
               : document.documentElement.scrollHeight - window.innerHeight;
 
-            // Calculate scroll position to center cursor at targetY
+            // Scroll so cursor ends up at target position
             const nextScroll = Math.max(0, Math.min(cursorOffset - targetY, maxScroll));
 
             if (isElement) {
