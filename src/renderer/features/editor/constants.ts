@@ -23,7 +23,7 @@ export const FOCUS_MODE_TRANSITION = 'opacity 0.2s ease';
 
 // Typewriter Mode
 export const TYPEWRITER_OFFSET = 0.5; // 50% of viewport height
-export const TYPEWRITER_THRESHOLD = 50; // px - minimum scroll distance before triggering
+export const TYPEWRITER_THRESHOLD = 4; // px - minimum scroll distance before triggering
 
 // Placeholder
 export const DEFAULT_PLACEHOLDER = 'Start writing...';
