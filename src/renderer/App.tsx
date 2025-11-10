@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import { Editor } from '@features/editor';
 import { useEntryStore } from '@features/entries';
 import { useJournalStore } from '@features/journals';
 import { useAutoSave } from '@hooks/useAutoSave';
+import { useEdgeReveal } from '@hooks/useEdgeReveal';
+import { useSessionTimer } from '@hooks/useSessionTimer';
+import { OverlayHUD } from '@layout/OverlayHUD';
+import { getWordCountFromHTML } from '@lib/text';
+import { formatDuration } from '@lib/time';
 import { ThemeProvider } from '@providers/theme-provider';
 
 function App() {
   const [content, setContent] = useState<string>('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const hudVisible = useEdgeReveal();
+  const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
 
   const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
   const { currentEntry, updateEntry, setCurrentEntry } = useEntryStore();
@@ -41,6 +48,7 @@ function App() {
         });
         setCurrentEntry(newEntry);
         setContent('');
+        resetSessionTimer();
 
         setIsInitialized(true);
       } catch (error) {
@@ -54,7 +62,7 @@ function App() {
   }, []);
 
   // Auto-save functionality (uses AUTO_SAVE_DELAY constant by default)
-  const { isSaving, lastSaved, trigger } = useAutoSave({
+  const { lastSaved, trigger } = useAutoSave({
     onSave: async (htmlContent) => {
       try {
         if (!currentEntry) return;
@@ -86,6 +94,26 @@ function App() {
     }
   };
 
+  const wordCount = useMemo(() => {
+    return getWordCountFromHTML(content);
+  }, [content]);
+
+  const dateLabel = useMemo(() => {
+    const now = new Date();
+    return `Today · ${now.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    })}`;
+  }, []);
+
+  const snapshotLabel = lastSaved
+    ? `Snapshot saved · ${lastSaved.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`
+    : 'Snapshot pending';
+
   // Check if the Electron API is available
   if (window.api === undefined) {
     return (
@@ -116,6 +144,14 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="esquisse-theme">
       <div className="relative h-screen w-screen">
+        <OverlayHUD
+          showTop={hudVisible}
+          showBottom={hudVisible}
+          dateLabel={dateLabel}
+          wordCountLabel={`Words · ${wordCount}`}
+          sessionLabel={formatDuration(sessionSeconds)}
+          snapshotLabel={snapshotLabel}
+        />
         <Editor
           content={content}
           onChange={handleContentChange}
@@ -123,13 +159,6 @@ function App() {
           focusMode={true}
           typewriterMode={true}
         />
-
-        {/* Save status indicator */}
-        {(isSaving || lastSaved) && (
-          <div className="fixed bottom-4 right-4 text-xs text-muted-foreground">
-            {isSaving ? 'Saving...' : lastSaved && `Saved at ${lastSaved.toLocaleTimeString()}`}
-          </div>
-        )}
 
         {/* Error display */}
         {apiError && (
