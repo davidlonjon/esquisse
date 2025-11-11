@@ -12,6 +12,7 @@ A feature-rich, cross-platform journaling application built with Electron, React
 - **Type-Safe**: End-to-end TypeScript for reliability
 - **Offline-First**: No internet connection required
 - **Localized**: English and French via i18next
+- **Settings Screen**: Configure theme, editor feel, auto-save, and language (⌘,)
 
 ## Tech Stack
 
@@ -27,6 +28,7 @@ A feature-rich, cross-platform journaling application built with Electron, React
 - **Zustand** - Lightweight state management
 - **sql.js** - SQLite compiled to WebAssembly (no native dependencies!)
 - **React Router** - Client-side routing
+- **TanStack Router** - File-free route definitions & future page expansion
 
 ### UI & Styling
 
@@ -39,6 +41,12 @@ A feature-rich, cross-platform journaling application built with Electron, React
 - **i18next** + **react-i18next** - Runtime translations in the renderer
 - **i18next-browser-languagedetector** - Persists preferred language and auto-detects locale
 - JSON translation bundles stored under `src/renderer/locales/{locale}/common.json`
+
+### Routing & Pages
+
+- **TanStack Router** (`src/renderer/router.tsx`) drives navigation between the editor (`/`) and settings (`/settings`).
+- Pages live in `src/renderer/pages/` (`EditorPage.tsx`, `SettingsPage.tsx`). Add new routes by creating a page file and registering it in `router.tsx`.
+- Navigation helpers: top HUD button + keyboard shortcut `⌘,` navigate to the Settings page.
 
 ### Development Tools
 

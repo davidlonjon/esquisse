@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +91,16 @@ export function OverlayHUD({
           <HUDPill label={wordCountLabel} />
         </div>
 
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex flex-wrap gap-2">
+          <Link
+            to="/settings"
+            className="flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition hover:border-border"
+          >
+            <span className="rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold text-foreground">
+              ⌘,
+            </span>
+            <span>{t('hud.settings')}</span>
+          </Link>
           <button
             type="button"
             onClick={() => setIsShortcutOpen(true)}

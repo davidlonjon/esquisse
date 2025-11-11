@@ -15,6 +15,7 @@
     "today": "Today · {{date}}",
     "words": "Words · {{count}}",
     "session": "Session",
+    "settings": "Settings",
     "snapshotSaved": "Snapshot saved · {{time}}",
     "snapshotPending": "Snapshot pending",
     "keyboard": {
@@ -31,6 +32,36 @@
           "label": "Command Palette",
           "description": "Jump to any action"
         }
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Tune Esquisse to your workflow.",
+    "back": "Back to editor",
+    "loading": "Loading settings...",
+    "sections": {
+      "appearance": "Appearance",
+      "editor": "Editor",
+      "autosave": "Auto-save"
+    },
+    "fields": {
+      "theme": "Theme",
+      "language": "Language",
+      "fontSize": "Font size: {{size}} px",
+      "fontFamily": "Font family",
+      "autoSave": "Auto-save",
+      "autoSaveInterval": "Auto-save interval: {{seconds}}s"
+    },
+    "options": {
+      "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "language": {
+        "en": "English",
+        "fr": "French"
       }
     }
   }

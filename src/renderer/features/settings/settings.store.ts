@@ -21,6 +21,7 @@ export const useSettingsStore = create<SettingsState>()(
       fontFamily: 'system-ui',
       autoSave: true,
       autoSaveInterval: 30000,
+      language: 'en',
       isLoading: false,
       error: null,
 

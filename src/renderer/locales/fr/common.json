@@ -15,6 +15,7 @@
     "today": "Aujourd'hui · {{date}}",
     "words": "Mots · {{count}}",
     "session": "Session",
+    "settings": "Paramètres",
     "snapshotSaved": "Instantané enregistré · {{time}}",
     "snapshotPending": "Instantané en attente",
     "keyboard": {
@@ -31,6 +32,36 @@
           "label": "Palette de commandes",
           "description": "Accéder à n'importe quelle action"
         }
+      }
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Ajustez Esquisse à votre flux d'écriture.",
+    "back": "Retour à l'éditeur",
+    "loading": "Chargement des paramètres...",
+    "sections": {
+      "appearance": "Apparence",
+      "editor": "Éditeur",
+      "autosave": "Enregistrement automatique"
+    },
+    "fields": {
+      "theme": "Thème",
+      "language": "Langue",
+      "fontSize": "Taille de police : {{size}} px",
+      "fontFamily": "Police",
+      "autoSave": "Enregistrement automatique",
+      "autoSaveInterval": "Intervalle d'enregistrement : {{seconds}} s"
+    },
+    "options": {
+      "theme": {
+        "system": "Système",
+        "light": "Clair",
+        "dark": "Sombre"
+      },
+      "language": {
+        "en": "Anglais",
+        "fr": "Français"
       }
     }
   }

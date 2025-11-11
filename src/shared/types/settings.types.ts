@@ -8,6 +8,7 @@ export interface Settings {
   fontFamily: string;
   autoSave: boolean;
   autoSaveInterval: number;
+  language: 'en' | 'fr';
 }
 
 export type UpdateSettingsInput = Partial<Settings>;
