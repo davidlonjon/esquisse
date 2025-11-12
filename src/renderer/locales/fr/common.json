@@ -31,6 +31,10 @@
         "commandPalette": {
           "label": "Palette de commandes",
           "description": "Accéder à n'importe quelle action"
+        },
+        "settings": {
+          "label": "Paramètres",
+          "description": "Ouvrir le panneau de préférences"
         }
       }
     }

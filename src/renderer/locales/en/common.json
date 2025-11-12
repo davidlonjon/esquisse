@@ -31,6 +31,10 @@
         "commandPalette": {
           "label": "Command Palette",
           "description": "Jump to any action"
+        },
+        "settings": {
+          "label": "Settings",
+          "description": "Open the preferences panel"
         }
       }
     }
