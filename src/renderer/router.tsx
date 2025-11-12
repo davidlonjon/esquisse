@@ -1,16 +1,31 @@
-import { RouterProvider, createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
+import {
+  RouterProvider,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+} from '@tanstack/react-router';
 
 import { EditorPage } from '@pages/EditorPage';
 import { SettingsPage } from '@pages/SettingsPage';
 
+function AppLayout() {
+  return (
+    <>
+      <EditorPage />
+      <Outlet />
+    </>
+  );
+}
+
 const RootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: AppLayout,
 });
 
 const editorRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/',
-  component: EditorPage,
+  component: () => null,
 });
 
 const settingsRoute = createRoute({
