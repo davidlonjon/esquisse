@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
+import { Modal } from '@layout/Modal';
 
 type SectionId = 'appearance' | 'editor' | 'autosave';
 
@@ -43,18 +44,6 @@ export function SettingsPage() {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeSettings();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeSettings]);
 
   const autoSaveSeconds = useMemo(() => Math.round(autoSaveInterval / 1000), [autoSaveInterval]);
 
@@ -289,65 +278,63 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:py-10">
-      <div
-        className="absolute inset-0 bg-background/70 backdrop-blur-xl transition-opacity"
+    <Modal
+      isOpen
+      onClose={closeSettings}
+      size="lg"
+      panelClassName="flex h-[min(90vh,760px)] w-full overflow-hidden rounded-[28px] border border-border bg-card text-foreground shadow-[0_40px_120px_rgba(15,23,42,0.25)]"
+    >
+      <button
+        type="button"
         onClick={closeSettings}
-      />
+        aria-label={t('settings.back')}
+        className="absolute right-5 top-5 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted/60 hover:text-foreground"
+      >
+        <X className="h-4 w-4" />
+      </button>
 
-      <div className="relative z-10 flex h-[min(90vh,760px)] w-full max-w-5xl overflow-hidden rounded-[28px] border border-border bg-card text-foreground shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
-        <button
-          type="button"
-          onClick={closeSettings}
-          aria-label={t('settings.back')}
-          className="absolute right-5 top-5 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted/60 hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <aside className="flex w-64 flex-col border-r border-border bg-muted/40 dark:bg-muted/20">
-          <div className="px-6 pt-8 pb-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-              {t('settings.title')}
-            </p>
-            <h2 className="mt-2 text-xl font-semibold text-foreground">
-              {t('settings.description')}
-            </h2>
-          </div>
-
-          {(isLoading || error) && (
-            <div className="px-6 pb-3 text-xs text-muted-foreground">
-              {isLoading ? t('settings.loading') : error}
-            </div>
-          )}
-
-          <nav className="mt-2 flex-1 space-y-1 px-2">
-            {sections.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => handleSectionClick(id)}
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                  activeSection === id
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="mt-auto border-t border-border px-6 py-4 text-xs text-muted-foreground">
-            ⌘ , · Esc
-          </div>
-        </aside>
-
-        <div className="flex-1 bg-card px-10 py-12">
-          <div className="mx-auto max-w-3xl">{renderActiveSection()}</div>
+      <aside className="flex w-64 flex-col border-r border-border bg-muted/40 dark:bg-muted/20">
+        <div className="px-6 pt-8 pb-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+            {t('settings.title')}
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-foreground">
+            {t('settings.description')}
+          </h2>
         </div>
+
+        {(isLoading || error) && (
+          <div className="px-6 pb-3 text-xs text-muted-foreground">
+            {isLoading ? t('settings.loading') : error}
+          </div>
+        )}
+
+        <nav className="mt-2 flex-1 space-y-1 px-2">
+          {sections.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => handleSectionClick(id)}
+              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                activeSection === id
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="mt-auto border-t border-border px-6 py-4 text-xs text-muted-foreground">
+          ⌘ , · Esc
+        </div>
+      </aside>
+
+      <div className="flex-1 bg-card px-10 py-12">
+        <div className="mx-auto max-w-3xl">{renderActiveSection()}</div>
       </div>
-    </div>
+    </Modal>
   );
 }
