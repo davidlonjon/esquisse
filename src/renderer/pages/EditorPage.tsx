@@ -29,6 +29,7 @@ export function EditorPage() {
   const updateEntry = useEntryStore((state) => state.updateEntry);
   const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
   const loadEntries = useEntryStore((state) => state.loadEntries);
+  const currentJournal = useJournalStore((state) => state.currentJournal);
   const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
 
   useEffect(() => {
@@ -43,15 +44,7 @@ export function EditorPage() {
 
         setCurrentJournal(journal);
         await loadEntries(journal.id);
-        let entryToOpen = useEntryStore.getState().entries[0];
-
-        if (!entryToOpen) {
-          entryToOpen = await window.api.createEntry({
-            journalId: journal.id,
-            content: '',
-          });
-          await loadEntries(journal.id);
-        }
+        const entryToOpen = useEntryStore.getState().entries[0];
 
         if (entryToOpen) {
           setCurrentEntry(entryToOpen);
@@ -77,25 +70,38 @@ export function EditorPage() {
   const { lastSaved, trigger } = useAutoSave({
     onSave: async (htmlContent) => {
       try {
-        if (!currentEntry) return;
-        await updateEntry(currentEntry.id, { content: htmlContent });
+        if (getWordCountFromHTML(htmlContent) === 0) return;
+        const activeEntry = useEntryStore.getState().currentEntry;
+        if (!activeEntry) return;
+        await updateEntry(activeEntry.id, { content: htmlContent });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         setApiError(t('app.errors.save', { message }));
       }
     },
-    enabled: isInitialized && !!currentEntry,
+    enabled: isInitialized,
   });
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent);
-    trigger(newContent);
+    const hasContent = getWordCountFromHTML(newContent) > 0;
+    if (!hasContent) {
+      return;
+    }
+
+    void (async () => {
+      await ensureEntryExists(newContent);
+      trigger(newContent);
+    })();
   };
 
   const handleManualSave = async (htmlContent: string) => {
     try {
-      if (!currentEntry) return;
-      await updateEntry(currentEntry.id, { content: htmlContent });
+      if (getWordCountFromHTML(htmlContent) === 0) return;
+      await ensureEntryExists(htmlContent);
+      const activeEntry = useEntryStore.getState().currentEntry;
+      if (!activeEntry) return;
+      await updateEntry(activeEntry.id, { content: htmlContent });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setApiError(t('app.errors.save', { message }));
@@ -114,6 +120,33 @@ export function EditorPage() {
       hudTimeoutRef.current = null;
     }, HUD_AUTO_HIDE_DELAY);
   }, []);
+
+  const ensureEntryExists = useCallback(
+    async (html: string) => {
+      const hasContent = getWordCountFromHTML(html) > 0;
+      if (!hasContent || !currentJournal) {
+        return useEntryStore.getState().currentEntry;
+      }
+
+      const existingEntry = useEntryStore.getState().currentEntry;
+      if (existingEntry) {
+        return existingEntry;
+      }
+
+      const createdEntry = await window.api.createEntry({
+        journalId: currentJournal.id,
+        content: html,
+      });
+      await loadEntries(currentJournal.id);
+      const syncedEntry =
+        useEntryStore.getState().entries.find((entry) => entry.id === createdEntry.id) ||
+        createdEntry;
+      setCurrentEntry(syncedEntry);
+      showHudTemporarily();
+      return syncedEntry;
+    },
+    [currentJournal, loadEntries, setCurrentEntry, showHudTemporarily]
+  );
 
   const navigateEntry = useCallback(
     (direction: -1 | 1) => {
