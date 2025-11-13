@@ -32,6 +32,10 @@
           "label": "Palette de commandes",
           "description": "Accéder à n'importe quelle action"
         },
+        "hudToggle": {
+          "label": "Afficher le HUD",
+          "description": "Afficher ou masquer l'affichage tête haute"
+        },
         "settings": {
           "label": "Paramètres",
           "description": "Ouvrir le panneau de préférences"

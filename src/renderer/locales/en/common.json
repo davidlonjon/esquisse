@@ -32,6 +32,10 @@
           "label": "Command Palette",
           "description": "Jump to any action"
         },
+        "hudToggle": {
+          "label": "Toggle HUD",
+          "description": "Show or hide the heads-up display"
+        },
         "settings": {
           "label": "Settings",
           "description": "Open the preferences panel"

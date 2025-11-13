@@ -18,6 +18,7 @@ export function EditorPage() {
   const [content, setContent] = useState<string>('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isHudPinned, setIsHudPinned] = useState(false);
 
   const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
   const { currentEntry, updateEntry, setCurrentEntry } = useEntryStore();
@@ -81,6 +82,18 @@ export function EditorPage() {
   };
 
   const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
+  useEffect(() => {
+    const handleHudToggle = (event: KeyboardEvent) => {
+      const isMetaCombo = event.metaKey || event.ctrlKey;
+      if (isMetaCombo && event.key === '.') {
+        event.preventDefault();
+        setIsHudPinned((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleHudToggle);
+    return () => window.removeEventListener('keydown', handleHudToggle);
+  }, []);
 
   const dateFormatter = useMemo(
     () =>
@@ -115,7 +128,8 @@ export function EditorPage() {
   );
 
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
-  const hudVisible = useEdgeReveal();
+  const hudEdgeVisible = useEdgeReveal();
+  const hudVisible = isHudPinned || hudEdgeVisible;
   const isSettingsRoute = location.pathname === '/settings';
 
   if (window.api === undefined) {
