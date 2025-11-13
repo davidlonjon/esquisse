@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+
 import { Modal } from '@layout/Modal';
 
 export interface ShortcutItem {
@@ -15,7 +17,7 @@ interface KeyboardShortcutsPanelProps {
 }
 
 const ShortcutBadge = ({ combo }: { combo: string }) => (
-  <span className="rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold text-foreground">
+  <span className="badge badge-outline border-base-300 bg-base-100 text-base-content dark:border-base-300/70 dark:bg-base-300/20">
     {combo}
   </span>
 );
@@ -32,33 +34,33 @@ export function KeyboardShortcutsPanel({
       isOpen
       onClose={onClose}
       size="sm"
-      align="top"
-      panelClassName="mt-10 rounded-2xl border border-border/70 bg-background px-6 py-5 shadow-2xl"
+      align="center"
+      panelClassName="relative rounded-lg border border-base-200 bg-base-100 p-0 text-base-content"
     >
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full border border-border/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
-        >
-          {closeLabel}
-        </button>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={closeLabel}
+        className="btn btn-ghost btn-circle btn-sm absolute right-4 top-4"
+      >
+        <X className="h-4 w-4" />
+      </button>
+
+      <div className="px-6 pt-8 pb-5">
+        <p className="text-base font-semibold">{title}</p>
+        <p className="text-sm text-base-content/70">{description}</p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 px-6 pb-6">
         {shortcuts.map((shortcut) => (
           <div
             key={shortcut.combo}
-            className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/10 px-3 py-2 text-sm"
+            className="flex items-center justify-between rounded-2xl border border-base-200/80 bg-base-100/90 px-4 py-3 shadow-sm dark:border-base-300/60 dark:bg-base-300/10"
           >
-            <div className="pr-3">
-              <p className="font-medium text-foreground">{shortcut.label}</p>
+            <div>
+              <p className="font-medium">{shortcut.label}</p>
               {shortcut.description && (
-                <p className="text-xs text-muted-foreground">{shortcut.description}</p>
+                <p className="text-sm text-base-content/70">{shortcut.description}</p>
               )}
             </div>
             <ShortcutBadge combo={shortcut.combo} />

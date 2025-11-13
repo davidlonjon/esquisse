@@ -24,8 +24,8 @@ const SIZE_CLASS_MAP: Record<ModalSize, string> = {
 };
 
 const ALIGN_CLASS_MAP: Record<ModalAlignment, string> = {
-  center: 'items-center justify-center',
-  top: 'items-start justify-center pt-16',
+  center: 'modal-middle',
+  top: 'modal-top',
 };
 
 export function Modal({
@@ -64,27 +64,30 @@ export function Modal({
   }
 
   return (
-    <div className={clsx('fixed inset-0 z-50 flex px-4 py-6 sm:py-10', ALIGN_CLASS_MAP[align])}>
-      <div
-        className={clsx(
-          'absolute inset-0 bg-background/70 backdrop-blur-xl transition-opacity',
-          overlayClassName
-        )}
-        onClick={() => {
-          if (!disableOutsideClose) {
-            onClose();
-          }
-        }}
-      />
-
+    <dialog open className={clsx('modal modal-open', ALIGN_CLASS_MAP[align])}>
       <div
         ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        className={clsx('relative z-10 w-full', SIZE_CLASS_MAP[size], panelClassName)}
+        className={clsx(
+          'modal-box w-full bg-base-100 text-base-content dark:bg-base-200 dark:text-base-content',
+          SIZE_CLASS_MAP[size],
+          panelClassName
+        )}
       >
         {children}
       </div>
-    </div>
+
+      {!disableOutsideClose && (
+        <form method="dialog" className="modal-backdrop" onClick={onClose}>
+          <button type="button" aria-label="Close" />
+        </form>
+      )}
+
+      {disableOutsideClose && (
+        <div
+          className={clsx('modal-backdrop pointer-events-none bg-transparent', overlayClassName)}
+          aria-hidden="true"
+        />
+      )}
+    </dialog>
   );
 }

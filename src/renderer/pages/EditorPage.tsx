@@ -1,3 +1,4 @@
+import { useRouterState } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +14,7 @@ import { formatDuration } from '@lib/time';
 
 export function EditorPage() {
   const { t, i18n } = useTranslation();
+  const { location } = useRouterState();
   const [content, setContent] = useState<string>('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -114,6 +116,7 @@ export function EditorPage() {
 
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
   const hudVisible = useEdgeReveal();
+  const isSettingsRoute = location.pathname === '/settings';
 
   if (window.api === undefined) {
     return (
@@ -145,6 +148,7 @@ export function EditorPage() {
         wordCountLabel={wordCountLabel}
         sessionLabel={formatDuration(sessionSeconds)}
         snapshotLabel={snapshotLabel}
+        disabled={isSettingsRoute}
       />
       <Editor
         content={content}

@@ -17,6 +17,7 @@ interface OverlayHUDProps {
   wordCountLabel: string;
   sessionLabel: string;
   snapshotLabel: string;
+  disabled?: boolean;
 }
 
 const HUDPill = ({ label }: { label: string }) => (
@@ -50,6 +51,7 @@ export function OverlayHUD({
   wordCountLabel,
   sessionLabel,
   snapshotLabel,
+  disabled = false,
 }: OverlayHUDProps) {
   const { t } = useTranslation();
   const translatedDefaults = useMemo<ShortcutItem[]>(
@@ -64,6 +66,7 @@ export function OverlayHUD({
 
   const shortcutList = translatedDefaults;
   const [isShortcutOpen, setIsShortcutOpen] = useState(false);
+  const hudSuppressed = disabled || isShortcutOpen;
 
   useEffect(() => {
     const handleToggleShortcutPanel = (event: KeyboardEvent) => {
@@ -87,7 +90,7 @@ export function OverlayHUD({
       <div
         className={clsx(
           'pointer-events-none fixed left-0 right-0 top-6 z-20 flex items-center justify-between px-10 transition-all duration-300 ease-out',
-          showTop ? 'opacity-100 translate-y-0' : '-translate-y-4 opacity-0'
+          showTop && !hudSuppressed ? 'opacity-100 translate-y-0' : '-translate-y-4 opacity-0'
         )}
       >
         <div className="flex flex-wrap gap-2">
@@ -98,8 +101,12 @@ export function OverlayHUD({
         <div className="pointer-events-auto flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setIsShortcutOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition hover:border-border"
+            onClick={() => !disabled && setIsShortcutOpen(true)}
+            disabled={disabled}
+            className={clsx(
+              'flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition',
+              disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-border'
+            )}
           >
             <span className="rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold text-foreground">
               ⌘/
@@ -112,7 +119,7 @@ export function OverlayHUD({
       <div
         className={clsx(
           'pointer-events-none fixed bottom-6 left-0 right-0 z-20 flex items-center justify-between px-10 transition-all duration-300 ease-out',
-          showBottom ? 'opacity-100 translate-y-0' : 'translate-y-4 opacity-0'
+          showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-4 opacity-0'
         )}
       >
         <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
