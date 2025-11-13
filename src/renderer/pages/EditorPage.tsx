@@ -1,8 +1,9 @@
 import { useRouterState } from '@tanstack/react-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Editor } from '@features/editor';
+import { HUD_AUTO_HIDE_DELAY } from '@features/editor/constants';
 import { useEntryStore } from '@features/entries';
 import { useJournalStore } from '@features/journals';
 import { useAutoSave } from '@hooks/useAutoSave';
@@ -19,9 +20,15 @@ export function EditorPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isHudPinned, setIsHudPinned] = useState(false);
+  const [hudTemporaryVisible, setHudTemporaryVisible] = useState(false);
+  const hudTimeoutRef = useRef<number | null>(null);
 
   const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
-  const { currentEntry, updateEntry, setCurrentEntry } = useEntryStore();
+  const entries = useEntryStore((state) => state.entries);
+  const currentEntry = useEntryStore((state) => state.currentEntry);
+  const updateEntry = useEntryStore((state) => state.updateEntry);
+  const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
+  const loadEntries = useEntryStore((state) => state.loadEntries);
   const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
 
   useEffect(() => {
@@ -35,12 +42,26 @@ export function EditorPage() {
         }
 
         setCurrentJournal(journal);
-        const newEntry = await window.api.createEntry({
-          journalId: journal.id,
-          content: '',
-        });
-        setCurrentEntry(newEntry);
-        setContent('');
+        await loadEntries(journal.id);
+        let entryToOpen = useEntryStore.getState().entries[0];
+
+        if (!entryToOpen) {
+          entryToOpen = await window.api.createEntry({
+            journalId: journal.id,
+            content: '',
+          });
+          await loadEntries(journal.id);
+        }
+
+        if (entryToOpen) {
+          setCurrentEntry(entryToOpen);
+          setContent(entryToOpen.content ?? '');
+          showHudTemporarily();
+        } else {
+          setCurrentEntry(null);
+          setContent('');
+        }
+
         resetSessionTimer();
         setIsInitialized(true);
       } catch (error) {
@@ -82,6 +103,34 @@ export function EditorPage() {
   };
 
   const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
+
+  const showHudTemporarily = useCallback(() => {
+    setHudTemporaryVisible(true);
+    if (hudTimeoutRef.current) {
+      window.clearTimeout(hudTimeoutRef.current);
+    }
+    hudTimeoutRef.current = window.setTimeout(() => {
+      setHudTemporaryVisible(false);
+      hudTimeoutRef.current = null;
+    }, HUD_AUTO_HIDE_DELAY);
+  }, []);
+
+  const navigateEntry = useCallback(
+    (direction: -1 | 1) => {
+      if (!currentEntry || entries.length === 0) return;
+      const currentIndex = entries.findIndex((entry) => entry.id === currentEntry.id);
+      if (currentIndex === -1) return;
+      const targetIndex = currentIndex + direction;
+      if (targetIndex < 0 || targetIndex >= entries.length) return;
+      const targetEntry = entries[targetIndex];
+      if (!targetEntry) return;
+      setCurrentEntry(targetEntry);
+      setContent(targetEntry.content ?? '');
+      showHudTemporarily();
+    },
+    [entries, currentEntry, setCurrentEntry, showHudTemporarily]
+  );
+
   useEffect(() => {
     const handleHudToggle = (event: KeyboardEvent) => {
       const isMetaCombo = event.metaKey || event.ctrlKey;
@@ -91,9 +140,25 @@ export function EditorPage() {
       }
     };
 
+    const handleEntryNavigation = (event: KeyboardEvent) => {
+      const isMetaCombo = event.metaKey || event.ctrlKey;
+      if (!isMetaCombo) return;
+      if (event.key === '[') {
+        event.preventDefault();
+        navigateEntry(1);
+      } else if (event.key === ']') {
+        event.preventDefault();
+        navigateEntry(-1);
+      }
+    };
+
     window.addEventListener('keydown', handleHudToggle);
-    return () => window.removeEventListener('keydown', handleHudToggle);
-  }, []);
+    window.addEventListener('keydown', handleEntryNavigation);
+    return () => {
+      window.removeEventListener('keydown', handleHudToggle);
+      window.removeEventListener('keydown', handleEntryNavigation);
+    };
+  }, [navigateEntry]);
 
   const dateFormatter = useMemo(
     () =>
@@ -129,7 +194,7 @@ export function EditorPage() {
 
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
   const hudEdgeVisible = useEdgeReveal();
-  const hudVisible = isHudPinned || hudEdgeVisible;
+  const hudVisible = isHudPinned || hudEdgeVisible || hudTemporaryVisible;
   const isSettingsRoute = location.pathname === '/settings';
 
   if (window.api === undefined) {

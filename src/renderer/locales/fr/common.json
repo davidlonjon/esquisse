@@ -36,6 +36,14 @@
           "label": "Afficher le HUD",
           "description": "Afficher ou masquer l'affichage tête haute"
         },
+        "previousEntry": {
+          "label": "Entrée précédente",
+          "description": "Aller à l'entrée de journal précédente"
+        },
+        "nextEntry": {
+          "label": "Entrée suivante",
+          "description": "Aller à l'entrée de journal suivante"
+        },
         "settings": {
           "label": "Paramètres",
           "description": "Ouvrir le panneau de préférences"

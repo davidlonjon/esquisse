@@ -36,6 +36,14 @@
           "label": "Toggle HUD",
           "description": "Show or hide the heads-up display"
         },
+        "previousEntry": {
+          "label": "Previous entry",
+          "description": "Navigate to the previous journal entry"
+        },
+        "nextEntry": {
+          "label": "Next entry",
+          "description": "Navigate to the next journal entry"
+        },
         "settings": {
           "label": "Settings",
           "description": "Open the preferences panel"

@@ -38,6 +38,16 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     descriptionKey: 'hud.keyboard.shortcut.hudToggle.description',
   },
   {
+    combo: '⌘[',
+    labelKey: 'hud.keyboard.shortcut.previousEntry.label',
+    descriptionKey: 'hud.keyboard.shortcut.previousEntry.description',
+  },
+  {
+    combo: '⌘]',
+    labelKey: 'hud.keyboard.shortcut.nextEntry.label',
+    descriptionKey: 'hud.keyboard.shortcut.nextEntry.description',
+  },
+  {
     combo: '⌘K',
     labelKey: 'hud.keyboard.shortcut.search.label',
     descriptionKey: 'hud.keyboard.shortcut.search.description',

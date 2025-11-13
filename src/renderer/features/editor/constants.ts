@@ -30,3 +30,5 @@ export const DEFAULT_PLACEHOLDER = 'Start writing...';
 
 // Heading Levels
 export const HEADING_LEVELS = [1, 2, 3] as Array<1 | 2 | 3 | 4 | 5 | 6>;
+
+export const HUD_AUTO_HIDE_DELAY = 5000; // ms - HUD auto-hide duration
