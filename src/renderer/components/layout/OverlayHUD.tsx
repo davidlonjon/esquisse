@@ -21,7 +21,7 @@ interface OverlayHUDProps {
 }
 
 const HUDPill = ({ label }: { label: string }) => (
-  <div className="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
+  <div className="rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-base-content/60 backdrop-blur-sm">
     {label}
   </div>
 );
@@ -104,14 +104,14 @@ export function OverlayHUD({
             onClick={() => !disabled && setIsShortcutOpen(true)}
             disabled={disabled}
             className={clsx(
-              'flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition',
-              disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-border'
+              'flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-base-content/60 backdrop-blur-sm transition',
+              disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-background/80'
             )}
           >
-            <span className="rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold text-foreground">
+            <span className="rounded bg-muted/30 px-2 py-0.5 text-xs font-semibold text-base-content/50">
               ⌘/
             </span>
-            <span>{t('hud.keyboard.button')}</span>
+            <span className="text-base-content/60">{t('hud.keyboard.button')}</span>
           </button>
         </div>
       </div>
@@ -122,7 +122,7 @@ export function OverlayHUD({
           showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-4 opacity-0'
         )}
       >
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-medium text-base-content/60">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           <span>
             {t('hud.session')} · {sessionLabel}
