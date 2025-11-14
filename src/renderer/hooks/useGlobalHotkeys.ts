@@ -39,6 +39,13 @@ export function useGlobalHotkeys(
   const localEnabled = options.enabled !== undefined ? options.enabled : true;
   const finalEnabled = respectGlobalState ? globalEnabled && localEnabled : localEnabled;
 
+  console.log(`[useGlobalHotkeys] Registering ${keys}:`, {
+    globalEnabled,
+    localEnabled,
+    finalEnabled,
+    respectGlobalState,
+  });
+
   useHotkeys(keys, callback, {
     enableOnContentEditable: true, // Enable shortcuts in editor (Tiptap)
     enableOnFormTags: false, // Disable in actual form inputs

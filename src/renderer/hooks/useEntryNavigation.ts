@@ -71,6 +71,7 @@ export function useEntryNavigation({
   useGlobalHotkeys(
     'mod+[',
     (event) => {
+      console.log('[useEntryNavigation] Next entry shortcut triggered!');
       event.preventDefault();
       navigateEntry(1);
     },
@@ -81,6 +82,7 @@ export function useEntryNavigation({
   useGlobalHotkeys(
     'mod+]',
     (event) => {
+      console.log('[useEntryNavigation] Previous entry shortcut triggered!');
       event.preventDefault();
       navigateEntry(-1);
     },

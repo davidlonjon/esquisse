@@ -26,6 +26,7 @@ export function useHud() {
   useGlobalHotkeys(
     'mod+.',
     (event) => {
+      console.log('[useHud] HUD toggle shortcut triggered!');
       event.preventDefault();
       setIsHudPinned((prev) => !prev);
     },
