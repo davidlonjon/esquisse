@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useSettingsStore } from '@features/settings';
+import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import i18n from '@lib/i18n';
 import { useTheme } from '@providers/theme-provider';
 
@@ -28,17 +29,15 @@ export default function App() {
     }
   }, [language]);
 
-  useEffect(() => {
-    const handleShortcut = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === ',') {
-        event.preventDefault();
-        router.navigate({ to: '/settings' });
-      }
-    };
-
-    window.addEventListener('keydown', handleShortcut);
-    return () => window.removeEventListener('keydown', handleShortcut);
-  }, []);
+  // Register settings shortcut (Cmd/Ctrl+,)
+  useGlobalHotkeys(
+    'mod+,',
+    (event) => {
+      event.preventDefault();
+      router.navigate({ to: '/settings' });
+    },
+    { preventDefault: true }
+  );
 
   return <AppRouterProvider />;
 }

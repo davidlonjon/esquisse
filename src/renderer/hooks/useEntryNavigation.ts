@@ -1,7 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 import { useEntryStore } from '@features/entries';
 import { Entry } from '@shared/ipc-types';
+
+import { useGlobalHotkeys } from './useGlobalHotkeys';
 
 interface UseEntryNavigationProps {
   entries: Entry[];
@@ -64,22 +66,24 @@ export function useEntryNavigation({
     [entries, currentEntry, setCurrentEntry, setContent, showHudTemporarily]
   );
 
-  useEffect(() => {
-    const handleEntryNavigation = (event: KeyboardEvent) => {
-      const isMetaCombo = event.metaKey || event.ctrlKey;
-      if (!isMetaCombo) return;
-      if (event.key === '[') {
-        event.preventDefault();
-        navigateEntry(1);
-      } else if (event.key === ']') {
-        event.preventDefault();
-        navigateEntry(-1);
-      }
-    };
+  // Register entry navigation shortcuts
+  // Cmd/Ctrl+[ = navigate to next entry
+  useGlobalHotkeys(
+    'mod+[',
+    (event) => {
+      event.preventDefault();
+      navigateEntry(1);
+    },
+    { preventDefault: true }
+  );
 
-    window.addEventListener('keydown', handleEntryNavigation);
-    return () => {
-      window.removeEventListener('keydown', handleEntryNavigation);
-    };
-  }, [navigateEntry]);
+  // Cmd/Ctrl+] = navigate to previous entry
+  useGlobalHotkeys(
+    'mod+]',
+    (event) => {
+      event.preventDefault();
+      navigateEntry(-1);
+    },
+    { preventDefault: true }
+  );
 }

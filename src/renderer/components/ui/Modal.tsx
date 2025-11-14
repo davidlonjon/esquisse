@@ -1,7 +1,9 @@
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef } from 'react';
 
+import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useOnClickOutside } from '@hooks/useOnClickOutside';
+import { useHotkeysContext } from '@providers/hotkeys-provider';
 
 type ModalSize = 'sm' | 'md' | 'lg';
 type ModalAlignment = 'center' | 'top';
@@ -39,6 +41,7 @@ export function Modal({
   disableOutsideClose = false,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const { openModal, closeModal } = useHotkeysContext();
 
   useOnClickOutside(panelRef, () => {
     if (!disableOutsideClose) {
@@ -46,18 +49,27 @@ export function Modal({
     }
   });
 
+  // Automatically disable global hotkeys when modal opens
   useEffect(() => {
-    if (!isOpen) return undefined;
+    if (isOpen) {
+      openModal();
+      return () => {
+        closeModal();
+      };
+    }
+  }, [isOpen, openModal, closeModal]);
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+  // Register Escape key handler (always enabled, even when global hotkeys are disabled)
+  useGlobalHotkeys(
+    'escape',
+    () => {
+      if (!disableOutsideClose) {
         onClose();
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    },
+    { enabled: isOpen },
+    false // Don't respect global enabled state
+  );
 
   if (!isOpen) {
     return null;
