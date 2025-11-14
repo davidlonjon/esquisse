@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 /**
  * Hotkeys Context
@@ -49,22 +49,20 @@ export function HotkeysProvider({ children }: HotkeysProviderProps) {
   const [enabled, setEnabled] = useState(true);
   const [modalCount, setModalCount] = useState(0);
 
+  // Sync enabled state with modal count
+  useEffect(() => {
+    setEnabled(modalCount === 0);
+  }, [modalCount]);
+
   const enable = () => setEnabled(true);
   const disable = () => setEnabled(false);
 
   const openModal = () => {
     setModalCount((prev) => prev + 1);
-    setEnabled(false);
   };
 
   const closeModal = () => {
-    setModalCount((prev) => {
-      const newCount = Math.max(0, prev - 1);
-      if (newCount === 0) {
-        setEnabled(true);
-      }
-      return newCount;
-    });
+    setModalCount((prev) => Math.max(0, prev - 1));
   };
 
   const value: HotkeysContextValue = {
