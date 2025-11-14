@@ -68,8 +68,9 @@ export function useEntryNavigation({
 
   // Register entry navigation shortcuts
   // Cmd/Ctrl+[ = navigate to next entry
+  // Using 'bracketleft' instead of '[' for better compatibility
   useGlobalHotkeys(
-    'mod+[',
+    'mod+bracketleft',
     (event) => {
       console.log('[useEntryNavigation] Next entry shortcut triggered!');
       event.preventDefault();
@@ -79,8 +80,9 @@ export function useEntryNavigation({
   );
 
   // Cmd/Ctrl+] = navigate to previous entry
+  // Using 'bracketright' instead of ']' for better compatibility
   useGlobalHotkeys(
-    'mod+]',
+    'mod+bracketright',
     (event) => {
       console.log('[useEntryNavigation] Previous entry shortcut triggered!');
       event.preventDefault();

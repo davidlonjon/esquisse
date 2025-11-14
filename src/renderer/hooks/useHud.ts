@@ -23,8 +23,9 @@ export function useHud() {
   }, []);
 
   // Register HUD toggle shortcut (Cmd/Ctrl+.)
+  // Using 'period' instead of '.' for better compatibility
   useGlobalHotkeys(
-    'mod+.',
+    'mod+period',
     (event) => {
       console.log('[useHud] HUD toggle shortcut triggered!');
       event.preventDefault();

@@ -21,22 +21,22 @@ export interface Shortcut {
 export const SHORTCUTS: Shortcut[] = [
   // Navigation shortcuts
   {
-    keys: 'mod+[',
-    description: 'Navigate to next entry',
+    keys: 'mod+bracketleft',
+    description: 'Navigate to next entry (Cmd+[ or Ctrl+[)',
     category: 'navigation',
     location: 'hooks/useEntryNavigation.ts',
     globallyControlled: true,
   },
   {
-    keys: 'mod+]',
-    description: 'Navigate to previous entry',
+    keys: 'mod+bracketright',
+    description: 'Navigate to previous entry (Cmd+] or Ctrl+])',
     category: 'navigation',
     location: 'hooks/useEntryNavigation.ts',
     globallyControlled: true,
   },
   {
-    keys: 'mod+,',
-    description: 'Open settings',
+    keys: 'mod+comma',
+    description: 'Open settings (Cmd+, or Ctrl+,)',
     category: 'navigation',
     location: 'App.tsx',
     globallyControlled: true,
@@ -44,8 +44,8 @@ export const SHORTCUTS: Shortcut[] = [
 
   // UI shortcuts
   {
-    keys: 'mod+.',
-    description: 'Toggle HUD pin/unpin',
+    keys: 'mod+period',
+    description: 'Toggle HUD pin/unpin (Cmd+. or Ctrl+.)',
     category: 'ui',
     location: 'hooks/useHud.ts',
     globallyControlled: true,

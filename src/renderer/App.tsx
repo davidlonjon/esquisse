@@ -30,8 +30,9 @@ export default function App() {
   }, [language]);
 
   // Register settings shortcut (Cmd/Ctrl+,)
+  // Using 'comma' instead of ',' for better compatibility
   useGlobalHotkeys(
-    'mod+,',
+    'mod+comma',
     (event) => {
       console.log('[App] Settings shortcut triggered!');
       event.preventDefault();
