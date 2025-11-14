@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 
-import { Modal } from '@layout/Modal';
+import { Badge } from '@ui/Badge';
+import { Button } from '@ui/Button';
+import { Modal } from '@ui/Modal';
 
 export interface ShortcutItem {
   combo: string;
@@ -17,9 +19,12 @@ interface KeyboardShortcutsPanelProps {
 }
 
 const ShortcutBadge = ({ combo }: { combo: string }) => (
-  <span className="badge badge-outline border-base-300 bg-base-100 text-base-content dark:border-base-300/70 dark:bg-base-300/20">
+  <Badge
+    variant="outline"
+    className="border-base-300 bg-base-100 text-base-content dark:border-base-300/70 dark:bg-base-300/20"
+  >
     {combo}
-  </span>
+  </Badge>
 );
 
 export function KeyboardShortcutsPanel({
@@ -37,14 +42,17 @@ export function KeyboardShortcutsPanel({
       align="center"
       panelClassName="relative rounded-lg border border-base-200 bg-base-100 p-0 text-base-content"
     >
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
+        shape="circle"
         type="button"
         onClick={onClose}
         aria-label={closeLabel}
-        className="btn btn-ghost btn-circle btn-sm absolute right-4 top-4"
+        className="absolute right-4 top-4"
       >
         <X className="h-4 w-4" />
-      </button>
+      </Button>
 
       <div className="px-6 pt-8 pb-5">
         <p className="text-base font-semibold">{title}</p>

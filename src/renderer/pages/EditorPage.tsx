@@ -1,13 +1,14 @@
 import { useRouterState } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Editor } from '@features/editor';
-import { HUD_AUTO_HIDE_DELAY } from '@features/editor/constants';
 import { useEntryStore } from '@features/entries';
 import { useJournalStore } from '@features/journals';
 import { useAutoSave } from '@hooks/useAutoSave';
-import { useEdgeReveal } from '@hooks/useEdgeReveal';
+import { useEntryNavigation } from '@hooks/useEntryNavigation';
+import { useHud } from '@hooks/useHud';
+import { useInitialization } from '@hooks/useInitialization';
 import { useSessionTimer } from '@hooks/useSessionTimer';
 import { OverlayHUD } from '@layout/OverlayHUD';
 import { getWordCountFromHTML } from '@lib/text';
@@ -19,46 +20,23 @@ export function EditorPage() {
   const [content, setContent] = useState<string>('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isHudPinned, setIsHudPinned] = useState(false);
-  const [hudTemporaryVisible, setHudTemporaryVisible] = useState(false);
-  const hudTimeoutRef = useRef<number | null>(null);
 
-  const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
+  const { isHudVisible, showHudTemporarily } = useHud();
+  const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
+
   const entries = useEntryStore((state) => state.entries);
   const currentEntry = useEntryStore((state) => state.currentEntry);
   const updateEntry = useEntryStore((state) => state.updateEntry);
-  const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
-  const loadEntries = useEntryStore((state) => state.loadEntries);
   const currentJournal = useJournalStore((state) => state.currentJournal);
-  const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
 
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        await loadJournals();
-        let journal = useJournalStore.getState().journals[0];
-        if (!journal) {
-          await createJournal({ name: 'Personal Journal' });
-          journal = useJournalStore.getState().journals[0];
-        }
-
-        setCurrentJournal(journal);
-        await loadEntries(journal.id);
-        setCurrentEntry(null);
-        setContent('');
-        showHudTemporarily();
-
-        resetSessionTimer();
-        setIsInitialized(true);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        setApiError(t('app.errors.initialize', { message }));
-      }
-    };
-
-    initialize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useInitialization({
+    setApiError,
+    setContent,
+    showHudTemporarily,
+    resetSessionTimer,
+    setIsInitialized,
+    t,
+  });
 
   const { lastSaved, trigger } = useAutoSave({
     onSave: async (htmlContent) => {
@@ -74,6 +52,33 @@ export function EditorPage() {
     },
     enabled: isInitialized,
   });
+
+  const ensureEntryExists = useCallback(
+    async (html: string) => {
+      const hasContent = getWordCountFromHTML(html) > 0;
+      if (!hasContent || !currentJournal) {
+        return useEntryStore.getState().currentEntry;
+      }
+
+      const existingEntry = useEntryStore.getState().currentEntry;
+      if (existingEntry) {
+        return existingEntry;
+      }
+
+      const createdEntry = await window.api.createEntry({
+        journalId: currentJournal.id,
+        content: html,
+      });
+      await useEntryStore.getState().loadEntries(currentJournal.id);
+      const syncedEntry =
+        useEntryStore.getState().entries.find((entry) => entry.id === createdEntry.id) ||
+        createdEntry;
+      useEntryStore.getState().setCurrentEntry(syncedEntry);
+      showHudTemporarily();
+      return syncedEntry;
+    },
+    [currentJournal, showHudTemporarily]
+  );
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent);
@@ -101,120 +106,14 @@ export function EditorPage() {
     }
   };
 
+  useEntryNavigation({
+    entries,
+    currentEntry,
+    setContent,
+    showHudTemporarily,
+  });
+
   const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
-
-  const showHudTemporarily = useCallback(() => {
-    setHudTemporaryVisible(true);
-    if (hudTimeoutRef.current) {
-      window.clearTimeout(hudTimeoutRef.current);
-    }
-    hudTimeoutRef.current = window.setTimeout(() => {
-      setHudTemporaryVisible(false);
-      hudTimeoutRef.current = null;
-    }, HUD_AUTO_HIDE_DELAY);
-  }, []);
-
-  const ensureEntryExists = useCallback(
-    async (html: string) => {
-      const hasContent = getWordCountFromHTML(html) > 0;
-      if (!hasContent || !currentJournal) {
-        return useEntryStore.getState().currentEntry;
-      }
-
-      const existingEntry = useEntryStore.getState().currentEntry;
-      if (existingEntry) {
-        return existingEntry;
-      }
-
-      const createdEntry = await window.api.createEntry({
-        journalId: currentJournal.id,
-        content: html,
-      });
-      await loadEntries(currentJournal.id);
-      const syncedEntry =
-        useEntryStore.getState().entries.find((entry) => entry.id === createdEntry.id) ||
-        createdEntry;
-      setCurrentEntry(syncedEntry);
-      showHudTemporarily();
-      return syncedEntry;
-    },
-    [currentJournal, loadEntries, setCurrentEntry, showHudTemporarily]
-  );
-
-  const navigateEntry = useCallback(
-    (direction: -1 | 1) => {
-      if (entries.length === 0) {
-        if (direction === -1) {
-          setCurrentEntry(null);
-          setContent('');
-          showHudTemporarily();
-        }
-        return;
-      }
-
-      const currentIndex = currentEntry
-        ? entries.findIndex((entry) => entry.id === currentEntry.id)
-        : -1;
-
-      if (currentIndex === -1) {
-        if (direction === 1) {
-          const firstEntry = entries[0];
-          setCurrentEntry(firstEntry);
-          setContent(firstEntry.content ?? '');
-          showHudTemporarily();
-        }
-        return;
-      }
-
-      const targetIndex = currentIndex + direction;
-      if (targetIndex < 0) {
-        setCurrentEntry(null);
-        setContent('');
-        showHudTemporarily();
-        return;
-      }
-
-      if (targetIndex >= entries.length) {
-        return;
-      }
-
-      const targetEntry = entries[targetIndex];
-      if (!targetEntry) return;
-      setCurrentEntry(targetEntry);
-      setContent(targetEntry.content ?? '');
-      showHudTemporarily();
-    },
-    [entries, currentEntry, setCurrentEntry, showHudTemporarily]
-  );
-
-  useEffect(() => {
-    const handleHudToggle = (event: KeyboardEvent) => {
-      const isMetaCombo = event.metaKey || event.ctrlKey;
-      if (isMetaCombo && event.key === '.') {
-        event.preventDefault();
-        setIsHudPinned((prev) => !prev);
-      }
-    };
-
-    const handleEntryNavigation = (event: KeyboardEvent) => {
-      const isMetaCombo = event.metaKey || event.ctrlKey;
-      if (!isMetaCombo) return;
-      if (event.key === '[') {
-        event.preventDefault();
-        navigateEntry(1);
-      } else if (event.key === ']') {
-        event.preventDefault();
-        navigateEntry(-1);
-      }
-    };
-
-    window.addEventListener('keydown', handleHudToggle);
-    window.addEventListener('keydown', handleEntryNavigation);
-    return () => {
-      window.removeEventListener('keydown', handleHudToggle);
-      window.removeEventListener('keydown', handleEntryNavigation);
-    };
-  }, [navigateEntry]);
 
   const dateFormatter = useMemo(
     () =>
@@ -249,8 +148,6 @@ export function EditorPage() {
   );
 
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
-  const hudEdgeVisible = useEdgeReveal();
-  const hudVisible = isHudPinned || hudEdgeVisible || hudTemporaryVisible;
   const isSettingsRoute = location.pathname === '/settings';
 
   if (window.api === undefined) {
@@ -277,8 +174,8 @@ export function EditorPage() {
   return (
     <div className="relative h-screen w-screen">
       <OverlayHUD
-        showTop={hudVisible}
-        showBottom={hudVisible}
+        showTop={isHudVisible}
+        showBottom={isHudVisible}
         dateLabel={dateLabel}
         wordCountLabel={wordCountLabel}
         sessionLabel={formatDuration(sessionSeconds)}
