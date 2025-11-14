@@ -72,7 +72,6 @@ export function useEntryNavigation({
   useGlobalHotkeys(
     'mod+bracketleft',
     (event) => {
-      console.log('[useEntryNavigation] Next entry shortcut triggered!');
       event.preventDefault();
       navigateEntry(1);
     },
@@ -84,7 +83,6 @@ export function useEntryNavigation({
   useGlobalHotkeys(
     'mod+bracketright',
     (event) => {
-      console.log('[useEntryNavigation] Previous entry shortcut triggered!');
       event.preventDefault();
       navigateEntry(-1);
     },

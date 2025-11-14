@@ -34,7 +34,6 @@ export default function App() {
   useGlobalHotkeys(
     'mod+comma',
     (event) => {
-      console.log('[App] Settings shortcut triggered!');
       event.preventDefault();
       router.navigate({ to: '/settings' });
     },
