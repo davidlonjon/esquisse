@@ -1,302 +1,99 @@
-# CLAUDE.md
+# Esquisse AI Engineering Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> Single source of truth for any LLM (Claude, GPT, etc.) that edits this repository. **CLAUDE.md** and **AGENTS.md** must stay identical.
 
-## Project Overview
+## 1. Product Snapshot
 
-Esquisse is a minimalist, local-first journaling desktop application built with Electron, React 19, and TypeScript. All data is stored locally using SQLite (via sql.js WebAssembly).
+- **Mission**: Minimalist, privacy-first journaling desktop app.
+- **Stack**: Electron + Vite, React 19, TypeScript, Zustand, TanStack Router, Tiptap, Tailwind/DaisyUI, sql.js (SQLite WASM), Playwright, Vitest.
+- **Process layout**: `src/main` (Node/Electron), `src/preload` (secure bridge), `src/renderer` (React UI), `src/shared` (types + IPC contracts).
+- **Feature-first directories** keep each domain self-contained: components, hooks, stores, translations, tests.
 
-## Essential Commands
+## 2. Essential Commands
 
-### Development
+| Purpose         | Command                                                    |
+| --------------- | ---------------------------------------------------------- |
+| Dev app         | `npm start`                                                |
+| Type safety     | `npm run type-check` (tsc --noEmit)                        |
+| Lint & format   | `npm run lint`, `npm run lint:fix`, `npm run format`       |
+| Tests           | `npm test` (watch), `npm run test:run`, `npm run test:e2e` |
+| Packaging       | `npm run package` / `npm run make`                         |
+| Clean / rebuild | `npm run clean`, `npm run rebuild`                         |
+| Full gate       | `npm run validate`                                         |
 
-```bash
-npm start                 # Start Electron app in development mode with hot reload (Vite HMR)
-npm run type-check        # Run TypeScript type checking without emitting files
-```
+Husky runs lint-staged → ESLint, Prettier, and `node scripts/run-type-check.js` on staged files.
 
-### Testing
+## 3. Layered Architecture
 
-```bash
-npm test                  # Run unit tests in watch mode with Vitest
-npm run test:run          # Run unit tests once (useful for CI or pre-commit)
-npm run test:ui           # Open Vitest UI for interactive test debugging
-npm run test:coverage     # Run tests with coverage reporting (generates coverage report)
-npm run test:e2e          # Run end-to-end tests with Playwright
-```
+1. **Main (`src/main`)**: Window lifecycle, IPC registration, SQLite access. Keep side effects behind services/modules; never expose Node APIs directly.
+2. **Preload (`src/preload`)**: Uses `contextBridge` to expose curated, typed `window.api.*`. Every method must go through IPC channels defined in shared code.
+3. **Renderer (`src/renderer`)**: React SPA with feature-first folders, Zustand stores for state, TanStack Router for navigation, i18next for copy, Tailwind for styles.
+4. **Shared (`src/shared`)**: Source of truth for types, IPC channels, and API interfaces—update here before touching other layers.
 
-### Code Quality
+## 4. Data & Persistence
 
-```bash
-npm run lint              # Run ESLint on TypeScript files
-npm run lint:fix          # Auto-fix ESLint errors where possible
-npm run lint:strict       # Run ESLint with zero warnings allowed (fails on any warning, useful for CI/CD)
-npm run format            # Format code with Prettier
-npm run format:check      # Check code formatting without modifying files
-```
+- SQLite is loaded via sql.js (WASM). DB lives in memory; call `saveDatabase()` after every write to persist to disk.
+- Default schema defined in `src/main/database/schema.sql`, copied at build time. Schema updates require editing the SQL file plus migration-safe code paths.
+- Domain CRUD modules live under `src/main/database/*.ts`; favor parameterized statements and UTC ISO timestamps.
+- Foreign keys are ON; deleting a journal cascades to entries. Tags are stored as JSON strings.
 
-### Building & Distribution
+## 5. IPC Workflow (additive checklist)
 
-```bash
-npm run package           # Package app without creating installers
-npm run make              # Create platform-specific distributables (DMG, EXE, etc.)
-npm run publish           # Publish the app (requires configuration)
-```
+1. Create/extend types in `src/shared/types` and export from its index.
+2. Add channel constant to `src/shared/ipc/channels.ts` and method signature to `src/shared/ipc/api.types.ts`.
+3. Implement handler in `src/main/modules/<domain>/*.ipc.ts`; validate input, wrap in try/catch, persist via DB module, return serializable data.
+4. Wire preload bridge in `src/preload/api/<domain>.api.ts` and export via `src/preload/api/index.ts`.
+5. Consume through `window.api` in renderer (hooks/stores/components). Keep renderer logic pure/UI-focused.
 
-### Maintenance
+Security notes: validate untrusted data server-side, never leak filesystem paths, and keep IPC payloads JSON-serializable.
 
-```bash
-npm run clean             # Remove all build artifacts and caches (.vite, out, dist, node_modules/.vite)
-npm run rebuild           # Clean and reinstall dependencies from scratch (useful when dependencies act weird)
-```
+## 6. Renderer Composition & State
 
-## Architecture
+- Pages live in `src/renderer/pages`, routed via `src/renderer/router.tsx` (currently `/` editor + `/settings`).
+- Zustand stores belong inside their feature folder; always expose loading/error flags, use async functions, and gate hotkeys via the shared hotkeys provider.
+- Hooks live in `src/renderer/hooks` (e.g., `useGlobalHotkeys`, `useHud`). Prefer hooks for cross-feature behavior to preserve SRP.
+- i18n: strings in `src/renderer/locales/{locale}/common.json`; update both `en` and `fr` and reuse `useTranslation()`.
 
-### Feature-First Structure
+## 7. UI & Interaction Patterns
 
-The codebase follows a **feature-first architecture** where code is organized by domain/feature rather than technical layer. This promotes scalability and maintainability.
+- Tiptap powers the editor—extend via feature folders under `features/editor` (extensions, styles, constants).
+- Styling uses Tailwind 4 + DaisyUI. Favor utility classes, `clsx`, and helper `cn()`.
+- Shared UI components in `src/renderer/components/ui`; layout primitives (HUD, modals, keyboard panel) under `components/layout`.
+- Hotkeys: register through `useGlobalHotkeys` so modal state automatically disables global shortcuts. Keep documentation synced via `src/renderer/config/shortcuts.ts` and HUD overlays.
+- Accessibility: ensure focus traps in modals, provide ARIA labels for HUD buttons, and maintain contrast in both light/dark modes.
 
-**Key Principles:**
+## 8. Engineering Guidelines
 
-- Features are self-contained with components, hooks, stores, types, and styles
-- Clear separation between main, preload, and renderer processes
-- Modular IPC handlers organized by domain
-- Path aliases for clean imports
+- **SRP & Modularity**: One responsibility per file. Co-locate logic with its feature; use barrel exports for ergonomics.
+- **TypeScript**: Strict mode is on—avoid `any`, prefer discriminated unions/enums, and keep IPC method signatures fully typed.
+- **Error handling**: Catch IPC/database errors in main process, log centrally, surface user-friendly notifications via stores/components.
+- **Performance**: Avoid heavy work in renderer render paths (debounce autosave, memoize derived data). Use lazy imports for large feature bundles when practical.
+- **Security/Privacy**: All data is local; never introduce network calls without explicit opt-in. Keep preload surface minimal and immutable.
+- **Testing**: Prefer Vitest + RTL for renderer, targeted unit tests for DB/IPC logic, and Playwright for regression flows (journal CRUD, settings, keyboard shortcuts).
 
-### Multi-Process Structure
+### Implementation Guardrails
 
-This is an Electron app with three distinct processes:
+- Keep React components under 200 lines and helper functions under 50 lines; extract reusable logic into hooks.
+- Use explicit interfaces, discriminated unions, and custom type guards; never fall back to `any`.
+- Wrap IPC handlers in try/catch, validate payloads, and keep CPU-heavy work outside the main process (renderer/worker threads).
+- Reuse Tailwind utility components and enforce class sorting via the Tailwind/Prettier plugins.
+- Apply performance tactics where relevant: lazy-load large feature bundles, virtualize long lists, and debounce/throttle expensive handlers.
+- Default to accessible patterns—semantic HTML, ARIA attributes, focus management, and full keyboard support for interactive elements.
+- Never include LLM co-author metadata in git commits; only human contributors belong in commit trailers.
 
-1. **Main Process** (`src/main/`)
-   - Node.js environment with filesystem and Electron API access
-   - **`core/window/`**: Window management (config, CSP, lifecycle, IPC)
-   - **`modules/{domain}/`**: Domain-specific IPC handlers (journal, entry, settings)
-   - **`database/`**: SQLite operations and schema
-   - **`services/`**: Business logic layer (future)
+## 9. Workflow Checklist for Changes
 
-2. **Preload Script** (`src/preload/`)
-   - Bridges main ↔ renderer securely via contextBridge
-   - **`api/`**: Modular API exports by domain (journal, entry, settings, window)
+1. Confirm design/feature scope; update translations if UI text changes.
+2. Touch shared types before main/preload/renderer.
+3. Add/adjust Zustand store logic, then UI components/pages.
+4. Update shortcut docs (`config/shortcuts.ts`) when binding keys.
+5. Run `npm run lint`, `npm run type-check`, and appropriate tests before committing.
+6. Keep commits minimal, descriptive, and free of secrets.
 
-3. **Renderer Process** (`src/renderer/`)
-   - React application in browser context
-   - **`features/{domain}/`**: Feature-first organization (editor, journals, entries, settings)
-   - **`components/`**: Shared components (ui, layout)
-   - **`providers/`**: React context providers
-   - **`pages/`**: Page components (for routing when added)
+## 10. When to Add More LLM Guides?
 
-### IPC Communication Pattern
+At present, **CLAUDE.md** and **AGENTS.md** contain unified instructions adequate for every model. Create another guide only if a new agent demands materially different workflows or permissions; otherwise, keep all AI contributors aligned via this single document.
 
-All communication follows a modular, type-safe pattern:
+---
 
-1. **Define types**: `src/shared/types/{domain}.types.ts`
-2. **Define channels**: `src/shared/ipc/channels.ts`
-3. **Update API interface**: `src/shared/ipc/api.types.ts`
-4. **Implement main handler**: `src/main/modules/{domain}/{domain}.ipc.ts`
-5. **Create preload API**: `src/preload/api/{domain}.api.ts`
-6. **Use in renderer**: `window.api.*` with full TypeScript support
-
-Example flow for adding a new IPC channel:
-
-```typescript
-// 1. src/shared/types/custom.types.ts
-export interface CustomData {
-  id: string;
-  value: string;
-}
-
-// 2. src/shared/ipc/channels.ts
-export const IPC_CHANNELS = {
-  CUSTOM_ACTION: 'custom:action',
-};
-
-// 3. src/shared/ipc/api.types.ts
-export interface ElectronAPI {
-  customAction: (data: CustomData) => Promise<void>;
-}
-
-// 4. src/main/modules/custom/custom.ipc.ts
-import { ipcMain } from 'electron';
-import { IPC_CHANNELS } from '@shared/ipc';
-
-export function registerCustomHandlers(): void {
-  ipcMain.handle(IPC_CHANNELS.CUSTOM_ACTION, async (_event, data) => {
-    // Implement logic
-  });
-}
-
-// 5. src/preload/api/custom.api.ts
-import { ipcRenderer } from 'electron';
-import { IPC_CHANNELS } from '@shared/ipc';
-import type { CustomData } from '@shared/types';
-
-export const customAPI = {
-  customAction: (data: CustomData): Promise<void> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CUSTOM_ACTION, data),
-};
-
-// 6. src/renderer/ - anywhere in React
-await window.api.customAction({ id: '1', value: 'test' });
-```
-
-### Database Layer
-
-- **sql.js**: SQLite compiled to WebAssembly - no native dependencies required
-- **Location**: Database file stored in platform-specific user data directory via `app.getPath('userData')`
-- **Persistence**: In-memory database is exported to file after each operation via `saveDatabase()`
-- **Schema**: Defined in `src/main/database/schema.sql` and executed on initialization
-- **CRUD Operations**: Organized by domain:
-  - `src/main/database/journals.ts` - Journal operations
-  - `src/main/database/entries.ts` - Entry operations
-  - `src/main/database/settings.ts` - Settings key-value store
-
-**Important**: The schema.sql file is copied to the build directory during the build process (see `vite.main.config.ts`). When modifying the schema, changes take effect on next app initialization.
-
-### State Management
-
-Zustand stores provide reactive state in the renderer process. Each store:
-
-- Calls `window.api.*` methods to communicate with main process
-- Manages local state, loading states, and errors
-- Located in `src/renderer/features/{domain}/` alongside related code
-
-Pattern:
-
-```typescript
-// src/renderer/features/journals/journals.store.ts
-const useJournalStore = create<JournalState>((set) => ({
-  journals: [],
-  isLoading: false,
-  loadJournals: async () => {
-    set({ isLoading: true });
-    const journals = await window.api.getAllJournals();
-    set({ journals, isLoading: false });
-  },
-}));
-```
-
-### TypeScript Path Aliases
-
-Comprehensive path aliases are configured for cleaner imports:
-
-```typescript
-// Renderer
-import { Editor } from '@features/editor';
-import { Button } from '@ui/button';
-import { ErrorBoundary } from '@layout/ErrorBoundary';
-import { useAutoSave } from '@hooks/useAutoSave';
-import { ThemeProvider } from '@providers/theme-provider';
-
-// Shared
-import { Journal } from '@shared/types';
-import { IPC_CHANNELS } from '@shared/ipc';
-
-// Main process
-import { createMainWindow } from '@main/core/window';
-
-// Preload
-import { journalAPI } from '@preload/api/journal.api';
-```
-
-### Routing & Settings
-
-- Navigation is handled by TanStack Router (`src/renderer/router.tsx`) with two primary routes: `/` (EditorPage) and `/settings` (SettingsPage). Add routes by registering new page components in that file.
-- The Settings page (`src/renderer/pages/SettingsPage.tsx`) reads/writes through `useSettingsStore` → IPC → SQLite, so changes persist across restarts and can later sync between devices.
-- A `⌘,` shortcut (and HUD button) navigates to `/settings`. Use TanStack Router's `<Link>` or `router.navigate` when adding new navigation affordances.
-
-### Localization
-
-- i18next + react-i18next power renderer translations; initialization lives in `src/renderer/lib/i18n.ts`.
-- Language detection checks `localStorage` then the browser/OS locale, with English as fallback.
-- Translation bundles sit under `src/renderer/locales/{locale}/common.json`. Always update EN + FR versions when adding keys.
-- Components should call `useTranslation()` instead of hard-coding strings. See `App.tsx` and `OverlayHUD.tsx` for patterns (interpolation, formatting, etc.).
-- The keyboard shortcut modal (`KeyboardShortcutsPanel`) and HUD already consume translated labels; reuse those helpers when adding new HUD items or overlays.
-
-**Available aliases:**
-
-- `@features/*` → `./src/renderer/features/*`
-- `@components/*` → `./src/renderer/components/*`
-- `@ui/*` → `./src/renderer/components/ui/*`
-- `@layout/*` → `./src/renderer/components/layout/*`
-- `@hooks/*` → `./src/renderer/hooks/*`
-- `@providers/*` → `./src/renderer/providers/*`
-- `@pages/*` → `./src/renderer/pages/*`
-- `@lib/*` → `./src/renderer/lib/*`
-- `@shared/*` → `./src/shared/*`
-- `@main/*` → `./src/main/*`
-- `@preload/*` → `./src/preload/*`
-
-Configured in `tsconfig.json`, `vite.*.config.ts`, and `vitest.config.ts`.
-
-## Build System
-
-### Electron Forge + Vite
-
-- **forge.config.ts**: Defines build targets (main process, preload, renderer) and packager configuration
-- **vite.main.config.ts**: Main process build (includes custom plugin to copy schema.sql)
-- **vite.renderer.config.mjs**: Renderer process build with React
-- **vite.preload.config.ts**: Preload script build
-
-### sql.js WASM Loading
-
-The database initialization code in `src/main/database/index.ts` handles WASM file location differently for dev vs production:
-
-- **Development**: Loads from `node_modules/sql.js/dist/`
-- **Production**: Loads from `process.resourcesPath/sql.js/`
-
-When packaging for production, ensure the sql.js WASM file is included in the build.
-
-## UI Components
-
-### Shadcn/ui Integration
-
-UI components use the shadcn/ui pattern:
-
-- Components are in `src/renderer/components/ui/`
-- Add new components: `npx shadcn@latest add <component-name>`
-- Tailwind CSS v4 with `tailwind-animate` plugin
-- Utility function `cn()` in `src/renderer/lib/utils.ts` for conditional class merging
-
-### Styling
-
-- Tailwind CSS v4 with PostCSS
-- Global styles in `src/index.css`
-- Component styles use Tailwind utility classes
-
-## Testing Strategy
-
-### Unit Tests (Vitest)
-
-- Test files colocated with source: `*.test.ts` or `*.test.tsx`
-- React Testing Library for component tests
-- Setup file: `src/renderer/test/setup.ts`
-- Run with: `npm test` (watch) or `npm run test:run` (once)
-
-### E2E Tests (Playwright)
-
-- Located in `e2e/` directory
-- Test the full Electron application
-- Run with: `npm run test:e2e`
-
-## Development Workflow
-
-### Git Hooks
-
-Husky + lint-staged runs on pre-commit:
-
-- ESLint --fix on staged `.ts` and `.tsx` files
-- Prettier on staged code, CSS, JSON, and markdown files
-
-### Type Safety
-
-- Strict TypeScript mode enabled
-- Run `npm run type-check` before commits
-- Pay special attention to IPC type definitions in `src/shared/ipc-types.ts`
-
-## Critical Notes
-
-1. **Foreign Keys**: Database has `PRAGMA foreign_keys = ON` - deleting a journal cascades to delete its entries
-2. **Database Persistence**: sql.js is in-memory; `saveDatabase()` must be called after writes
-3. **Search Limitations**: sql.js doesn't support FTS5 full-text search; uses LIKE queries instead
-4. **Tags Storage**: Entry tags are stored as JSON strings in the database
-5. **Window API Types**: `window.api` is globally typed via declaration merging in `src/shared/ipc-types.ts`
+_Last updated: November 2025_
