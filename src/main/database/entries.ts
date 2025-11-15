@@ -1,71 +1,68 @@
 import { randomUUID } from 'crypto';
 
-import { Entry } from '../../shared/ipc-types';
+import type { CreateEntryInput, Entry, UpdateEntryInput } from '../../shared/ipc-types';
 
-import { getDatabase, saveDatabase } from './index';
+import { createPaginationClause, selectOneRow, selectRows, type PaginationOptions } from './utils';
+
+import { getDatabase, withTransaction } from './index';
+
+const ENTRY_COLUMNS =
+  'id, journal_id as journalId, title, content, tags, created_at as createdAt, updated_at as updatedAt';
+
+const mapEntryRow = (row: Record<string, unknown>): Entry => ({
+  id: String(row.id),
+  journalId: String(row.journalId),
+  title: row.title == null ? undefined : String(row.title),
+  content: String(row.content ?? ''),
+  tags: row.tags ? JSON.parse(String(row.tags)) : undefined,
+  createdAt: String(row.createdAt),
+  updatedAt: String(row.updatedAt),
+});
 
 /**
  * Create a new entry
  */
-export function createEntry(entry: Omit<Entry, 'id' | 'createdAt' | 'updatedAt'>): Entry {
-  const db = getDatabase();
-  const id = randomUUID();
-  const now = new Date().toISOString();
+export function createEntry(entry: CreateEntryInput): Entry {
+  return withTransaction((db) => {
+    const id = randomUUID();
+    const now = new Date().toISOString();
+    const tagsJson = entry.tags ? JSON.stringify(entry.tags) : null;
 
-  const tagsJson = entry.tags ? JSON.stringify(entry.tags) : null;
+    db.run(
+      `INSERT INTO entries (id, journal_id, title, content, tags, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, entry.journalId, entry.title ?? null, entry.content, tagsJson, now, now]
+    );
 
-  db.run(
-    `INSERT INTO entries (id, journal_id, title, content, tags, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [id, entry.journalId, entry.title || null, entry.content, tagsJson, now, now]
-  );
-
-  saveDatabase();
-
-  return {
-    id,
-    journalId: entry.journalId,
-    title: entry.title,
-    content: entry.content,
-    tags: entry.tags,
-    createdAt: now,
-    updatedAt: now,
-  };
+    return {
+      id,
+      journalId: entry.journalId,
+      title: entry.title,
+      content: entry.content,
+      tags: entry.tags,
+      createdAt: now,
+      updatedAt: now,
+    };
+  });
 }
 
 /**
  * Get all entries, optionally filtered by journal ID
  */
-export function getAllEntries(journalId?: string): Entry[] {
+export function getAllEntries(journalId?: string, options?: PaginationOptions): Entry[] {
   const db = getDatabase();
+  const { clause, params } = createPaginationClause(options);
+  let query = `SELECT ${ENTRY_COLUMNS} FROM entries`;
+  const queryParams: (string | number | null)[] = [];
 
-  const query = journalId
-    ? `SELECT id, journal_id as journalId, title, content, tags, created_at as createdAt, updated_at as updatedAt
-       FROM entries WHERE journal_id = ? ORDER BY created_at DESC`
-    : `SELECT id, journal_id as journalId, title, content, tags, created_at as createdAt, updated_at as updatedAt
-       FROM entries ORDER BY created_at DESC`;
-
-  const result = journalId ? db.exec(query, [journalId]) : db.exec(query);
-
-  if (result.length === 0) return [];
-
-  const entries: Entry[] = [];
-  const columns = result[0].columns;
-  const values = result[0].values;
-
-  for (const row of values) {
-    const entry: Record<string, unknown> = {};
-    columns.forEach((col, idx) => {
-      if (col === 'tags' && row[idx]) {
-        entry[col] = JSON.parse(row[idx] as string);
-      } else {
-        entry[col] = row[idx];
-      }
-    });
-    entries.push(entry as unknown as Entry);
+  if (journalId) {
+    query += ' WHERE journal_id = ?';
+    queryParams.push(journalId);
   }
 
-  return entries;
+  query += ` ORDER BY updated_at DESC${clause}`;
+  const rows = selectRows(db, query, [...queryParams, ...params]);
+  return rows.map(mapEntryRow);
 }
 
 /**
@@ -73,105 +70,75 @@ export function getAllEntries(journalId?: string): Entry[] {
  */
 export function getEntryById(id: string): Entry | null {
   const db = getDatabase();
-  const result = db.exec(
-    `SELECT id, journal_id as journalId, title, content, tags, created_at as createdAt, updated_at as updatedAt
-     FROM entries WHERE id = ?`,
-    [id]
-  );
-
-  if (result.length === 0 || result[0].values.length === 0) return null;
-
-  const columns = result[0].columns;
-  const row = result[0].values[0];
-  const entry: Record<string, unknown> = {};
-  columns.forEach((col, idx) => {
-    if (col === 'tags' && row[idx]) {
-      entry[col] = JSON.parse(row[idx] as string);
-    } else {
-      entry[col] = row[idx];
-    }
-  });
-
-  return entry as unknown as Entry;
+  const row = selectOneRow(db, `SELECT ${ENTRY_COLUMNS} FROM entries WHERE id = ?`, [id]);
+  return row ? mapEntryRow(row) : null;
 }
 
 /**
  * Update an entry
  */
-export function updateEntry(id: string, updates: Partial<Entry>): Entry {
-  const db = getDatabase();
-  const now = new Date().toISOString();
+export function updateEntry(id: string, updates: UpdateEntryInput): Entry {
+  return withTransaction((db) => {
+    const now = new Date().toISOString();
+    const fields: string[] = [];
+    const values: (string | null)[] = [];
 
-  const fields: string[] = [];
-  const values: (string | null)[] = [];
+    if (updates.title !== undefined) {
+      fields.push('title = ?');
+      values.push(updates.title ?? null);
+    }
+    if (updates.content !== undefined) {
+      fields.push('content = ?');
+      values.push(updates.content ?? null);
+    }
+    if (updates.tags !== undefined) {
+      fields.push('tags = ?');
+      values.push(updates.tags ? JSON.stringify(updates.tags) : null);
+    }
 
-  if (updates.title !== undefined) {
-    fields.push('title = ?');
-    values.push(updates.title);
-  }
-  if (updates.content !== undefined) {
-    fields.push('content = ?');
-    values.push(updates.content);
-  }
-  if (updates.tags !== undefined) {
-    fields.push('tags = ?');
-    values.push(JSON.stringify(updates.tags));
-  }
+    if (fields.length === 0) {
+      return getEntryById(id)!;
+    }
 
-  fields.push('updated_at = ?');
-  values.push(now);
-  values.push(id);
+    fields.push('updated_at = ?');
+    values.push(now, id);
 
-  db.run(`UPDATE entries SET ${fields.join(', ')} WHERE id = ?`, values);
+    db.run(`UPDATE entries SET ${fields.join(', ')} WHERE id = ?`, values);
 
-  saveDatabase();
-
-  return getEntryById(id)!;
+    return getEntryById(id)!;
+  });
 }
 
 /**
  * Delete an entry
  */
 export function deleteEntry(id: string): boolean {
-  const db = getDatabase();
-  db.run('DELETE FROM entries WHERE id = ?', [id]);
-  saveDatabase();
-  return true;
+  return withTransaction((db) => {
+    db.run('DELETE FROM entries WHERE id = ?', [id]);
+    return true;
+  });
 }
 
 /**
  * Search entries using LIKE queries (FTS5 not available in sql.js)
  */
-export function searchEntries(query: string): Entry[] {
-  const db = getDatabase();
-  const searchPattern = `%${query}%`;
-
-  const result = db.exec(
-    `SELECT id, journal_id as journalId, title, content, tags,
-            created_at as createdAt, updated_at as updatedAt
-     FROM entries
-     WHERE title LIKE ? OR content LIKE ? OR tags LIKE ?
-     ORDER BY updated_at DESC`,
-    [searchPattern, searchPattern, searchPattern]
-  );
-
-  if (result.length === 0) return [];
-
-  const entries: Entry[] = [];
-  const columns = result[0].columns;
-  const values = result[0].values;
-
-  for (const row of values) {
-    const entry: Record<string, unknown> = {};
-    columns.forEach((col, idx) => {
-      if (col === 'tags' && row[idx]) {
-        entry[col] = JSON.parse(row[idx] as string);
-      } else {
-        entry[col] = row[idx];
-      }
-    });
-    entries.push(entry as unknown as Entry);
+export function searchEntries(query: string, options?: PaginationOptions): Entry[] {
+  const normalized = query.trim();
+  if (!normalized) {
+    return [];
   }
 
-  return entries;
+  const db = getDatabase();
+  const searchPattern = `%${normalized}%`;
+  const { clause, params } = createPaginationClause(options);
+  const rows = selectRows(
+    db,
+    `SELECT ${ENTRY_COLUMNS}
+       FROM entries
+       WHERE title LIKE ? OR content LIKE ? OR tags LIKE ?
+       ORDER BY updated_at DESC${clause}`,
+    [searchPattern, searchPattern, searchPattern, ...params]
+  );
+
+  return rows.map(mapEntryRow);
 }

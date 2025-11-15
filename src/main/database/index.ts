@@ -4,6 +4,8 @@ import path from 'path';
 
 import initSqlJs, { Database } from 'sql.js';
 
+import { runMigrations } from './migrations';
+
 let db: Database | null = null;
 let dbPath: string | null = null;
 
@@ -68,28 +70,7 @@ export async function initializeDatabase(): Promise<Database> {
     // Enable foreign keys
     db.run('PRAGMA foreign_keys = ON');
 
-    // Read and execute schema
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    const schema = fs.readFileSync(schemaPath, 'utf-8');
-
-    // Execute schema (split by semicolons and execute each statement)
-    const statements = schema
-      .split(';')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
-    for (const statement of statements) {
-      try {
-        db.run(statement);
-      } catch (error) {
-        // Ignore errors for statements that create tables that already exist
-        if (!(error as Error).message.includes('already exists')) {
-          console.error('Error executing statement:', statement, error);
-        }
-      }
-    }
-
-    // Save database after initialization
+    runMigrations(db);
     saveDatabase();
 
     console.log('Database initialized successfully');
@@ -127,3 +108,17 @@ export function closeDatabase(): void {
  * Export saveDatabase for use in other modules
  */
 export { saveDatabase };
+
+export function withTransaction<T>(fn: (database: Database) => T): T {
+  const database = getDatabase();
+  database.run('BEGIN IMMEDIATE TRANSACTION');
+  try {
+    const result = fn(database);
+    database.run('COMMIT');
+    saveDatabase();
+    return result;
+  } catch (error) {
+    database.run('ROLLBACK');
+    throw error;
+  }
+}

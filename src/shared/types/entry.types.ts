@@ -12,5 +12,15 @@ export interface Entry {
   updatedAt: string;
 }
 
-export type CreateEntryInput = Omit<Entry, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdateEntryInput = Partial<Entry>;
+export interface CreateEntryInput {
+  journalId: string;
+  title?: string;
+  content: string;
+  tags?: string[];
+}
+
+export interface UpdateEntryInput {
+  title?: string | null;
+  content?: string;
+  tags?: string[] | null;
+}

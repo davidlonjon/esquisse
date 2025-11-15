@@ -11,5 +11,14 @@ export interface Journal {
   updatedAt: string;
 }
 
-export type CreateJournalInput = Omit<Journal, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdateJournalInput = Partial<Journal>;
+export interface CreateJournalInput {
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateJournalInput {
+  name?: string;
+  description?: string | null;
+  color?: string | null;
+}
