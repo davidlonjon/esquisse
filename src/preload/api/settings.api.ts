@@ -6,11 +6,11 @@
 import { ipcRenderer } from 'electron';
 
 import { IPC_CHANNELS } from '@shared/ipc';
-import type { Settings, UpdateSettingsInput } from '@shared/types';
+import type { Settings, UpdateSettingsInput, Result } from '@shared/types';
 
 export const settingsAPI = {
-  getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_GET),
+  getSettings: (): Promise<Result<Settings>> => ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_GET),
 
-  setSettings: (settings: UpdateSettingsInput): Promise<Settings> =>
+  setSettings: (settings: UpdateSettingsInput): Promise<Result<Settings>> =>
     ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_SET, settings),
 };

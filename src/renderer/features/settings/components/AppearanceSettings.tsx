@@ -1,7 +1,7 @@
 import { Check, Languages, Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Settings } from '@shared/ipc-types';
+import type { Settings } from '@shared/types';
 import { Button } from '@ui/Button';
 import { Select } from '@ui/Select';
 

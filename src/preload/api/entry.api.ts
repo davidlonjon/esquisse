@@ -6,23 +6,24 @@
 import { ipcRenderer } from 'electron';
 
 import { IPC_CHANNELS } from '@shared/ipc';
-import type { Entry, CreateEntryInput, UpdateEntryInput } from '@shared/types';
+import type { Entry, CreateEntryInput, UpdateEntryInput, Result } from '@shared/types';
 
 export const entryAPI = {
-  createEntry: (entry: CreateEntryInput): Promise<Entry> =>
+  createEntry: (entry: CreateEntryInput): Promise<Result<Entry>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_CREATE, entry),
 
-  getAllEntries: (journalId?: string): Promise<Entry[]> =>
+  getAllEntries: (journalId?: string): Promise<Result<Entry[]>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_GET_ALL, journalId),
 
-  getEntryById: (id: string): Promise<Entry | null> =>
+  getEntryById: (id: string): Promise<Result<Entry | null>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_GET_BY_ID, id),
 
-  updateEntry: (id: string, updates: UpdateEntryInput): Promise<Entry> =>
+  updateEntry: (id: string, updates: UpdateEntryInput): Promise<Result<Entry>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_UPDATE, id, updates),
 
-  deleteEntry: (id: string): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.ENTRY_DELETE, id),
+  deleteEntry: (id: string): Promise<Result<boolean>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_DELETE, id),
 
-  searchEntries: (query: string): Promise<Entry[]> =>
+  searchEntries: (query: string): Promise<Result<Entry[]>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_SEARCH, query),
 };

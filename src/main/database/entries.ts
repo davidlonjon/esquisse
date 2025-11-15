@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '../../shared/ipc-types';
+import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
 
 import { createPaginationClause, selectOneRow, selectRows, type PaginationOptions } from './utils';
 

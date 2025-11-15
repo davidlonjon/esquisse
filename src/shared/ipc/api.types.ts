@@ -11,27 +11,28 @@ import type {
   UpdateEntryInput,
   Settings,
   UpdateSettingsInput,
+  Result,
 } from '../types';
 
 export interface ElectronAPI {
   // Journal operations
-  createJournal: (journal: CreateJournalInput) => Promise<Journal>;
-  getAllJournals: () => Promise<Journal[]>;
-  getJournalById: (id: string) => Promise<Journal | null>;
-  updateJournal: (id: string, updates: UpdateJournalInput) => Promise<Journal>;
-  deleteJournal: (id: string) => Promise<boolean>;
+  createJournal: (journal: CreateJournalInput) => Promise<Result<Journal>>;
+  getAllJournals: () => Promise<Result<Journal[]>>;
+  getJournalById: (id: string) => Promise<Result<Journal | null>>;
+  updateJournal: (id: string, updates: UpdateJournalInput) => Promise<Result<Journal>>;
+  deleteJournal: (id: string) => Promise<Result<boolean>>;
 
   // Entry operations
-  createEntry: (entry: CreateEntryInput) => Promise<Entry>;
-  getAllEntries: (journalId?: string) => Promise<Entry[]>;
-  getEntryById: (id: string) => Promise<Entry | null>;
-  updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Entry>;
-  deleteEntry: (id: string) => Promise<boolean>;
-  searchEntries: (query: string) => Promise<Entry[]>;
+  createEntry: (entry: CreateEntryInput) => Promise<Result<Entry>>;
+  getAllEntries: (journalId?: string) => Promise<Result<Entry[]>>;
+  getEntryById: (id: string) => Promise<Result<Entry | null>>;
+  updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Result<Entry>>;
+  deleteEntry: (id: string) => Promise<Result<boolean>>;
+  searchEntries: (query: string) => Promise<Result<Entry[]>>;
 
   // Settings
-  getSettings: () => Promise<Settings>;
-  setSettings: (settings: UpdateSettingsInput) => Promise<Settings>;
+  getSettings: () => Promise<Result<Settings>>;
+  setSettings: (settings: UpdateSettingsInput) => Promise<Result<Settings>>;
 
   // Window operations
   minimizeWindow: () => void;

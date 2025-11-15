@@ -1,7 +1,7 @@
 import { Clock3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Settings } from '@shared/ipc-types';
+import type { Settings } from '@shared/types';
 import { Badge } from '@ui/Badge';
 import { Slider } from '@ui/Slider';
 import { Toggle } from '@ui/Toggle';

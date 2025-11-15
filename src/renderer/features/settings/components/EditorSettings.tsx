@@ -1,7 +1,7 @@
 import { Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Settings } from '@shared/ipc-types';
+import type { Settings } from '@shared/types';
 import { Badge } from '@ui/Badge';
 import { Input } from '@ui/Input';
 import { Slider } from '@ui/Slider';

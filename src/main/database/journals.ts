@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import type { CreateJournalInput, Journal, UpdateJournalInput } from '../../shared/ipc-types';
+import type { CreateJournalInput, Journal, UpdateJournalInput } from '@shared/types';
 
 import { createPaginationClause, selectOneRow, selectRows, type PaginationOptions } from './utils';
 

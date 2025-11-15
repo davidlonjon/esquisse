@@ -1,4 +1,4 @@
-import { Settings } from '../../shared/ipc-types';
+import type { Settings } from '@shared/types';
 
 import { getDatabase, saveDatabase } from './index';
 

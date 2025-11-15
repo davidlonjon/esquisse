@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useEntryStore } from '@features/entries';
-import { Entry } from '@shared/ipc-types';
+import type { Entry } from '@shared/types';
 
 import { useGlobalHotkeys } from './useGlobalHotkeys';
 

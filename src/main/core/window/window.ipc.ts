@@ -5,7 +5,7 @@
 
 import { ipcMain } from 'electron';
 
-import { IPC_CHANNELS } from '@shared/ipc-types';
+import { IPC_CHANNELS } from '@shared/ipc';
 
 import { closeMainWindow, getMainWindow } from './window-manager';
 

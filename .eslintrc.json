@@ -36,7 +36,18 @@
         "alphabetize": { "order": "asc", "caseInsensitive": true }
       }
     ],
-    "import/no-named-as-default": "off"
+    "import/no-named-as-default": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@shared/ipc-types",
+            "message": "Use @shared/types or @shared/ipc instead."
+          }
+        ]
+      }
+    ]
   },
   "settings": {
     "react": {
