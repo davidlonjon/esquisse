@@ -191,6 +191,8 @@ export const useJournalStore = create<JournalState>((set) => ({
     })),
 }));
 
+export const createJournalStoreInitialState = (): JournalState => createInitialState();
+
 export const selectJournals = (state: JournalState) => state.journals;
 export const selectJournalLookup = (state: JournalState) => state.journalLookup;
 export const selectCurrentJournalId = (state: JournalState) => state.currentJournalId;

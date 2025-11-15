@@ -267,6 +267,8 @@ export const useEntryStore = create<EntryState>((set) => ({
     })),
 }));
 
+export const createEntryStoreInitialState = (): EntryState => createInitialState();
+
 export const selectEntries = (state: EntryState) => state.entries;
 export const selectEntryLookup = (state: EntryState) => state.entryLookup;
 export const selectCurrentEntryId = (state: EntryState) => state.currentEntryId;
