@@ -43,7 +43,7 @@
         "paths": [
           {
             "name": "@shared/ipc-types",
-            "message": "Use @shared/types or @shared/ipc instead."
+            "message": "Use @shared/ipc or @shared/types instead."
           }
         ]
       }
