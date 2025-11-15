@@ -1,8 +1,13 @@
 import { useCallback, useState } from 'react';
 
+import { getShortcutBindings } from '@config/shortcuts';
+
 import { useGlobalHotkeys } from './useGlobalHotkeys';
 
-const TOGGLE_SHORTCUTS = ['mod+slash', 'shift+mod+slash'];
+const TOGGLE_SHORTCUTS = (() => {
+  const bindings = getShortcutBindings('toggleShortcutsPanel');
+  return bindings.length > 0 ? bindings : ['mod+slash'];
+})();
 
 export function useKeyboardShortcutsPanel() {
   const [isOpen, setIsOpen] = useState(false);

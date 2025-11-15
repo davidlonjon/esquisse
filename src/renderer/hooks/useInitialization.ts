@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useEntryStore } from '@features/entries';
 import { useJournalStore } from '@features/journals';
@@ -25,6 +25,11 @@ export function useInitialization({
   const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
   const [status, setStatus] = useState<InitializationStatus>('idle');
   const [error, setError] = useState<string | null>(null);
+  const defaultJournalNameRef = useRef(defaultJournalName);
+
+  useEffect(() => {
+    defaultJournalNameRef.current = defaultJournalName;
+  }, [defaultJournalName]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -37,7 +42,7 @@ export function useInitialization({
         const journals = await loadJournals();
         let journal = journals[0];
         if (!journal) {
-          journal = await createJournal({ name: defaultJournalName });
+          journal = await createJournal({ name: defaultJournalNameRef.current });
         }
 
         setCurrentJournal(journal);
@@ -69,7 +74,6 @@ export function useInitialization({
     };
   }, [
     createJournal,
-    defaultJournalName,
     loadEntries,
     loadJournals,
     resetSessionTimer,

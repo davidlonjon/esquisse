@@ -30,7 +30,7 @@ export interface Shortcut {
   /** Unique identifier used throughout the renderer */
   id: ShortcutId;
   /** Keyboard combination (e.g., 'mod+s', 'escape') */
-  keys: string;
+  keys: string | string[];
   /** Human-readable description */
   description: string;
   /** Category for grouping */
@@ -113,7 +113,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: 'toggleShortcutsPanel',
-    keys: 'mod+slash',
+    keys: ['mod+slash', 'shift+mod+slash'],
     description: 'Toggle keyboard shortcuts panel (Cmd+/ or Ctrl+/)',
     category: 'ui',
     location: 'hooks/useKeyboardShortcutsPanel.ts',
@@ -122,8 +122,8 @@ export const SHORTCUTS: Shortcut[] = [
       labelKey: 'hud.keyboard.shortcut.shortcutsPanel.label',
       descriptionKey: 'hud.keyboard.shortcut.shortcutsPanel.description',
       combos: {
-        mac: '⌘/',
-        windows: 'Ctrl /',
+        mac: '⌘/ or ⇧⌘/',
+        windows: 'Ctrl / or Shift+Ctrl /',
       },
     },
   },
@@ -227,4 +227,12 @@ export function getShortcutById(id: ShortcutId): Shortcut | undefined {
  */
 export function getShortcutDisplayMetadata(id: ShortcutId): ShortcutDisplayMetadata | undefined {
   return getShortcutById(id)?.display;
+}
+
+export function getShortcutBindings(id: ShortcutId): string[] {
+  const shortcut = getShortcutById(id);
+  if (!shortcut) {
+    return [];
+  }
+  return Array.isArray(shortcut.keys) ? shortcut.keys : [shortcut.keys];
 }
