@@ -16,10 +16,12 @@
     "lint:strict": "eslint --ext .ts,.tsx . --max-warnings 0",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
+    "lint:md": "remark . --ext .md --frail",
+    "lint:md:fix": "remark . --ext .md --frail --output",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
-    "validate": "npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:strict && npm run type-check",
+    "validate": "npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:md && npm run lint:strict && npm run type-check",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run --passWithNoTests",
@@ -37,7 +39,11 @@
       "stylelint --fix",
       "prettier --write"
     ],
-    "*.{json,md}": [
+    "*.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "remark --no-stdout --frail",
       "prettier --write"
     ]
   },
@@ -86,6 +92,9 @@
     "playwright": "^1.56.1",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
+    "remark-cli": "^12.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-preset-lint-recommended": "^7.0.1",
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
     "tailwindcss": "^4.1.16",
