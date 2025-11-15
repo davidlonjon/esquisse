@@ -7,14 +7,12 @@ export type InitializationStatus = 'idle' | 'loading' | 'success' | 'error';
 
 interface UseInitializationProps {
   defaultJournalName: string;
-  setContent: (content: string) => void;
   showHudTemporarily: () => void;
   resetSessionTimer: () => void;
 }
 
 export function useInitialization({
   defaultJournalName,
-  setContent,
   showHudTemporarily,
   resetSessionTimer,
 }: UseInitializationProps): { status: InitializationStatus; error: string | null } {
@@ -48,7 +46,7 @@ export function useInitialization({
         setCurrentJournal(journal);
         await loadEntries(journal.id);
         setCurrentEntry(null);
-        setContent('');
+        // setContent(''); // Removed
         showHudTemporarily();
         resetSessionTimer();
 
@@ -77,7 +75,7 @@ export function useInitialization({
     loadEntries,
     loadJournals,
     resetSessionTimer,
-    setContent,
+    // setContent, // Removed from dependencies
     setCurrentEntry,
     setCurrentJournal,
     showHudTemporarily,

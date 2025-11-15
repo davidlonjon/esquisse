@@ -61,7 +61,7 @@ export function useEditorController(): EditorController {
   const defaultJournalName = t('journals.defaultName');
   const initialization = useInitialization({
     defaultJournalName,
-    setContent,
+    // setContent, // No longer passed directly
     showHudTemporarily,
     resetSessionTimer,
   });
@@ -141,9 +141,18 @@ export function useEditorController(): EditorController {
   useEntryNavigation({
     entries,
     currentEntry,
-    setContent,
-    showHudTemporarily,
+    // setContent, // No longer passed directly
+    // showHudTemporarily, // No longer passed directly
   });
+
+  // Effect to update local content state when currentEntry changes
+  useEffect(() => {
+    if (currentEntry) {
+      setContent(currentEntry.content ?? '');
+    } else {
+      setContent('');
+    }
+  }, [currentEntry]);
 
   const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
   const dateFormatter = useMemo(
