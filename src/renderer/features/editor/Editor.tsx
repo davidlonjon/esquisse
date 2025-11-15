@@ -10,6 +10,7 @@ import {
   EDITOR_FOCUS_DELAY,
   HEADING_LEVELS,
   TYPEWRITER_OFFSET,
+  TYPEWRITER_THRESHOLD,
 } from './constants';
 import { FocusMode } from './extensions/FocusMode';
 import { TypewriterScroll } from './extensions/TypewriterScroll';
@@ -27,9 +28,15 @@ export function Editor({
   placeholder = DEFAULT_PLACEHOLDER,
   onChange,
   onSave,
-  focusMode: _focusMode = true,
+  focusMode = true,
   typewriterMode = true,
 }: EditorProps) {
+  const editorClassNames = ['editor-content'];
+
+  if (focusMode) {
+    editorClassNames.push('focus-mode');
+  }
+
   const editor = useEditor(
     {
       extensions: [
@@ -48,19 +55,24 @@ export function Editor({
             class: 'editor-image',
           },
         }),
-        FocusMode.configure({
-          className: 'is-active',
-          mode: 'paragraph',
-        }),
+        ...(focusMode
+          ? [
+              FocusMode.configure({
+                className: 'is-active',
+                mode: 'paragraph',
+              }),
+            ]
+          : []),
         TypewriterScroll.configure({
           enabled: typewriterMode,
           offset: TYPEWRITER_OFFSET,
+          threshold: TYPEWRITER_THRESHOLD,
         }),
       ],
       content,
       editorProps: {
         attributes: {
-          class: 'editor-content',
+          class: editorClassNames.join(' '),
           spellcheck: 'true',
         },
       },

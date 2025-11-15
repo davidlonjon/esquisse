@@ -5,6 +5,7 @@ import { Settings } from '@shared/ipc-types';
 
 interface SettingsState extends Settings {
   isLoading: boolean;
+  isSaving: boolean;
   error: string | null;
 
   // Actions
@@ -21,7 +22,9 @@ export const useSettingsStore = create<SettingsState>()(
       fontFamily: 'system-ui',
       autoSave: true,
       autoSaveInterval: 30000,
+      language: 'en',
       isLoading: false,
+      isSaving: false,
       error: null,
 
       loadSettings: async () => {
@@ -35,12 +38,12 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       updateSettings: async (updates) => {
-        set({ isLoading: true, error: null });
+        set({ isSaving: true, error: null });
         try {
           const settings = await window.api.setSettings(updates);
-          set({ ...settings, isLoading: false });
+          set({ ...settings, isSaving: false });
         } catch (error) {
-          set({ error: (error as Error).message, isLoading: false });
+          set({ error: (error as Error).message, isSaving: false });
         }
       },
     }),

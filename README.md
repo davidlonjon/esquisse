@@ -11,6 +11,8 @@ A feature-rich, cross-platform journaling application built with Electron, React
 - **Modern UI**: Built with Shadcn/ui and Tailwind CSS
 - **Type-Safe**: End-to-end TypeScript for reliability
 - **Offline-First**: No internet connection required
+- **Localized**: English and French via i18next
+- **Settings Screen**: Configure theme, editor feel, auto-save, and language (⌘,)
 
 ## Tech Stack
 
@@ -26,12 +28,25 @@ A feature-rich, cross-platform journaling application built with Electron, React
 - **Zustand** - Lightweight state management
 - **sql.js** - SQLite compiled to WebAssembly (no native dependencies!)
 - **React Router** - Client-side routing
+- **TanStack Router** - File-free route definitions & future page expansion
 
 ### UI & Styling
 
 - **Tailwind CSS** - Utility-first CSS
 - **Shadcn/ui** - High-quality React components
 - **Lucide React** - Beautiful icons
+
+### Localization
+
+- **i18next** + **react-i18next** - Runtime translations in the renderer
+- **i18next-browser-languagedetector** - Persists preferred language and auto-detects locale
+- JSON translation bundles stored under `src/renderer/locales/{locale}/common.json`
+
+### Routing & Pages
+
+- **TanStack Router** (`src/renderer/router.tsx`) drives navigation between the editor (`/`) and settings (`/settings`).
+- Pages live in `src/renderer/pages/` (`EditorPage.tsx`, `SettingsPage.tsx`). Add new routes by creating a page file and registering it in `router.tsx`.
+- Navigation helpers: top HUD button + keyboard shortcut `⌘,` navigate to the Settings page.
 
 ### Development Tools
 
@@ -149,6 +164,29 @@ import { ... } from '@shared/*';       // Shared types/IPC
 import { ... } from '@main/*';         // Main process code
 import { ... } from '@preload/*';      // Preload code
 ```
+
+## Localization
+
+The renderer initializes i18next (`src/renderer/lib/i18n.ts`) with English and French resources located in `src/renderer/locales/{en,fr}/common.json`. Language detection prefers `localStorage` (so user overrides persist) and falls back to the OS/browser language.
+
+`src/renderer/index.tsx` wraps the app with `I18nextProvider`, so any component can call `useTranslation()`:
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+export function Status() {
+  const { t } = useTranslation();
+  return <span>{t('hud.snapshotPending')}</span>;
+}
+```
+
+### Adding a Locale
+
+1. Duplicate `src/renderer/locales/en/common.json` into a new `<locale>` folder (e.g., `es/common.json`) and translate the strings.
+2. Register the locale inside `src/renderer/lib/i18n.ts` (`resources` map + `supportedLngs`).
+3. (Optional) Provide a toggle or menu item that calls `i18n.changeLanguage('<locale>')`.
+
+Translation keys currently live in a single `common` namespace for simplicity, but i18next supports multiple namespaces if the project grows.
 
 ## Getting Started
 

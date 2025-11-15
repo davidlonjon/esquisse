@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: Settings = {
   fontFamily: 'system-ui',
   autoSave: true,
   autoSaveInterval: 30000,
+  language: 'en',
 };
 
 /**

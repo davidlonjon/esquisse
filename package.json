@@ -29,10 +29,9 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "eslint --max-warnings 0",
+      "eslint --fix --max-warnings 0",
       "prettier --write",
-      "bash -c 'npm run type-check'"
+      "node scripts/run-type-check.js"
     ],
     "*.css": [
       "stylelint --fix",
@@ -71,6 +70,7 @@
     "@typescript-eslint/parser": "^8.46.2",
     "@vitejs/plugin-react": "^5.1.0",
     "autoprefixer": "^10.4.21",
+    "daisyui": "^5.5.2",
     "electron": "^39.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
@@ -95,7 +95,10 @@
     "vitest": "^4.0.6"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/postcss": "^4.1.16",
+    "@tanstack/react-router": "^1.135.0",
+    "@tanstack/react-router-devtools": "^1.135.0",
     "@tiptap/extension-image": "^3.10.2",
     "@tiptap/extension-link": "^3.10.2",
     "@tiptap/extension-placeholder": "^3.10.2",
@@ -106,9 +109,13 @@
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "electron-squirrel-startup": "^1.0.1",
+    "i18next": "^25.6.1",
+    "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hotkeys-hook": "^5.2.1",
+    "react-i18next": "^16.2.4",
     "react-router-dom": "^7.9.5",
     "sql.js": "^1.13.0",
     "tailwind-merge": "^3.3.1",

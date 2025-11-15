@@ -9,50 +9,86 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem 1rem;
-  overflow-y: auto;
+  padding: 50vh 1rem;
+  overflow: hidden auto;
   background: hsl(var(--background));
+  scroll-behavior: auto;
 }
 
-.editor-content {
-  width: 100%;
-  max-width: 700px;
+@media (width >= 768px) {
+  .editor-container {
+    padding: 50vh 2rem;
+  }
+}
+
+@media (width >= 1200px) {
+  .editor-container {
+    padding: 50vh 4rem;
+  }
+}
+
+.editor-content,
+.ProseMirror {
+  width: 600px;
   margin: 0 auto;
   font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.75;
   color: hsl(var(--foreground));
-  outline: none;
+  outline: none !important;
+  caret-color: #06b6d4 !important; /* Blue-green cursor (cyan-500) */
+  font-weight: 400;
+  overflow-x: hidden !important;
+  overflow-y: visible;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  text-align: left !important;
 }
 
-.editor-content .tiptap {
-  outline: none;
-  min-height: 70vh;
-  caret-color: #06b6d4; /* Blue-green cursor (cyan-500) */
-  font-size: 16px;
-  line-height: 1.75;
-  font-weight: 400;
+@media (width >= 768px) {
+  .editor-content,
+  .ProseMirror {
+    width: 780px;
+    font-size: 18px;
+  }
+}
+
+@media (width >= 1200px) {
+  .editor-content,
+  .ProseMirror {
+    width: 920px;
+    font-size: 19px;
+  }
+}
+
+@media (width >= 1600px) {
+  .editor-content,
+  .ProseMirror {
+    width: 1000px;
+    font-size: 20px;
+  }
 }
 
 /* Enhanced cursor visibility when focused */
-.editor-content .tiptap:focus {
-  caret-color: #06b6d4;
+.editor-content:focus,
+.ProseMirror:focus {
+  caret-color: #06b6d4 !important;
 }
 
 /* When editor is empty, show an inviting cursor area with bigger cursor */
-.editor-content .tiptap.is-editor-empty p:first-child {
+.editor-content.is-editor-empty p:first-child {
   min-height: 2em;
   font-size: 18px;
   line-height: 2;
 }
 
 /* Selection */
-.editor-content .tiptap ::selection {
+.editor-content ::selection {
   background: hsl(var(--primary) / 20%);
 }
 
 /* Placeholder */
-.editor-content .tiptap.is-editor-empty::before {
+.editor-content.is-editor-empty::before {
   content: attr(data-placeholder);
   float: left;
   color: hsl(var(--muted-foreground));
@@ -60,7 +96,7 @@
   height: 0;
 }
 
-.editor-content .tiptap p.is-editor-empty:first-child::before {
+.editor-content p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: hsl(var(--muted-foreground));

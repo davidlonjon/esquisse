@@ -283,6 +283,21 @@ import { Button } from '@ui/button';
 - `vite.renderer.config.mjs`: Renderer build
 - `vitest.config.ts`: Test environment
 
+## Localization
+
+- Renderer strings are powered by i18next/`react-i18next` (`src/renderer/lib/i18n.ts`). The instance auto-detects language from `localStorage` then the OS/browser locale, defaulting to English.
+- Translation bundles live under `src/renderer/locales/{locale}/common.json`. Every new key must at least exist in `en` and `fr`.
+- `src/renderer/index.tsx` wraps the app with `I18nextProvider`, so components call `useTranslation()` for text. Do **not** hardcode strings directly.
+- HUD overlays, shortcut panels, and `App.tsx` already use translation keys—follow those patterns (including interpolation with `t('hud.snapshotSaved', { time })`).
+- To add a locale: create a new folder under `locales`, update the `resources` and `supportedLngs` arrays in `lib/i18n.ts`, and optionally expose a UI toggle that calls `i18n.changeLanguage('<locale>')`.
+
+## Routing & Settings
+
+- TanStack Router (`src/renderer/router.tsx`) owns navigation. The root route renders an `<Outlet />`; children currently include `/` (EditorPage) and `/settings` (SettingsPage). Register new pages by adding routes to this file.
+- Editor-specific logic now lives inside `src/renderer/pages/EditorPage.tsx` and the settings UI inside `src/renderer/pages/SettingsPage.tsx`. Both pages share providers applied in `src/renderer/index.tsx`.
+- A HUD button and the `⌘,` shortcut navigate to `/settings`. Use `<Link>` or `router.navigate({ to: '/settings' })` for new shortcuts or buttons.
+- Settings changes persist through `window.api.setSettings` → SQLite. When adding a new preference, update `src/shared/types/settings.types.ts`, the default record in `src/main/database/settings.ts`, the Zustand store, and translation strings for labels/help text.
+
 ## State Management
 
 ### Zustand Stores

@@ -198,6 +198,20 @@ import { createMainWindow } from '@main/core/window';
 import { journalAPI } from '@preload/api/journal.api';
 ```
 
+### Routing & Settings
+
+- Navigation is handled by TanStack Router (`src/renderer/router.tsx`) with two primary routes: `/` (EditorPage) and `/settings` (SettingsPage). Add routes by registering new page components in that file.
+- The Settings page (`src/renderer/pages/SettingsPage.tsx`) reads/writes through `useSettingsStore` → IPC → SQLite, so changes persist across restarts and can later sync between devices.
+- A `⌘,` shortcut (and HUD button) navigates to `/settings`. Use TanStack Router's `<Link>` or `router.navigate` when adding new navigation affordances.
+
+### Localization
+
+- i18next + react-i18next power renderer translations; initialization lives in `src/renderer/lib/i18n.ts`.
+- Language detection checks `localStorage` then the browser/OS locale, with English as fallback.
+- Translation bundles sit under `src/renderer/locales/{locale}/common.json`. Always update EN + FR versions when adding keys.
+- Components should call `useTranslation()` instead of hard-coding strings. See `App.tsx` and `OverlayHUD.tsx` for patterns (interpolation, formatting, etc.).
+- The keyboard shortcut modal (`KeyboardShortcutsPanel`) and HUD already consume translated labels; reuse those helpers when adding new HUD items or overlays.
+
 **Available aliases:**
 
 - `@features/*` → `./src/renderer/features/*`

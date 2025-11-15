@@ -45,4 +45,7 @@ export interface TypewriterScrollOptions {
 
   /** Vertical offset (0.5 = 50% of viewport height) */
   offset: number;
+
+  /** Minimum scroll delta before moving container */
+  threshold?: number;
 }

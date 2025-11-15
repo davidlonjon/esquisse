@@ -23,10 +23,12 @@ export const FOCUS_MODE_TRANSITION = 'opacity 0.2s ease';
 
 // Typewriter Mode
 export const TYPEWRITER_OFFSET = 0.5; // 50% of viewport height
-export const TYPEWRITER_THRESHOLD = 50; // px - minimum scroll distance before triggering
+export const TYPEWRITER_THRESHOLD = 4; // px - minimum scroll distance before triggering
 
 // Placeholder
 export const DEFAULT_PLACEHOLDER = 'Start writing...';
 
 // Heading Levels
 export const HEADING_LEVELS = [1, 2, 3] as Array<1 | 2 | 3 | 4 | 5 | 6>;
+
+export const HUD_AUTO_HIDE_DELAY = 5000; // ms - HUD auto-hide duration
