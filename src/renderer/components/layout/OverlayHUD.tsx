@@ -1,7 +1,8 @@
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useKeyboardShortcutsPanel } from '@hooks/useKeyboardShortcutsPanel';
 import { KeyboardShortcutsPanel, type ShortcutItem } from '@layout/KeyboardShortcutsPanel';
 
 interface ShortcutDefinition {
@@ -69,6 +70,7 @@ export function OverlayHUD({
   disabled = false,
 }: OverlayHUDProps) {
   const { t } = useTranslation();
+  const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
   const translatedDefaults = useMemo<ShortcutItem[]>(
     () =>
       DEFAULT_SHORTCUTS.map((shortcut) => ({
@@ -80,25 +82,7 @@ export function OverlayHUD({
   );
 
   const shortcutList = translatedDefaults;
-  const [isShortcutOpen, setIsShortcutOpen] = useState(false);
-  const hudSuppressed = disabled || isShortcutOpen;
-
-  useEffect(() => {
-    const handleToggleShortcutPanel = (event: KeyboardEvent) => {
-      const isMetaCombo = event.metaKey || event.ctrlKey;
-      if (isMetaCombo && (event.key === '/' || event.key === '?')) {
-        event.preventDefault();
-        setIsShortcutOpen((prev) => !prev);
-      }
-
-      if (event.key === 'Escape') {
-        setIsShortcutOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleToggleShortcutPanel);
-    return () => window.removeEventListener('keydown', handleToggleShortcutPanel);
-  }, []);
+  const hudSuppressed = disabled || isShortcutsOpen;
 
   return (
     <>
@@ -116,7 +100,11 @@ export function OverlayHUD({
         <div className="pointer-events-auto flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => !disabled && setIsShortcutOpen(true)}
+            onClick={() => {
+              if (!disabled) {
+                openShortcuts();
+              }
+            }}
             disabled={disabled}
             className={clsx(
               'flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-base-content/60 backdrop-blur-sm transition',
@@ -147,10 +135,10 @@ export function OverlayHUD({
         <HUDPill label={snapshotLabel} />
       </div>
 
-      {isShortcutOpen && (
+      {isShortcutsOpen && (
         <KeyboardShortcutsPanel
           shortcuts={shortcutList}
-          onClose={() => setIsShortcutOpen(false)}
+          onClose={closeShortcuts}
           title={t('hud.keyboard.title')}
           description={t('hud.keyboard.subtitle')}
           closeLabel={t('hud.keyboard.close')}

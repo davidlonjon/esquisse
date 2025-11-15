@@ -50,6 +50,13 @@ export const SHORTCUTS: Shortcut[] = [
     location: 'hooks/useHud.ts',
     globallyControlled: true,
   },
+  {
+    keys: 'mod+slash',
+    description: 'Toggle keyboard shortcuts panel (Cmd+/ or Ctrl+/)',
+    category: 'ui',
+    location: 'hooks/useKeyboardShortcutsPanel.ts',
+    globallyControlled: true,
+  },
 
   // Modal shortcuts
   {
