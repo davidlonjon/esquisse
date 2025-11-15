@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-
 import { useRouterState } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -148,6 +146,7 @@ export function useEditorController(): EditorController {
   });
 
   // Effect to update local content state when currentEntry changes
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (currentEntry) {
       setContent(currentEntry.content ?? '');
@@ -155,6 +154,7 @@ export function useEditorController(): EditorController {
       setContent('');
     }
   }, [currentEntry]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
   const dateFormatter = useMemo(
