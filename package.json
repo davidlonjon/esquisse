@@ -31,7 +31,7 @@
     "*.{ts,tsx}": [
       "eslint --fix --max-warnings 0",
       "prettier --write",
-      "npm run type-check"
+      "node scripts/run-type-check.js"
     ],
     "*.css": [
       "stylelint --fix",
