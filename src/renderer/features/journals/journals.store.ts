@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 import { journalService } from '@services/journal.service';
 import type { CreateJournalInput, Journal, UpdateJournalInput } from '@shared/types';
@@ -62,134 +63,126 @@ const createInitialState = (): JournalState => ({
   setCurrentJournalId: () => undefined,
 });
 
-export const useJournalStore = create<JournalState>((set) => ({
-  ...createInitialState(),
+export const useJournalStore = create(
+  immer<JournalState>((set) => ({
+    ...createInitialState(),
 
-  loadJournals: async () => {
-    set((state) => ({
-      progress: { ...state.progress, load: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const journals = await journalService.list();
-      const lookup = createJournalLookup(journals);
-      set((state) => ({
-        journals,
-        journalLookup: lookup,
-        currentJournalId:
-          state.currentJournalId && lookup[state.currentJournalId]
-            ? state.currentJournalId
-            : (journals[0]?.id ?? null),
-        progress: { ...state.progress, load: toAsyncSlice('success') },
-      }));
-      return journals;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, load: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
-
-  createJournal: async (input) => {
-    set((state) => ({
-      progress: { ...state.progress, save: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const newJournal = await journalService.create(input);
-      set((state) => ({
-        journals: [newJournal, ...state.journals],
-        journalLookup: { ...state.journalLookup, [newJournal.id]: newJournal },
-        progress: { ...state.progress, save: toAsyncSlice('success') },
-      }));
-      return newJournal;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, save: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
-
-  updateJournal: async (id, updates) => {
-    set((state) => ({
-      progress: { ...state.progress, save: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const updated = await journalService.update(id, updates);
+    loadJournals: async () => {
       set((state) => {
-        if (!state.journalLookup[id]) {
-          return {
-            progress: { ...state.progress, save: toAsyncSlice('success') },
-          };
-        }
-
-        const journals = state.journals.map((journal) => (journal.id === id ? updated : journal));
-        const journalLookup = { ...state.journalLookup, [id]: updated };
-        return {
-          journals,
-          journalLookup,
-          progress: { ...state.progress, save: toAsyncSlice('success') },
-        };
+        state.progress.load = toAsyncSlice('loading');
       });
-      return updated;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, save: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
 
-  deleteJournal: async (id) => {
-    set((state) => ({
-      progress: { ...state.progress, remove: toAsyncSlice('loading') },
-    }));
+      try {
+        const journals = await journalService.list();
+        const lookup = createJournalLookup(journals);
+        set((state) => {
+          state.journals = journals;
+          state.journalLookup = lookup;
+          state.currentJournalId =
+            state.currentJournalId && lookup[state.currentJournalId]
+              ? state.currentJournalId
+              : (journals[0]?.id ?? null);
+          state.progress.load = toAsyncSlice('success');
+        });
+        return journals;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.load = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
 
-    try {
-      await journalService.remove(id);
+    createJournal: async (input) => {
       set((state) => {
-        if (!state.journalLookup[id]) {
-          return {
-            progress: { ...state.progress, remove: toAsyncSlice('success') },
-          };
-        }
-
-        const journals = state.journals.filter((journal) => journal.id !== id);
-        const restLookup = { ...state.journalLookup };
-        delete restLookup[id];
-        return {
-          journals,
-          journalLookup: restLookup,
-          currentJournalId:
-            state.currentJournalId === id ? (journals[0]?.id ?? null) : state.currentJournalId,
-          progress: { ...state.progress, remove: toAsyncSlice('success') },
-        };
+        state.progress.save = toAsyncSlice('loading');
       });
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, remove: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
 
-  setCurrentJournal: (journal) =>
-    set((state) => ({
-      currentJournalId: journal?.id && state.journalLookup[journal.id] ? journal.id : null,
-    })),
+      try {
+        const newJournal = await journalService.create(input);
+        set((state) => {
+          state.journals.unshift(newJournal);
+          state.journalLookup[newJournal.id] = newJournal;
+          state.progress.save = toAsyncSlice('success');
+        });
+        return newJournal;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.save = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
 
-  setCurrentJournalId: (journalId) =>
-    set((state) => ({
-      currentJournalId: journalId && state.journalLookup[journalId] ? journalId : null,
-    })),
-}));
+    updateJournal: async (id, updates) => {
+      set((state) => {
+        state.progress.save = toAsyncSlice('loading');
+      });
+
+      try {
+        const updated = await journalService.update(id, updates);
+        set((state) => {
+          const journalIndex = state.journals.findIndex((j) => j.id === id);
+          if (journalIndex !== -1) {
+            state.journals[journalIndex] = updated;
+          }
+          if (state.journalLookup[id]) {
+            state.journalLookup[id] = updated;
+          }
+          state.progress.save = toAsyncSlice('success');
+        });
+        return updated;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.save = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    deleteJournal: async (id) => {
+      set((state) => {
+        state.progress.remove = toAsyncSlice('loading');
+      });
+
+      try {
+        await journalService.remove(id);
+        set((state) => {
+          const journalIndex = state.journals.findIndex((j) => j.id === id);
+          if (journalIndex !== -1) {
+            state.journals.splice(journalIndex, 1);
+          }
+          if (state.journalLookup[id]) {
+            delete state.journalLookup[id];
+          }
+          if (state.currentJournalId === id) {
+            state.currentJournalId = state.journals[0]?.id ?? null;
+          }
+          state.progress.remove = toAsyncSlice('success');
+        });
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.remove = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    setCurrentJournal: (journal) =>
+      set((state) => {
+        state.currentJournalId = journal?.id && state.journalLookup[journal.id] ? journal.id : null;
+      }),
+
+    setCurrentJournalId: (journalId) =>
+      set((state) => {
+        state.currentJournalId = journalId && state.journalLookup[journalId] ? journalId : null;
+      }),
+  }))
+);
 
 export const createJournalStoreInitialState = (): JournalState => createInitialState();
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 import { entryService } from '@services/entry.service';
 import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
@@ -80,192 +81,179 @@ const createInitialState = (): EntryState => ({
   setCurrentEntryId: () => undefined,
 });
 
-export const useEntryStore = create<EntryState>((set) => ({
-  ...createInitialState(),
+export const useEntryStore = create(
+  immer<EntryState>((set) => ({
+    ...createInitialState(),
 
-  loadEntries: async (journalId) => {
-    set((state) => ({
-      progress: { ...state.progress, load: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const entries = await entryService.list(journalId);
-      const lookup = createLookup(entries);
-
-      set((state) => ({
-        entries,
-        entryLookup: lookup,
-        currentEntryId:
-          state.currentEntryId && lookup[state.currentEntryId] ? state.currentEntryId : null,
-        progress: { ...state.progress, load: toAsyncSlice('success') },
-      }));
-
-      return entries;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, load: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
-
-  createEntry: async (entry) => {
-    set((state) => ({
-      progress: { ...state.progress, save: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const newEntry = await entryService.create(entry);
+    loadEntries: async (journalId) => {
       set((state) => {
-        const entries = [newEntry, ...state.entries];
-        return {
-          entries,
-          entryLookup: { ...state.entryLookup, [newEntry.id]: newEntry },
-          progress: { ...state.progress, save: toAsyncSlice('success') },
-        };
-      });
-      return newEntry;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, save: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
-
-  updateEntry: async (id, updates) => {
-    set((state) => ({
-      progress: { ...state.progress, save: toAsyncSlice('loading') },
-    }));
-
-    try {
-      const updated = await entryService.update(id, updates);
-      set((state) => {
-        if (!state.entryLookup[id]) {
-          return {
-            progress: { ...state.progress, save: toAsyncSlice('success') },
-          };
-        }
-
-        const entries = state.entries.map((entry) => (entry.id === id ? updated : entry));
-        const entryLookup = { ...state.entryLookup, [id]: updated };
-        const searchResults = state.search.results.map((entry) =>
-          entry.id === id ? updated : entry
-        );
-
-        return {
-          entries,
-          entryLookup,
-          search: {
-            ...state.search,
-            results: searchResults,
-          },
-          progress: { ...state.progress, save: toAsyncSlice('success') },
-        };
+        state.progress.load = toAsyncSlice('loading');
       });
 
-      return updated;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, save: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
+      try {
+        const entries = await entryService.list(journalId);
+        const lookup = createLookup(entries);
 
-  deleteEntry: async (id) => {
-    set((state) => ({
-      progress: { ...state.progress, remove: toAsyncSlice('loading') },
-    }));
+        set((state) => {
+          state.entries = entries;
+          state.entryLookup = lookup;
+          state.currentEntryId =
+            state.currentEntryId && lookup[state.currentEntryId] ? state.currentEntryId : null;
+          state.progress.load = toAsyncSlice('success');
+        });
 
-    try {
-      await entryService.remove(id);
+        return entries;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.load = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    createEntry: async (entry) => {
       set((state) => {
-        if (!state.entryLookup[id]) {
-          return {
-            progress: { ...state.progress, remove: toAsyncSlice('success') },
-          };
-        }
-
-        const entries = state.entries.filter((entry) => entry.id !== id);
-        const restLookup = { ...state.entryLookup };
-        delete restLookup[id];
-        return {
-          entries,
-          entryLookup: restLookup,
-          currentEntryId: state.currentEntryId === id ? null : state.currentEntryId,
-          search: {
-            ...state.search,
-            results: state.search.results.filter((entry) => entry.id !== id),
-          },
-          progress: { ...state.progress, remove: toAsyncSlice('success') },
-        };
+        state.progress.save = toAsyncSlice('loading');
       });
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, remove: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
 
-  searchEntries: async (query) => {
-    set((state) => ({
-      progress: { ...state.progress, search: toAsyncSlice('loading') },
-      search: {
-        ...state.search,
-        status: toAsyncSlice('loading'),
-      },
-    }));
+      try {
+        const newEntry = await entryService.create(entry);
+        set((state) => {
+          state.entries.unshift(newEntry);
+          state.entryLookup[newEntry.id] = newEntry;
+          state.progress.save = toAsyncSlice('success');
+        });
+        return newEntry;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.save = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
 
-    try {
-      const results = await entryService.search(query);
-      set((state) => ({
-        search: {
-          query,
-          results,
-          status: toAsyncSlice('success'),
-        },
-        progress: { ...state.progress, search: toAsyncSlice('success') },
-      }));
-      return results;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        search: {
-          ...state.search,
-          status: toAsyncSlice('error', message),
-        },
-        progress: { ...state.progress, search: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
+    updateEntry: async (id, updates) => {
+      set((state) => {
+        state.progress.save = toAsyncSlice('loading');
+      });
 
-  clearSearch: () =>
-    set((state) => ({
-      search: {
-        query: '',
-        results: [],
-        status: createAsyncSlice(),
-      },
-      progress: { ...state.progress, search: createAsyncSlice() },
-    })),
+      try {
+        const updated = await entryService.update(id, updates);
+        set((state) => {
+          if (!state.entryLookup[id]) {
+            state.progress.save = toAsyncSlice('success');
+            return;
+          }
 
-  setCurrentEntry: (entry) =>
-    set((state) => ({
-      currentEntryId: entry?.id && state.entryLookup[entry.id] ? entry.id : null,
-    })),
+          const entryIndex = state.entries.findIndex((e) => e.id === id);
+          if (entryIndex !== -1) {
+            state.entries[entryIndex] = updated;
+          }
+          state.entryLookup[id] = updated;
 
-  setCurrentEntryId: (entryId) =>
-    set((state) => ({
-      currentEntryId: entryId && state.entryLookup[entryId] ? entryId : null,
-    })),
-}));
+          const searchResultIndex = state.search.results.findIndex((e) => e.id === id);
+          if (searchResultIndex !== -1) {
+            state.search.results[searchResultIndex] = updated;
+          }
+
+          state.progress.save = toAsyncSlice('success');
+        });
+
+        return updated;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.save = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    deleteEntry: async (id) => {
+      set((state) => {
+        state.progress.remove = toAsyncSlice('loading');
+      });
+
+      try {
+        await entryService.remove(id);
+        set((state) => {
+          if (!state.entryLookup[id]) {
+            state.progress.remove = toAsyncSlice('success');
+            return;
+          }
+
+          const entryIndex = state.entries.findIndex((e) => e.id === id);
+          if (entryIndex !== -1) {
+            state.entries.splice(entryIndex, 1);
+          }
+          delete state.entryLookup[id];
+
+          if (state.currentEntryId === id) {
+            state.currentEntryId = null;
+          }
+
+          const searchResultIndex = state.search.results.findIndex((e) => e.id === id);
+          if (searchResultIndex !== -1) {
+            state.search.results.splice(searchResultIndex, 1);
+          }
+
+          state.progress.remove = toAsyncSlice('success');
+        });
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.remove = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    searchEntries: async (query) => {
+      set((state) => {
+        state.progress.search = toAsyncSlice('loading');
+        state.search.status = toAsyncSlice('loading');
+      });
+
+      try {
+        const results = await entryService.search(query);
+        set((state) => {
+          state.search.query = query;
+          state.search.results = results;
+          state.search.status = toAsyncSlice('success');
+          state.progress.search = toAsyncSlice('success');
+        });
+        return results;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.search.status = toAsyncSlice('error', message);
+          state.progress.search = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
+    clearSearch: () =>
+      set((state) => {
+        state.search.query = '';
+        state.search.results = [];
+        state.search.status = createAsyncSlice();
+        state.progress.search = createAsyncSlice();
+      }),
+
+    setCurrentEntry: (entry) =>
+      set((state) => {
+        state.currentEntryId = entry?.id && state.entryLookup[entry.id] ? entry.id : null;
+      }),
+
+    setCurrentEntryId: (entryId) =>
+      set((state) => {
+        state.currentEntryId = entryId && state.entryLookup[entryId] ? entryId : null;
+      }),
+  }))
+);
 
 export const createEntryStoreInitialState = (): EntryState => createInitialState();
 
