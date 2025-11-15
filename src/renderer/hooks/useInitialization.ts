@@ -33,7 +33,7 @@ export function useInitialization({
         const journals = await loadJournals();
         let journal = journals[0];
         if (!journal) {
-          journal = await createJournal({ name: 'Personal Journal' });
+          journal = await createJournal({ name: t('journals.defaultName') });
         }
 
         setCurrentJournal(journal);

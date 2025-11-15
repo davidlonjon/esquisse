@@ -31,7 +31,7 @@
 .ProseMirror {
   width: 600px;
   margin: 0 auto;
-  font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
+  font-family: var(--font-mono);
   font-size: 17px;
   line-height: 1.75;
   color: hsl(var(--foreground));

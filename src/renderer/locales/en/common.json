@@ -47,6 +47,14 @@
         "settings": {
           "label": "Settings",
           "description": "Open the preferences panel"
+        },
+        "shortcutsPanel": {
+          "label": "Shortcuts panel",
+          "description": "Show or hide the shortcut reference"
+        },
+        "closeModal": {
+          "label": "Close modal",
+          "description": "Dismiss the active dialog"
         }
       }
     }
@@ -80,5 +88,8 @@
         "fr": "French"
       }
     }
+  },
+  "journals": {
+    "defaultName": "Personal Journal"
   }
 }

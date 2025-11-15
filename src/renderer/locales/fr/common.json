@@ -47,6 +47,14 @@
         "settings": {
           "label": "Paramètres",
           "description": "Ouvrir le panneau de préférences"
+        },
+        "shortcutsPanel": {
+          "label": "Panneau des raccourcis",
+          "description": "Afficher ou masquer la référence des raccourcis"
+        },
+        "closeModal": {
+          "label": "Fermer la fenêtre",
+          "description": "Fermer la boîte de dialogue active"
         }
       }
     }
@@ -80,5 +88,8 @@
         "fr": "Français"
       }
     }
+  },
+  "journals": {
+    "defaultName": "Journal personnel"
   }
 }

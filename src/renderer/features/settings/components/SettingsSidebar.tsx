@@ -1,6 +1,9 @@
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { getShortcutCombo } from '@lib/shortcuts';
 
 export type SectionId = 'appearance' | 'editor' | 'autosave';
 
@@ -26,6 +29,12 @@ export function SettingsSidebar({
   error,
 }: SettingsSidebarProps) {
   const { t } = useTranslation();
+  const footerShortcutLabel = useMemo(() => {
+    const combos = [getShortcutCombo('openSettings'), getShortcutCombo('closeModal')].filter(
+      (value): value is string => Boolean(value)
+    );
+    return combos.length > 0 ? combos.join(' · ') : null;
+  }, []);
 
   return (
     <aside className="flex w-64 flex-col border-r border-base-200 bg-base-200/70 dark:bg-base-200/20">
@@ -62,9 +71,11 @@ export function SettingsSidebar({
         ))}
       </ul>
 
-      <div className="mt-auto border-t border-base-200 px-6 py-4 text-xs text-base-content/70">
-        ⌘ , · Esc
-      </div>
+      {footerShortcutLabel && (
+        <div className="mt-auto border-t border-base-200 px-6 py-4 text-xs text-base-content/70">
+          {footerShortcutLabel}
+        </div>
+      )}
     </aside>
   );
 }

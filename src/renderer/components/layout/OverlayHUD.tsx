@@ -2,14 +2,10 @@ import clsx from 'clsx';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ShortcutId } from '@config/shortcuts';
 import { useKeyboardShortcutsPanel } from '@hooks/useKeyboardShortcutsPanel';
 import { KeyboardShortcutsPanel, type ShortcutItem } from '@layout/KeyboardShortcutsPanel';
-
-interface ShortcutDefinition {
-  combo: string;
-  labelKey: string;
-  descriptionKey?: string;
-}
+import { getShortcutCombo, getShortcutDisplayList } from '@lib/shortcuts';
 
 interface OverlayHUDProps {
   showTop: boolean;
@@ -27,37 +23,13 @@ const HUDPill = ({ label }: { label: string }) => (
   </div>
 );
 
-const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
-  {
-    combo: '⌘,',
-    labelKey: 'hud.keyboard.shortcut.settings.label',
-    descriptionKey: 'hud.keyboard.shortcut.settings.description',
-  },
-  {
-    combo: '⌘.',
-    labelKey: 'hud.keyboard.shortcut.hudToggle.label',
-    descriptionKey: 'hud.keyboard.shortcut.hudToggle.description',
-  },
-  {
-    combo: '⌘[',
-    labelKey: 'hud.keyboard.shortcut.previousEntry.label',
-    descriptionKey: 'hud.keyboard.shortcut.previousEntry.description',
-  },
-  {
-    combo: '⌘]',
-    labelKey: 'hud.keyboard.shortcut.nextEntry.label',
-    descriptionKey: 'hud.keyboard.shortcut.nextEntry.description',
-  },
-  {
-    combo: '⌘K',
-    labelKey: 'hud.keyboard.shortcut.search.label',
-    descriptionKey: 'hud.keyboard.shortcut.search.description',
-  },
-  {
-    combo: '⌘P',
-    labelKey: 'hud.keyboard.shortcut.commandPalette.label',
-    descriptionKey: 'hud.keyboard.shortcut.commandPalette.description',
-  },
+const HUD_SHORTCUT_IDS: ShortcutId[] = [
+  'openSettings',
+  'toggleHudPin',
+  'previousEntry',
+  'nextEntry',
+  'searchEntries',
+  'commandPalette',
 ];
 
 export function OverlayHUD({
@@ -71,17 +43,16 @@ export function OverlayHUD({
 }: OverlayHUDProps) {
   const { t } = useTranslation();
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
-  const translatedDefaults = useMemo<ShortcutItem[]>(
+  const translatedShortcuts = useMemo(
     () =>
-      DEFAULT_SHORTCUTS.map((shortcut) => ({
+      getShortcutDisplayList(HUD_SHORTCUT_IDS, t).map<ShortcutItem>((shortcut) => ({
         combo: shortcut.combo,
-        label: t(shortcut.labelKey),
-        description: shortcut.descriptionKey ? t(shortcut.descriptionKey) : undefined,
+        label: shortcut.label,
+        description: shortcut.description,
       })),
     [t]
   );
-
-  const shortcutList = translatedDefaults;
+  const shortcutsButtonCombo = useMemo(() => getShortcutCombo('toggleShortcutsPanel') ?? '⌘/', []);
   const hudSuppressed = disabled || isShortcutsOpen;
 
   return (
@@ -112,7 +83,7 @@ export function OverlayHUD({
             )}
           >
             <span className="rounded bg-muted/30 px-2 py-0.5 text-xs font-semibold text-base-content/50">
-              ⌘/
+              {shortcutsButtonCombo}
             </span>
             <span className="text-base-content/60">{t('hud.keyboard.button')}</span>
           </button>
@@ -137,7 +108,7 @@ export function OverlayHUD({
 
       {isShortcutsOpen && (
         <KeyboardShortcutsPanel
-          shortcuts={shortcutList}
+          shortcuts={translatedShortcuts}
           onClose={closeShortcuts}
           title={t('hud.keyboard.title')}
           description={t('hud.keyboard.subtitle')}

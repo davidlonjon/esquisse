@@ -9,7 +9,8 @@ export const EDITOR_MIN_HEIGHT = '70vh';
 export const EDITOR_PADDING = '2rem';
 
 // Typography
-export const EDITOR_FONT_FAMILY = "'IBM Plex Mono', 'Courier New', Courier, monospace";
+export const EDITOR_FONT_FAMILY =
+  "ui-monospace, 'SFMono-Regular', 'JetBrains Mono', 'Fira Code', 'Menlo', 'Consolas', 'Liberation Mono', 'Courier New', monospace";
 export const EDITOR_FONT_SIZE = 16; // px
 export const EDITOR_LINE_HEIGHT = 1.75;
 
