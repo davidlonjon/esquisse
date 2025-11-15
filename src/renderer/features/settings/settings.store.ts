@@ -3,12 +3,22 @@ import { create } from 'zustand';
 import { settingsService } from '@services/settings.service';
 import type { Settings, UpdateSettingsInput } from '@shared/types';
 
-import type { RequestState } from '../../store/utils';
-import { withRequestStatus } from '../../store/utils';
+import {
+  createAsyncSlice,
+  getErrorMessage,
+  toAsyncSlice,
+  type AsyncSlice,
+} from '../../store/utils';
 
-interface SettingsState extends Settings, RequestState {
-  isSaving: boolean;
-  loadSettings: () => Promise<Settings>;
+interface SettingsProgressState {
+  load: AsyncSlice;
+  save: AsyncSlice;
+}
+
+interface SettingsState extends Settings {
+  hasLoaded: boolean;
+  progress: SettingsProgressState;
+  loadSettings: (options?: { force?: boolean }) => Promise<Settings>;
   updateSettings: (settings: UpdateSettingsInput) => Promise<Settings>;
 }
 
@@ -21,38 +31,72 @@ const defaultSettings: Settings = {
   language: 'en',
 };
 
-let hasLoadedSettings = false;
+const pickSettings = (state: SettingsState): Settings => ({
+  theme: state.theme,
+  fontSize: state.fontSize,
+  fontFamily: state.fontFamily,
+  autoSave: state.autoSave,
+  autoSaveInterval: state.autoSaveInterval,
+  language: state.language,
+});
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   ...defaultSettings,
-  status: 'idle',
-  error: null,
-  isSaving: false,
-
-  loadSettings: async () => {
-    if (hasLoadedSettings) {
-      const { theme, fontSize, fontFamily, autoSave, autoSaveInterval, language } = get();
-      return { theme, fontSize, fontFamily, autoSave, autoSaveInterval, language };
-    }
-
-    return withRequestStatus(set, async () => {
-      const settings = await settingsService.get();
-      set({ ...settings });
-      hasLoadedSettings = true;
-      return settings;
-    });
+  hasLoaded: false,
+  progress: {
+    load: createAsyncSlice(),
+    save: createAsyncSlice(),
   },
 
-  updateSettings: async (updates) =>
-    withRequestStatus(set, async () => {
-      set({ isSaving: true });
-      try {
-        const settings = await settingsService.update(updates);
-        set({ ...settings, isSaving: false });
-        return settings;
-      } catch (error) {
-        set({ isSaving: false });
-        throw error;
-      }
-    }),
+  loadSettings: async (options) => {
+    if (get().hasLoaded && !options?.force) {
+      return pickSettings(get());
+    }
+
+    set((state) => ({
+      progress: { ...state.progress, load: toAsyncSlice('loading') },
+    }));
+
+    try {
+      const settings = await settingsService.get();
+      set((state) => ({
+        ...state,
+        ...settings,
+        hasLoaded: true,
+        progress: { ...state.progress, load: toAsyncSlice('success') },
+      }));
+      return settings;
+    } catch (error) {
+      const message = getErrorMessage(error);
+      set((state) => ({
+        progress: { ...state.progress, load: toAsyncSlice('error', message) },
+      }));
+      throw error;
+    }
+  },
+
+  updateSettings: async (updates) => {
+    set((state) => ({
+      progress: { ...state.progress, save: toAsyncSlice('loading') },
+    }));
+
+    try {
+      const settings = await settingsService.update(updates);
+      set((state) => ({
+        ...state,
+        ...settings,
+        progress: { ...state.progress, save: toAsyncSlice('success') },
+      }));
+      return settings;
+    } catch (error) {
+      const message = getErrorMessage(error);
+      set((state) => ({
+        progress: { ...state.progress, save: toAsyncSlice('error', message) },
+      }));
+      throw error;
+    }
+  },
 }));
+
+export const selectSettings = (state: SettingsState): Settings => pickSettings(state);
+export const selectSettingsProgress = (state: SettingsState) => state.progress;

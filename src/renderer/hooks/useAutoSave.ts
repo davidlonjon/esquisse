@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AUTO_SAVE_DELAY } from '@features/editor';
 
@@ -18,6 +18,10 @@ export interface UseAutoSaveReturn {
   lastSaved: Date | null;
   /** Trigger a save operation (debounced) */
   trigger: (content: string) => void;
+  /** Immediately flush any pending auto-save */
+  flush: () => Promise<void>;
+  /** Cancel any pending auto-save */
+  cancel: () => void;
 }
 
 /**
@@ -41,46 +45,71 @@ export function useAutoSave({
 }: UseAutoSaveOptions): UseAutoSaveReturn {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingContentRef = useRef<string>('');
 
-  const trigger = (content: string) => {
-    if (!enabled) return;
-
-    // Store the content to save
-    pendingContentRef.current = content;
-
-    // Clear existing timeout
+  const clearPendingTimeout = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const executeSave = useCallback(async () => {
+    try {
+      setIsSaving(true);
+      await onSave(pendingContentRef.current);
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [onSave]);
+
+  const trigger = useCallback(
+    (content: string) => {
+      if (!enabled) return;
+
+      pendingContentRef.current = content;
+      clearPendingTimeout();
+      timeoutRef.current = setTimeout(async () => {
+        clearPendingTimeout();
+        await executeSave();
+      }, delay);
+    },
+    [clearPendingTimeout, delay, enabled, executeSave]
+  );
+
+  const flush = useCallback(async () => {
+    if (!enabled) {
+      clearPendingTimeout();
+      return;
     }
 
-    // Set new timeout
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        setIsSaving(true);
-        await onSave(pendingContentRef.current);
-        setLastSaved(new Date());
-      } catch (error) {
-        console.error('Auto-save failed:', error);
-      } finally {
-        setIsSaving(false);
-      }
-    }, delay);
-  };
+    if (timeoutRef.current) {
+      clearPendingTimeout();
+      await executeSave();
+    }
+  }, [clearPendingTimeout, enabled, executeSave]);
 
-  // Cleanup timeout on unmount
+  const cancel = useCallback(() => {
+    clearPendingTimeout();
+  }, [clearPendingTimeout]);
+
+  useEffect(() => cancel, [cancel]);
+
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
+    if (!enabled) {
+      cancel();
+    }
+  }, [cancel, enabled]);
 
   return {
     isSaving,
     lastSaved,
     trigger,
+    flush,
+    cancel,
   };
 }

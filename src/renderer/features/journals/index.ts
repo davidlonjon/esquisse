@@ -2,4 +2,11 @@
  * Journals feature exports
  */
 
-export { useJournalStore } from './journals.store';
+export {
+  useJournalStore,
+  selectJournals,
+  selectJournalLookup,
+  selectCurrentJournal,
+  selectCurrentJournalId,
+  selectJournalProgress,
+} from './journals.store';

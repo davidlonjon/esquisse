@@ -2,4 +2,4 @@
  * Settings feature exports
  */
 
-export { useSettingsStore } from './settings.store';
+export { useSettingsStore, selectSettings, selectSettingsProgress } from './settings.store';

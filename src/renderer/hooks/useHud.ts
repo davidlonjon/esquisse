@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { HUD_AUTO_HIDE_DELAY } from '@features/editor/constants';
 
@@ -8,19 +8,29 @@ import { useGlobalHotkeys } from './useGlobalHotkeys';
 export function useHud() {
   const [isHudPinned, setIsHudPinned] = useState(false);
   const [hudTemporaryVisible, setHudTemporaryVisible] = useState(false);
-  const hudTimeoutRef = useRef<number | null>(null);
+  const hudTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hudEdgeVisible = useEdgeReveal();
+
+  const clearHudTimeout = useCallback(() => {
+    if (hudTimeoutRef.current) {
+      clearTimeout(hudTimeoutRef.current);
+      hudTimeoutRef.current = null;
+    }
+  }, []);
 
   const showHudTemporarily = useCallback(() => {
     setHudTemporaryVisible(true);
-    if (hudTimeoutRef.current) {
-      window.clearTimeout(hudTimeoutRef.current);
-    }
-    hudTimeoutRef.current = window.setTimeout(() => {
+    clearHudTimeout();
+    hudTimeoutRef.current = setTimeout(() => {
       setHudTemporaryVisible(false);
       hudTimeoutRef.current = null;
     }, HUD_AUTO_HIDE_DELAY);
-  }, []);
+  }, [clearHudTimeout]);
+
+  const hideTemporaryHud = useCallback(() => {
+    clearHudTimeout();
+    setHudTemporaryVisible(false);
+  }, [clearHudTimeout]);
 
   // Register HUD toggle shortcut (Cmd/Ctrl+.)
   // Using 'period' instead of '.' for better compatibility
@@ -35,5 +45,14 @@ export function useHud() {
 
   const isHudVisible = isHudPinned || hudEdgeVisible || hudTemporaryVisible;
 
-  return { isHudVisible, showHudTemporarily };
+  useEffect(() => clearHudTimeout, [clearHudTimeout]);
+
+  return {
+    isHudVisible,
+    isHudPinned,
+    showHudTemporarily,
+    hideTemporaryHud,
+    toggleHudPin: () => setIsHudPinned((prev) => !prev),
+    setHudPinned: setIsHudPinned,
+  };
 }

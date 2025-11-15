@@ -1,39 +1,43 @@
-import { TFunction } from 'i18next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useEntryStore } from '@features/entries';
 import { useJournalStore } from '@features/journals';
 
+export type InitializationStatus = 'idle' | 'loading' | 'success' | 'error';
+
 interface UseInitializationProps {
-  setApiError: (error: string | null) => void;
+  defaultJournalName: string;
   setContent: (content: string) => void;
   showHudTemporarily: () => void;
   resetSessionTimer: () => void;
-  setIsInitialized: (isInitialized: boolean) => void;
-  t: TFunction;
 }
 
 export function useInitialization({
-  setApiError,
+  defaultJournalName,
   setContent,
   showHudTemporarily,
   resetSessionTimer,
-  setIsInitialized,
-  t,
-}: UseInitializationProps) {
+}: UseInitializationProps): { status: InitializationStatus; error: string | null } {
   const loadJournals = useJournalStore((state) => state.loadJournals);
   const createJournal = useJournalStore((state) => state.createJournal);
   const setCurrentJournal = useJournalStore((state) => state.setCurrentJournal);
   const loadEntries = useEntryStore((state) => state.loadEntries);
   const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
+  const [status, setStatus] = useState<InitializationStatus>('idle');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const initialize = async () => {
+      setStatus('loading');
+      setError(null);
+
       try {
         const journals = await loadJournals();
         let journal = journals[0];
         if (!journal) {
-          journal = await createJournal({ name: t('journals.defaultName') });
+          journal = await createJournal({ name: defaultJournalName });
         }
 
         setCurrentJournal(journal);
@@ -41,16 +45,39 @@ export function useInitialization({
         setCurrentEntry(null);
         setContent('');
         showHudTemporarily();
-
         resetSessionTimer();
-        setIsInitialized(true);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        setApiError(t('app.errors.initialize', { message }));
+
+        if (!isCancelled) {
+          setStatus('success');
+        }
+      } catch (initializationError) {
+        const message =
+          initializationError instanceof Error
+            ? initializationError.message
+            : String(initializationError);
+        if (!isCancelled) {
+          setError(message);
+          setStatus('error');
+        }
       }
     };
 
-    initialize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // This should only run once
+    void initialize();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    createJournal,
+    defaultJournalName,
+    loadEntries,
+    loadJournals,
+    resetSessionTimer,
+    setContent,
+    setCurrentEntry,
+    setCurrentJournal,
+    showHudTemporarily,
+  ]);
+
+  return { status, error };
 }

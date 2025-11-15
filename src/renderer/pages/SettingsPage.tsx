@@ -18,19 +18,17 @@ export function SettingsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SectionId>('appearance');
-  const {
-    theme,
-    language,
-    fontSize,
-    fontFamily,
-    autoSave,
-    autoSaveInterval,
-    error,
-    loadSettings,
-    updateSettings,
-    status,
-  } = useSettingsStore();
-  const isLoading = status === 'loading';
+  const theme = useSettingsStore((state) => state.theme);
+  const language = useSettingsStore((state) => state.language);
+  const fontSize = useSettingsStore((state) => state.fontSize);
+  const fontFamily = useSettingsStore((state) => state.fontFamily);
+  const autoSave = useSettingsStore((state) => state.autoSave);
+  const autoSaveInterval = useSettingsStore((state) => state.autoSaveInterval);
+  const loadSettings = useSettingsStore((state) => state.loadSettings);
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
+  const loadStatus = useSettingsStore((state) => state.progress.load.status);
+  const loadError = useSettingsStore((state) => state.progress.load.error);
+  const isLoading = loadStatus === 'loading';
 
   const closeSettings = useCallback(() => {
     navigate({ to: '/' });
@@ -128,7 +126,7 @@ export function SettingsPage() {
         activeSection={activeSection}
         onSectionClick={setActiveSection}
         isLoading={isLoading}
-        error={error}
+        error={loadError}
       />
 
       <div className="flex-1 bg-base-100 px-6 py-10 sm:px-10">

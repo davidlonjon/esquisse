@@ -1,8 +1,6 @@
-import type { StoreApi } from 'zustand';
-
 export type RequestStatus = 'idle' | 'loading' | 'success' | 'error';
 
-export interface RequestState {
+export interface AsyncSlice {
   status: RequestStatus;
   error: string | null;
 }
@@ -10,19 +8,9 @@ export interface RequestState {
 export const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-type SetState<TState> = StoreApi<TState>['setState'];
+export const createAsyncSlice = (): AsyncSlice => ({ status: 'idle', error: null });
 
-export async function withRequestStatus<TState extends RequestState, TResult>(
-  set: SetState<TState>,
-  action: () => Promise<TResult>
-): Promise<TResult> {
-  set({ status: 'loading', error: null } as Partial<TState>);
-  try {
-    const result = await action();
-    set({ status: 'success' } as Partial<TState>);
-    return result;
-  } catch (error) {
-    set({ status: 'error', error: getErrorMessage(error) } as Partial<TState>);
-    throw error;
-  }
-}
+export const toAsyncSlice = (status: RequestStatus, error: string | null = null): AsyncSlice => ({
+  status,
+  error,
+});
