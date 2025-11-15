@@ -1,54 +1,58 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
-import { Settings } from '@shared/ipc-types';
+import { settingsService } from '@services/settings.service';
+import type { Settings, UpdateSettingsInput } from '@shared/types';
 
-interface SettingsState extends Settings {
-  isLoading: boolean;
+import type { RequestState } from '../../store/utils';
+import { withRequestStatus } from '../../store/utils';
+
+interface SettingsState extends Settings, RequestState {
   isSaving: boolean;
-  error: string | null;
-
-  // Actions
-  loadSettings: () => Promise<void>;
-  updateSettings: (settings: Partial<Settings>) => Promise<void>;
+  loadSettings: () => Promise<Settings>;
+  updateSettings: (settings: UpdateSettingsInput) => Promise<Settings>;
 }
 
-export const useSettingsStore = create<SettingsState>()(
-  persist(
-    (set) => ({
-      // Default settings
-      theme: 'system',
-      fontSize: 16,
-      fontFamily: 'system-ui',
-      autoSave: true,
-      autoSaveInterval: 30000,
-      language: 'en',
-      isLoading: false,
-      isSaving: false,
-      error: null,
+const defaultSettings: Settings = {
+  theme: 'system',
+  fontSize: 16,
+  fontFamily: 'system-ui',
+  autoSave: true,
+  autoSaveInterval: 30000,
+  language: 'en',
+};
 
-      loadSettings: async () => {
-        set({ isLoading: true, error: null });
-        try {
-          const settings = await window.api.getSettings();
-          set({ ...settings, isLoading: false });
-        } catch (error) {
-          set({ error: (error as Error).message, isLoading: false });
-        }
-      },
+let hasLoadedSettings = false;
 
-      updateSettings: async (updates) => {
-        set({ isSaving: true, error: null });
-        try {
-          const settings = await window.api.setSettings(updates);
-          set({ ...settings, isSaving: false });
-        } catch (error) {
-          set({ error: (error as Error).message, isSaving: false });
-        }
-      },
-    }),
-    {
-      name: 'esquisse-settings',
+export const useSettingsStore = create<SettingsState>((set, get) => ({
+  ...defaultSettings,
+  status: 'idle',
+  error: null,
+  isSaving: false,
+
+  loadSettings: async () => {
+    if (hasLoadedSettings) {
+      const { theme, fontSize, fontFamily, autoSave, autoSaveInterval, language } = get();
+      return { theme, fontSize, fontFamily, autoSave, autoSaveInterval, language };
     }
-  )
-);
+
+    return withRequestStatus(set, async () => {
+      const settings = await settingsService.get();
+      set({ ...settings });
+      hasLoadedSettings = true;
+      return settings;
+    });
+  },
+
+  updateSettings: async (updates) =>
+    withRequestStatus(set, async () => {
+      set({ isSaving: true });
+      try {
+        const settings = await settingsService.update(updates);
+        set({ ...settings, isSaving: false });
+        return settings;
+      } catch (error) {
+        set({ isSaving: false });
+        throw error;
+      }
+    }),
+}));

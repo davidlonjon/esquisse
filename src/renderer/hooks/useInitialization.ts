@@ -21,17 +21,19 @@ export function useInitialization({
   setIsInitialized,
   t,
 }: UseInitializationProps) {
-  const { loadJournals, createJournal, setCurrentJournal } = useJournalStore();
-  const { loadEntries, setCurrentEntry } = useEntryStore();
+  const loadJournals = useJournalStore((state) => state.loadJournals);
+  const createJournal = useJournalStore((state) => state.createJournal);
+  const setCurrentJournal = useJournalStore((state) => state.setCurrentJournal);
+  const loadEntries = useEntryStore((state) => state.loadEntries);
+  const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
 
   useEffect(() => {
     const initialize = async () => {
       try {
-        await loadJournals();
-        let journal = useJournalStore.getState().journals[0];
+        const journals = await loadJournals();
+        let journal = journals[0];
         if (!journal) {
-          await createJournal({ name: 'Personal Journal' });
-          journal = useJournalStore.getState().journals[0];
+          journal = await createJournal({ name: 'Personal Journal' });
         }
 
         setCurrentJournal(journal);

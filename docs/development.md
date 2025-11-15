@@ -43,6 +43,12 @@ cp .env.example .env
 4. Never add LLM co-author trailers; only humans belong in commit metadata.
 5. Update documentation (README, `docs/`, translation files) when behavior changes.
 
+## Coding Conventions
+
+- Use the service layer under `src/renderer/services` for all IPC calls; stores/hooks should never import `window.api` directly.
+- Keep async/business logic inside services or custom hooks and keep React components presentational (<200 lines).
+- When consuming Zustand stores, rely on selectors and avoid `useStore.getState()` from components unless wrapped in a helper.
+
 ## Testing Strategy
 
 - **Unit/UI tests**: Vitest + React Testing Library. Co-locate `*.test.ts(x)` with sources.

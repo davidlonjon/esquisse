@@ -1,77 +1,63 @@
 import { create } from 'zustand';
 
-import { Journal } from '@shared/ipc-types';
+import { journalService } from '@services/journal.service';
+import type { CreateJournalInput, Journal, UpdateJournalInput } from '@shared/types';
 
-interface JournalState {
+import type { RequestState } from '../../store/utils';
+import { withRequestStatus } from '../../store/utils';
+
+interface JournalState extends RequestState {
   journals: Journal[];
   currentJournal: Journal | null;
-  isLoading: boolean;
-  error: string | null;
-
-  // Actions
-  loadJournals: () => Promise<void>;
-  createJournal: (journal: Omit<Journal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateJournal: (id: string, updates: Partial<Journal>) => Promise<void>;
+  loadJournals: () => Promise<Journal[]>;
+  createJournal: (input: CreateJournalInput) => Promise<Journal>;
+  updateJournal: (id: string, updates: UpdateJournalInput) => Promise<Journal>;
   deleteJournal: (id: string) => Promise<void>;
   setCurrentJournal: (journal: Journal | null) => void;
 }
 
-export const useJournalStore = create<JournalState>((set) => ({
+const initialState: Pick<JournalState, 'journals' | 'currentJournal' | 'status' | 'error'> = {
   journals: [],
   currentJournal: null,
-  isLoading: false,
+  status: 'idle',
   error: null,
+};
 
-  loadJournals: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const journals = await window.api.getAllJournals();
-      set({ journals, isLoading: false });
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+export const useJournalStore = create<JournalState>((set) => ({
+  ...initialState,
 
-  createJournal: async (journal) => {
-    set({ isLoading: true, error: null });
-    try {
-      const newJournal = await window.api.createJournal(journal);
+  loadJournals: async () =>
+    withRequestStatus(set, async () => {
+      const journals = await journalService.list();
+      set({ journals });
+      return journals;
+    }),
+
+  createJournal: async (input) =>
+    withRequestStatus(set, async () => {
+      const newJournal = await journalService.create(input);
+      set((state) => ({ journals: [newJournal, ...state.journals] }));
+      return newJournal;
+    }),
+
+  updateJournal: async (id, updates) =>
+    withRequestStatus(set, async () => {
+      const updated = await journalService.update(id, updates);
       set((state) => ({
-        journals: [newJournal, ...state.journals],
-        isLoading: false,
+        journals: state.journals.map((journal) => (journal.id === id ? updated : journal)),
+        currentJournal: state.currentJournal?.id === id ? updated : state.currentJournal,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+      return updated;
+    }),
 
-  updateJournal: async (id, updates) => {
-    set({ isLoading: true, error: null });
-    try {
-      const updatedJournal = await window.api.updateJournal(id, updates);
+  deleteJournal: async (id) =>
+    withRequestStatus(set, async () => {
+      await journalService.remove(id);
       set((state) => ({
-        journals: state.journals.map((j) => (j.id === id ? updatedJournal : j)),
-        currentJournal: state.currentJournal?.id === id ? updatedJournal : state.currentJournal,
-        isLoading: false,
-      }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
-
-  deleteJournal: async (id) => {
-    set({ isLoading: true, error: null });
-    try {
-      await window.api.deleteJournal(id);
-      set((state) => ({
-        journals: state.journals.filter((j) => j.id !== id),
+        journals: state.journals.filter((journal) => journal.id !== id),
         currentJournal: state.currentJournal?.id === id ? null : state.currentJournal,
-        isLoading: false,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+    }),
 
   setCurrentJournal: (journal) => set({ currentJournal: journal }),
 }));

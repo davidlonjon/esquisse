@@ -40,6 +40,12 @@ Benefits:
 - Easier code discovery
 - Enables scaling without flattening the entire renderer directory
 
+## Renderer Service Layer
+
+- Location: `src/renderer/services`
+- Each domain service (`journalService`, `entryService`, `settingsService`) centralizes the corresponding `window.api` calls so IPC details stay outside of stores/components.
+- Renderer state and hooks must consume these services instead of calling `window.api` directly to keep the IPC surface consistent and testable.
+
 ## IPC Pipeline
 
 1. **Types** – define payloads/result interfaces under `src/shared/types` and re-export them.

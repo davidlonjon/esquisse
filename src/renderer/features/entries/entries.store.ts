@@ -1,88 +1,71 @@
 import { create } from 'zustand';
 
-import { Entry } from '@shared/ipc-types';
+import { entryService } from '@services/entry.service';
+import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
 
-interface EntryState {
+import type { RequestState } from '../../store/utils';
+import { withRequestStatus } from '../../store/utils';
+
+interface EntryState extends RequestState {
   entries: Entry[];
   currentEntry: Entry | null;
-  isLoading: boolean;
-  error: string | null;
-
-  // Actions
-  loadEntries: (journalId?: string) => Promise<void>;
-  createEntry: (entry: Omit<Entry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateEntry: (id: string, updates: Partial<Entry>) => Promise<void>;
+  loadEntries: (journalId?: string) => Promise<Entry[]>;
+  createEntry: (entry: CreateEntryInput) => Promise<Entry>;
+  updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Entry>;
   deleteEntry: (id: string) => Promise<void>;
-  searchEntries: (query: string) => Promise<void>;
+  searchEntries: (query: string) => Promise<Entry[]>;
   setCurrentEntry: (entry: Entry | null) => void;
 }
 
-export const useEntryStore = create<EntryState>((set) => ({
+const initialState: Pick<EntryState, 'entries' | 'currentEntry' | 'status' | 'error'> = {
   entries: [],
   currentEntry: null,
-  isLoading: false,
+  status: 'idle',
   error: null,
+};
 
-  loadEntries: async (journalId) => {
-    set({ isLoading: true, error: null });
-    try {
-      const entries = await window.api.getAllEntries(journalId);
-      set({ entries, isLoading: false });
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+export const useEntryStore = create<EntryState>((set) => ({
+  ...initialState,
 
-  createEntry: async (entry) => {
-    set({ isLoading: true, error: null });
-    try {
-      const newEntry = await window.api.createEntry(entry);
+  loadEntries: async (journalId) =>
+    withRequestStatus(set, async () => {
+      const entries = await entryService.list(journalId);
+      set({ entries });
+      return entries;
+    }),
+
+  createEntry: async (entry) =>
+    withRequestStatus(set, async () => {
+      const newEntry = await entryService.create(entry);
+      set((state) => ({ entries: [newEntry, ...state.entries] }));
+      return newEntry;
+    }),
+
+  updateEntry: async (id, updates) =>
+    withRequestStatus(set, async () => {
+      const updated = await entryService.update(id, updates);
       set((state) => ({
-        entries: [newEntry, ...state.entries],
-        isLoading: false,
+        entries: state.entries.map((entry) => (entry.id === id ? updated : entry)),
+        currentEntry: state.currentEntry?.id === id ? updated : state.currentEntry,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+      return updated;
+    }),
 
-  updateEntry: async (id, updates) => {
-    set({ isLoading: true, error: null });
-    try {
-      const updatedEntry = await window.api.updateEntry(id, updates);
+  deleteEntry: async (id) =>
+    withRequestStatus(set, async () => {
+      await entryService.remove(id);
       set((state) => ({
-        entries: state.entries.map((e) => (e.id === id ? updatedEntry : e)),
-        currentEntry: state.currentEntry?.id === id ? updatedEntry : state.currentEntry,
-        isLoading: false,
-      }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
-
-  deleteEntry: async (id) => {
-    set({ isLoading: true, error: null });
-    try {
-      await window.api.deleteEntry(id);
-      set((state) => ({
-        entries: state.entries.filter((e) => e.id !== id),
+        entries: state.entries.filter((entry) => entry.id !== id),
         currentEntry: state.currentEntry?.id === id ? null : state.currentEntry,
-        isLoading: false,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+    }),
 
-  searchEntries: async (query) => {
-    set({ isLoading: true, error: null });
-    try {
-      const entries = await window.api.searchEntries(query);
-      set({ entries, isLoading: false });
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
+  searchEntries: async (query) =>
+    withRequestStatus(set, async () => {
+      const entries = await entryService.search(query);
+      set({ entries });
+      return entries;
+    }),
 
   setCurrentEntry: (entry) => set({ currentEntry: entry }),
 }));

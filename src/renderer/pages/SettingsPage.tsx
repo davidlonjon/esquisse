@@ -25,11 +25,12 @@ export function SettingsPage() {
     fontFamily,
     autoSave,
     autoSaveInterval,
-    isLoading,
     error,
     loadSettings,
     updateSettings,
+    status,
   } = useSettingsStore();
+  const isLoading = status === 'loading';
 
   const closeSettings = useCallback(() => {
     navigate({ to: '/' });

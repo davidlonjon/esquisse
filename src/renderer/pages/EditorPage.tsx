@@ -1,5 +1,5 @@
 import { useRouterState } from '@tanstack/react-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Editor } from '@features/editor';
@@ -27,7 +27,14 @@ export function EditorPage() {
   const entries = useEntryStore((state) => state.entries);
   const currentEntry = useEntryStore((state) => state.currentEntry);
   const updateEntry = useEntryStore((state) => state.updateEntry);
+  const createEntry = useEntryStore((state) => state.createEntry);
+  const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
   const currentJournal = useJournalStore((state) => state.currentJournal);
+
+  const currentEntryRef = useRef(currentEntry);
+  useEffect(() => {
+    currentEntryRef.current = currentEntry;
+  }, [currentEntry]);
 
   useInitialization({
     setApiError,
@@ -42,7 +49,7 @@ export function EditorPage() {
     onSave: async (htmlContent) => {
       try {
         if (getWordCountFromHTML(htmlContent) === 0) return;
-        const activeEntry = useEntryStore.getState().currentEntry;
+        const activeEntry = currentEntryRef.current;
         if (!activeEntry) return;
         await updateEntry(activeEntry.id, { content: htmlContent });
       } catch (error) {
@@ -57,27 +64,22 @@ export function EditorPage() {
     async (html: string) => {
       const hasContent = getWordCountFromHTML(html) > 0;
       if (!hasContent || !currentJournal) {
-        return useEntryStore.getState().currentEntry;
+        return currentEntry;
       }
 
-      const existingEntry = useEntryStore.getState().currentEntry;
-      if (existingEntry) {
-        return existingEntry;
+      if (currentEntry) {
+        return currentEntry;
       }
 
-      const createdEntry = await window.api.createEntry({
+      const createdEntry = await createEntry({
         journalId: currentJournal.id,
         content: html,
       });
-      await useEntryStore.getState().loadEntries(currentJournal.id);
-      const syncedEntry =
-        useEntryStore.getState().entries.find((entry) => entry.id === createdEntry.id) ||
-        createdEntry;
-      useEntryStore.getState().setCurrentEntry(syncedEntry);
+      setCurrentEntry(createdEntry);
       showHudTemporarily();
-      return syncedEntry;
+      return createdEntry;
     },
-    [currentJournal, showHudTemporarily]
+    [createEntry, currentEntry, currentJournal, setCurrentEntry, showHudTemporarily]
   );
 
   const handleContentChange = (newContent: string) => {
@@ -97,7 +99,7 @@ export function EditorPage() {
     try {
       if (getWordCountFromHTML(htmlContent) === 0) return;
       await ensureEntryExists(htmlContent);
-      const activeEntry = useEntryStore.getState().currentEntry;
+      const activeEntry = currentEntryRef.current;
       if (!activeEntry) return;
       await updateEntry(activeEntry.id, { content: htmlContent });
     } catch (error) {
