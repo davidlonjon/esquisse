@@ -80,6 +80,7 @@ Security notes: validate untrusted data server-side, never leak filesystem paths
 - Apply performance tactics where relevant: lazy-load large feature bundles, virtualize long lists, and debounce/throttle expensive handlers.
 - Default to accessible patterns—semantic HTML, ARIA attributes, focus management, and full keyboard support for interactive elements.
 - Never include LLM co-author metadata in git commits; only human contributors belong in commit trailers.
+- Keep README, the `docs/` folder, and translation files accurate whenever behavior, setup, or workflows change.
 
 ## 9. Workflow Checklist for Changes
 
