@@ -29,10 +29,9 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "eslint --max-warnings 0",
+      "eslint --fix --max-warnings 0",
       "prettier --write",
-      "bash -c 'npm run type-check'"
+      "npm run type-check"
     ],
     "*.css": [
       "stylelint --fix",
