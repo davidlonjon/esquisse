@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
 import i18n from '@lib/i18n';
-import { Button } from '@ui/Button';
-import { Select } from '@ui/Select';
+import { Button, Select } from '@ui';
 
 const THEME_OPTIONS: Array<{ value: 'system' | 'light' | 'dark'; labelKey: string }> = [
   { value: 'system', labelKey: 'settings.options.theme.system' },

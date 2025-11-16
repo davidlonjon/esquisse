@@ -24,6 +24,7 @@
       "@preload/*": ["./src/preload/*"],
       "@features/*": ["./src/renderer/features/*"],
       "@components/*": ["./src/renderer/components/*"],
+      "@ui": ["./src/renderer/components/ui/index.ts"],
       "@ui/*": ["./src/renderer/components/ui/*"],
       "@layout/*": ["./src/renderer/components/layout/*"],
       "@hooks/*": ["./src/renderer/hooks/*"],

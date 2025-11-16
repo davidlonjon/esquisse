@@ -2,9 +2,7 @@ import { Clock3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
-import { Badge } from '@ui/Badge';
-import { Slider } from '@ui/Slider';
-import { Toggle } from '@ui/Toggle';
+import { Badge, Slider, Toggle } from '@ui';
 
 export function AutosaveSettings() {
   const { t } = useTranslation();

@@ -2,9 +2,7 @@ import { Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
-import { Badge } from '@ui/Badge';
-import { Input } from '@ui/Input';
-import { Slider } from '@ui/Slider';
+import { Badge, Input, Slider } from '@ui';
 
 export function EditorSettings() {
   const { t } = useTranslation();

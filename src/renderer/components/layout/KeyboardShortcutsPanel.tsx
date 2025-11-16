@@ -1,8 +1,6 @@
 import { X } from 'lucide-react';
 
-import { Badge } from '@ui/Badge';
-import { Button } from '@ui/Button';
-import { Modal } from '@ui/Modal';
+import { Badge, Button, Modal } from '@ui';
 
 export interface ShortcutItem {
   combo: string;
