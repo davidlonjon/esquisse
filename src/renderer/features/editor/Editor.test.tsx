@@ -22,10 +22,10 @@ const mockEditor = {
   },
 };
 
-const mockUseEditor = vi.fn(() => mockEditor);
+const mockUseEditor = vi.fn((_config?: unknown) => mockEditor);
 
 vi.mock('@tiptap/react', () => ({
-  useEditor: (...args: unknown[]) => mockUseEditor(...args),
+  useEditor: (config: unknown) => mockUseEditor(config),
   EditorContent: ({ editor }: { editor: unknown }) => (
     <div data-testid="editor-content" data-editor={editor ? 'loaded' : 'null'}>
       Editor Content
@@ -76,7 +76,7 @@ describe('Editor', () => {
 
   describe('Rendering', () => {
     it('should render loading state when editor is not initialized', () => {
-      mockUseEditor.mockReturnValue(null);
+      mockUseEditor.mockReturnValueOnce(null as never);
 
       render(<Editor />);
 
@@ -109,23 +109,25 @@ describe('Editor', () => {
       render(<Editor content="<p>Initial content</p>" />);
 
       expect(mockUseEditor).toHaveBeenCalled();
-      const config = mockUseEditor.mock.calls[0][0];
-      expect(config.content).toBe('<p>Initial content</p>');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as { content: string };
+      expect(config?.content).toBe('<p>Initial content</p>');
     });
 
     it('should initialize editor with empty content by default', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      expect(config.content).toBe('');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as { content: string };
+      expect(config?.content).toBe('');
     });
 
     it('should call onChange when editor content updates', () => {
       const onChange = vi.fn();
       render(<Editor onChange={onChange} />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      config.onUpdate({ editor: mockEditor });
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        onUpdate: (props: { editor: typeof mockEditor }) => void;
+      };
+      config?.onUpdate({ editor: mockEditor });
 
       expect(onChange).toHaveBeenCalledWith('<p>Test content</p>');
     });
@@ -133,8 +135,10 @@ describe('Editor', () => {
     it('should not call onChange if not provided', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      expect(() => config.onUpdate({ editor: mockEditor })).not.toThrow();
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        onUpdate: (props: { editor: typeof mockEditor }) => void;
+      };
+      expect(() => config?.onUpdate({ editor: mockEditor })).not.toThrow();
     });
   });
 
@@ -173,9 +177,7 @@ describe('Editor', () => {
       const { container } = render(<Editor />);
 
       const editorContainer = container.querySelector('.editor-container');
-      expect(() =>
-        fireEvent.keyDown(editorContainer!, { key: 's', metaKey: true })
-      ).not.toThrow();
+      expect(() => fireEvent.keyDown(editorContainer!, { key: 's', metaKey: true })).not.toThrow();
     });
   });
 
@@ -183,25 +185,31 @@ describe('Editor', () => {
     it('should enable focus mode by default', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      const attributes = config.editorProps.attributes;
-      expect(attributes.class).toContain('focus-mode');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        editorProps: { attributes: { class: string } };
+      };
+      const attributes = config?.editorProps?.attributes;
+      expect(attributes?.class).toContain('focus-mode');
     });
 
     it('should disable focus mode when focusMode is false', () => {
       render(<Editor focusMode={false} />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      const attributes = config.editorProps.attributes;
-      expect(attributes.class).not.toContain('focus-mode');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        editorProps: { attributes: { class: string } };
+      };
+      const attributes = config?.editorProps?.attributes;
+      expect(attributes?.class).not.toContain('focus-mode');
     });
 
     it('should always include editor-content class', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      const attributes = config.editorProps.attributes;
-      expect(attributes.class).toContain('editor-content');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        editorProps: { attributes: { class: string } };
+      };
+      const attributes = config?.editorProps?.attributes;
+      expect(attributes?.class).toContain('editor-content');
     });
   });
 
@@ -209,10 +217,7 @@ describe('Editor', () => {
     it('should use default placeholder when not provided', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      const placeholderExt = config.extensions.find(
-        (ext: { name?: string }) => ext.name === 'placeholder' || ext === 'placeholder'
-      );
+      const config = mockUseEditor.mock.calls[0]?.[0];
       // Just verify editor was initialized (placeholder is configured in extensions)
       expect(config).toBeDefined();
     });
@@ -220,7 +225,7 @@ describe('Editor', () => {
     it('should use custom placeholder when provided', () => {
       render(<Editor placeholder="Start writing your journal..." />);
 
-      const config = mockUseEditor.mock.calls[0][0];
+      const config = mockUseEditor.mock.calls[0]?.[0];
       expect(config).toBeDefined();
     });
   });
@@ -230,8 +235,10 @@ describe('Editor', () => {
       vi.useFakeTimers();
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      config.onCreate({ editor: mockEditor });
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        onCreate: (props: { editor: typeof mockEditor }) => void;
+      };
+      config?.onCreate({ editor: mockEditor });
 
       vi.advanceTimersByTime(200);
 
@@ -245,8 +252,10 @@ describe('Editor', () => {
 
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      config.onCreate({ editor: mockEditor });
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        onCreate: (props: { editor: typeof mockEditor }) => void;
+      };
+      config?.onCreate({ editor: mockEditor });
 
       vi.advanceTimersByTime(200);
 
@@ -259,9 +268,11 @@ describe('Editor', () => {
     it('should enable spellcheck by default', () => {
       render(<Editor />);
 
-      const config = mockUseEditor.mock.calls[0][0];
-      const attributes = config.editorProps.attributes;
-      expect(attributes.spellcheck).toBe('true');
+      const config = mockUseEditor.mock.calls[0]?.[0] as unknown as {
+        editorProps: { attributes: { spellcheck: string } };
+      };
+      const attributes = config?.editorProps?.attributes;
+      expect(attributes?.spellcheck).toBe('true');
     });
   });
 });

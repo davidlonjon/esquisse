@@ -54,11 +54,7 @@ describe('EditorStatus', () => {
 
     it('should not render default error when errorMessage is provided', () => {
       render(
-        <EditorStatus
-          status="error"
-          initializingLabel="Loading..."
-          errorMessage="Custom error"
-        />
+        <EditorStatus status="error" initializingLabel="Loading..." errorMessage="Custom error" />
       );
 
       expect(screen.queryByText('Unable to initialize the editor.')).not.toBeInTheDocument();
@@ -66,11 +62,7 @@ describe('EditorStatus', () => {
 
     it('should render error UI with correct styling', () => {
       const { container } = render(
-        <EditorStatus
-          status="error"
-          initializingLabel="Loading..."
-          errorMessage="Error occurred"
-        />
+        <EditorStatus status="error" initializingLabel="Loading..." errorMessage="Error occurred" />
       );
 
       const errorDiv = container.querySelector('.border-destructive');
@@ -80,11 +72,7 @@ describe('EditorStatus', () => {
 
     it('should not render initializing label when in error state', () => {
       render(
-        <EditorStatus
-          status="error"
-          initializingLabel="Loading..."
-          errorMessage="Error occurred"
-        />
+        <EditorStatus status="error" initializingLabel="Loading..." errorMessage="Error occurred" />
       );
 
       expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -105,9 +93,7 @@ describe('EditorStatus', () => {
     });
 
     it('should handle error status', () => {
-      render(
-        <EditorStatus status="error" initializingLabel="Error state" errorMessage="Error!" />
-      );
+      render(<EditorStatus status="error" initializingLabel="Error state" errorMessage="Error!" />);
 
       expect(screen.getByText('Error!')).toBeInTheDocument();
     });
