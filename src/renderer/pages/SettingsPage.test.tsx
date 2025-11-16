@@ -176,21 +176,17 @@ describe('SettingsPage', () => {
     it('should register escape hotkey', () => {
       render(<SettingsPage />);
 
-      expect(mockUseGlobalHotkeys).toHaveBeenCalledWith(
-        'escape',
-        expect.any(Function),
-        { preventDefault: true }
-      );
+      expect(mockUseGlobalHotkeys).toHaveBeenCalledWith('escape', expect.any(Function), {
+        preventDefault: true,
+      });
     });
 
     it('should register mod+comma hotkey', () => {
       render(<SettingsPage />);
 
-      expect(mockUseGlobalHotkeys).toHaveBeenCalledWith(
-        'mod+comma',
-        expect.any(Function),
-        { preventDefault: true }
-      );
+      expect(mockUseGlobalHotkeys).toHaveBeenCalledWith('mod+comma', expect.any(Function), {
+        preventDefault: true,
+      });
     });
   });
 

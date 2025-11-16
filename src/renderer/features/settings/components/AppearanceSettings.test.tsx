@@ -38,7 +38,12 @@ vi.mock('@features/settings', () => ({
 }));
 
 vi.mock('@ui', () => ({
-  Button: ({ children, onClick, variant, className }: React.ComponentProps<'button'> & { variant?: string }) => (
+  Button: ({
+    children,
+    onClick,
+    variant,
+    className,
+  }: React.ComponentProps<'button'> & { variant?: string }) => (
     <button onClick={onClick} data-variant={variant} className={className}>
       {children}
     </button>

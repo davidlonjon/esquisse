@@ -10,8 +10,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-const mockController = {
-  status: 'success' as const,
+let mockController = {
+  status: 'success' as 'success' | 'loading' | 'error',
   initializingLabel: '',
   initializationMessage: '',
   hud: {
@@ -25,7 +25,7 @@ const mockController = {
   handleContentChange: vi.fn(),
   handleManualSave: vi.fn(),
   placeholder: 'Start writing...',
-  apiError: null,
+  apiError: null as string | null,
   clearApiError: vi.fn(),
 };
 
@@ -34,8 +34,21 @@ vi.mock('@hooks/useEditorController', () => ({
 }));
 
 vi.mock('@features/editor', () => ({
-  Editor: ({ content, onChange, placeholder }: { content: string; onChange: () => void; placeholder: string }) => (
-    <div data-testid="editor" data-content={content} data-placeholder={placeholder} onClick={onChange}>
+  Editor: ({
+    content,
+    onChange,
+    placeholder,
+  }: {
+    content: string;
+    onChange: () => void;
+    placeholder: string;
+  }) => (
+    <div
+      data-testid="editor"
+      data-content={content}
+      data-placeholder={placeholder}
+      onClick={onChange}
+    >
       Editor Component
     </div>
   ),
@@ -56,6 +69,25 @@ vi.mock('@features/editor/components', () => ({
 describe('EditorPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset mockController to default state
+    mockController = {
+      status: 'success',
+      initializingLabel: '',
+      initializationMessage: '',
+      hud: {
+        isVisible: true,
+        dateLabel: 'Monday, Jan 1',
+        wordCountLabel: '150 words',
+        sessionLabel: '5min',
+        snapshotLabel: 'Saved',
+      },
+      content: '<p>Test content</p>',
+      handleContentChange: vi.fn(),
+      handleManualSave: vi.fn(),
+      placeholder: 'Start writing...',
+      apiError: null,
+      clearApiError: vi.fn(),
+    };
     // Reset window.api
     Object.defineProperty(window, 'api', {
       writable: true,

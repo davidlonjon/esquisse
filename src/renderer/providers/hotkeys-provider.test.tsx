@@ -1,5 +1,5 @@
 import { render, screen, renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { HotkeysProvider, useHotkeysContext } from './hotkeys-provider';
 
