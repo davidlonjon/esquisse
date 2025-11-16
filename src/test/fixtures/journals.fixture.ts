@@ -30,7 +30,7 @@ export const mockJournalInputs: CreateJournalInput[] = [
 export const createMockJournal = (overrides: Partial<Journal> = {}): Journal => {
   const now = new Date().toISOString();
   return {
-    id: 'test-journal-id',
+    id: '550e8400-e29b-41d4-a716-446655440000',
     name: 'Test Journal',
     description: 'A test journal',
     color: '#3B82F6',
