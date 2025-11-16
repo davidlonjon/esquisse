@@ -2,6 +2,12 @@ import { useRouterState } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+  selectEditorContent,
+  selectEditorLastSaved,
+  selectEditorWordCount,
+  useEditorContentStore,
+} from '@features/editor';
 import { selectCurrentEntry, selectEntries, useEntryStore } from '@features/entries';
 import { selectCurrentJournal, useJournalStore } from '@features/journals';
 import { useAutoSave } from '@hooks/useAutoSave';
@@ -39,7 +45,12 @@ export interface EditorController {
 export function useEditorController(): EditorController {
   const { location } = useRouterState();
   const { t, i18n } = useTranslation();
-  const [content, setContent] = useState<string>('');
+  const content = useEditorContentStore(selectEditorContent);
+  const wordCount = useEditorContentStore(selectEditorWordCount);
+  const lastSaved = useEditorContentStore(selectEditorLastSaved);
+  const setEditorContent = useEditorContentStore((state) => state.setContent);
+  const resetEditorContent = useEditorContentStore((state) => state.resetContent);
+  const setEditorLastSaved = useEditorContentStore((state) => state.setLastSaved);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const entries = useEntryStore(selectEntries);
@@ -61,7 +72,6 @@ export function useEditorController(): EditorController {
   const defaultJournalName = t('journals.defaultName');
   const initialization = useInitialization({
     defaultJournalName,
-    // setContent, // No longer passed directly
     showHudTemporarily,
     resetSessionTimer,
   });
@@ -81,7 +91,11 @@ export function useEditorController(): EditorController {
     enabled: initialization.status === 'success',
   });
 
-  const { lastSaved, trigger: triggerAutoSave } = autoSave;
+  const { lastSaved: autoSavedAt, trigger: triggerAutoSave } = autoSave;
+
+  useEffect(() => {
+    setEditorLastSaved(autoSavedAt);
+  }, [autoSavedAt, setEditorLastSaved]);
 
   const ensureEntryExists = useCallback(
     async (html: string) => {
@@ -106,21 +120,18 @@ export function useEditorController(): EditorController {
     [createEntry, currentJournal, setCurrentEntry, showHudTemporarily]
   );
 
-  const handleContentChange = useCallback(
-    (newContent: string) => {
-      setContent(newContent);
-      const hasContent = getWordCountFromHTML(newContent) > 0;
-      if (!hasContent) {
-        return;
-      }
+  const handleContentChange = (newContent: string) => {
+    setEditorContent(newContent);
+    const hasContent = getWordCountFromHTML(newContent) > 0;
+    if (!hasContent) {
+      return;
+    }
 
-      void (async () => {
-        await ensureEntryExists(newContent);
-        triggerAutoSave(newContent);
-      })();
-    },
-    [ensureEntryExists, triggerAutoSave]
-  );
+    void (async () => {
+      await ensureEntryExists(newContent);
+      triggerAutoSave(newContent);
+    })();
+  };
 
   const handleManualSave = useCallback(
     async (htmlContent: string) => {
@@ -141,22 +152,15 @@ export function useEditorController(): EditorController {
   useEntryNavigation({
     entries,
     currentEntry,
-    // setContent, // No longer passed directly
-    // showHudTemporarily, // No longer passed directly
+    onNavigate: showHudTemporarily,
   });
 
   // Effect to update local content state when currentEntry changes
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (currentEntry) {
-      setContent(currentEntry.content ?? '');
-    } else {
-      setContent('');
-    }
-  }, [currentEntry]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+    const nextContent = currentEntry?.content ?? '';
+    resetEditorContent(nextContent);
+  }, [currentEntry?.content, currentEntry?.id, resetEditorContent]);
 
-  const wordCount = useMemo(() => getWordCountFromHTML(content), [content]);
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.language, {

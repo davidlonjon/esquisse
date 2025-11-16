@@ -6,3 +6,9 @@
 export { Editor } from './Editor';
 export * from './types';
 export * from './constants';
+export {
+  useEditorContentStore,
+  selectEditorContent,
+  selectEditorWordCount,
+  selectEditorLastSaved,
+} from './store/editor.store';

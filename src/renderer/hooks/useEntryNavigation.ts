@@ -4,23 +4,22 @@ import { useEntryStore } from '@features/entries';
 import type { Entry } from '@shared/types';
 
 import { useGlobalHotkeys } from './useGlobalHotkeys';
-import { useHud } from './useHud'; // Import useHud
 
 interface UseEntryNavigationProps {
   entries: Entry[];
   currentEntry: Entry | null;
+  onNavigate?: () => void;
 }
 
-export function useEntryNavigation({ entries, currentEntry }: UseEntryNavigationProps) {
+export function useEntryNavigation({ entries, currentEntry, onNavigate }: UseEntryNavigationProps) {
   const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
-  const { showHudTemporarily } = useHud(); // Use useHud directly
 
   const navigateEntry = useCallback(
     (direction: -1 | 1) => {
       if (entries.length === 0) {
         if (direction === -1) {
           setCurrentEntry(null);
-          showHudTemporarily();
+          onNavigate?.();
         }
         return;
       }
@@ -33,7 +32,7 @@ export function useEntryNavigation({ entries, currentEntry }: UseEntryNavigation
         if (direction === 1) {
           const firstEntry = entries[0];
           setCurrentEntry(firstEntry);
-          showHudTemporarily();
+          onNavigate?.();
         }
         return;
       }
@@ -41,7 +40,7 @@ export function useEntryNavigation({ entries, currentEntry }: UseEntryNavigation
       const targetIndex = currentIndex + direction;
       if (targetIndex < 0) {
         setCurrentEntry(null);
-        showHudTemporarily();
+        onNavigate?.();
         return;
       }
 
@@ -52,9 +51,9 @@ export function useEntryNavigation({ entries, currentEntry }: UseEntryNavigation
       const targetEntry = entries[targetIndex];
       if (!targetEntry) return;
       setCurrentEntry(targetEntry);
-      showHudTemporarily();
+      onNavigate?.();
     },
-    [entries, currentEntry, setCurrentEntry, showHudTemporarily]
+    [entries, currentEntry, onNavigate, setCurrentEntry]
   );
 
   // Register entry navigation shortcuts
