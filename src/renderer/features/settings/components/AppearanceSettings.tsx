@@ -1,7 +1,7 @@
 import { Check, Languages, Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { selectAppearanceSettings, useSettingsStore } from '@features/settings';
+import { useSettingsStore } from '@features/settings';
 import i18n from '@lib/i18n';
 import { Button } from '@ui/Button';
 import { Select } from '@ui/Select';
@@ -19,7 +19,8 @@ const LANGUAGE_OPTIONS: Array<{ value: 'en' | 'fr'; labelKey: string }> = [
 
 export function AppearanceSettings() {
   const { t } = useTranslation();
-  const { theme, language } = useSettingsStore(selectAppearanceSettings);
+  const theme = useSettingsStore((state) => state.theme);
+  const language = useSettingsStore((state) => state.language);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
 
   const handleThemeChange = async (value: 'system' | 'light' | 'dark') => {

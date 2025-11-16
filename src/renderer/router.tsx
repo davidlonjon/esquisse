@@ -9,23 +9,14 @@ import {
 import { EditorPage } from '@pages/EditorPage';
 import { SettingsPage } from '@pages/SettingsPage';
 
-function AppLayout() {
-  return (
-    <>
-      <EditorPage />
-      <Outlet />
-    </>
-  );
-}
-
 const RootRoute = createRootRoute({
-  component: AppLayout,
+  component: Outlet,
 });
 
 const editorRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/',
-  component: () => null,
+  component: EditorPage,
 });
 
 const settingsRoute = createRoute({

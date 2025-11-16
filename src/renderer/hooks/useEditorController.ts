@@ -1,4 +1,3 @@
-import { useRouterState } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,11 +38,9 @@ export interface EditorController {
   handleContentChange: (content: string) => void;
   handleManualSave: (content: string) => Promise<void>;
   hud: HudViewModel;
-  isSettingsRoute: boolean;
 }
 
 export function useEditorController(): EditorController {
-  const { location } = useRouterState();
   const { t, i18n } = useTranslation();
   const content = useEditorContentStore(selectEditorContent);
   const wordCount = useEditorContentStore(selectEditorWordCount);
@@ -195,7 +192,6 @@ export function useEditorController(): EditorController {
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
   const sessionLabel = useMemo(() => formatDuration(sessionSeconds), [sessionSeconds]);
 
-  const isSettingsRoute = location.pathname === '/settings';
   const placeholder = t('editor.placeholder');
   const initializingLabel = t('app.initializing');
   const initializationMessage =
@@ -224,6 +220,5 @@ export function useEditorController(): EditorController {
     handleContentChange,
     handleManualSave,
     hud: hudViewModel,
-    isSettingsRoute,
   };
 }

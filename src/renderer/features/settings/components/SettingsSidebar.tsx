@@ -1,9 +1,7 @@
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
-import { useMemo } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-import { getShortcutCombo } from '@lib/shortcuts';
 
 export type SectionId = 'appearance' | 'editor' | 'autosave';
 
@@ -17,6 +15,7 @@ interface SettingsSidebarProps {
   sections: Section[];
   activeSection: SectionId;
   onSectionClick: (id: SectionId) => void;
+  onBack: () => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -25,20 +24,24 @@ export function SettingsSidebar({
   sections,
   activeSection,
   onSectionClick,
+  onBack,
   isLoading,
   error,
 }: SettingsSidebarProps) {
   const { t } = useTranslation();
-  const footerShortcutLabel = useMemo(() => {
-    const combos = [getShortcutCombo('openSettings'), getShortcutCombo('closeModal')].filter(
-      (value): value is string => Boolean(value)
-    );
-    return combos.length > 0 ? combos.join(' · ') : null;
-  }, []);
+  const footerShortcutLabel = null;
 
   return (
     <aside className="flex w-64 flex-col border-r border-base-200 bg-base-200/70 dark:bg-base-200/20">
-      <div className="px-6 pt-8 pb-4">
+      <div className="px-6 pt-8 pb-4 space-y-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-2 rounded-full border border-transparent bg-transparent px-3 py-1 text-xs font-medium text-base-content/70 transition hover:border-base-300 hover:bg-base-100 hover:text-base-content"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>{t('settings.backToApp', 'Back to app')}</span>
+        </button>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-base-content/70">
           {t('settings.title')}
         </p>
@@ -71,11 +74,7 @@ export function SettingsSidebar({
         ))}
       </ul>
 
-      {footerShortcutLabel && (
-        <div className="mt-auto border-t border-base-200 px-6 py-4 text-xs text-base-content/70">
-          {footerShortcutLabel}
-        </div>
-      )}
+      {footerShortcutLabel && null}
     </aside>
   );
 }

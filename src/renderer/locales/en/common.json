@@ -63,6 +63,7 @@
     "title": "Settings",
     "description": "Tune Esquisse to your workflow.",
     "back": "Back to editor",
+    "backToApp": "Back to app",
     "loading": "Loading settings...",
     "sections": {
       "appearance": "Appearance",

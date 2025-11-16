@@ -1,14 +1,15 @@
 import { Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { selectEditorSettings, useSettingsStore } from '@features/settings';
+import { useSettingsStore } from '@features/settings';
 import { Badge } from '@ui/Badge';
 import { Input } from '@ui/Input';
 import { Slider } from '@ui/Slider';
 
 export function EditorSettings() {
   const { t } = useTranslation();
-  const { fontSize, fontFamily } = useSettingsStore(selectEditorSettings);
+  const fontSize = useSettingsStore((state) => state.fontSize);
+  const fontFamily = useSettingsStore((state) => state.fontFamily);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
 
   const handleFontSizeChange = async (value: number) => {

@@ -1,14 +1,15 @@
 import { Clock3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { selectAutosaveSettings, useSettingsStore } from '@features/settings';
+import { useSettingsStore } from '@features/settings';
 import { Badge } from '@ui/Badge';
 import { Slider } from '@ui/Slider';
 import { Toggle } from '@ui/Toggle';
 
 export function AutosaveSettings() {
   const { t } = useTranslation();
-  const { autoSave, autoSaveInterval } = useSettingsStore(selectAutosaveSettings);
+  const autoSave = useSettingsStore((state) => state.autoSave);
+  const autoSaveInterval = useSettingsStore((state) => state.autoSaveInterval);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
   const autoSaveSeconds = Math.round(autoSaveInterval / 1000);
 

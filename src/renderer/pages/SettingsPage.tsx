@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
-import { Clock3, Palette, Type, X } from 'lucide-react';
+import { Clock3, Palette, Type } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +12,7 @@ import {
   SectionId,
   SettingsSidebar,
 } from '@features/settings/components';
-import { Modal } from '@ui/Modal';
+import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -24,12 +24,34 @@ export function SettingsPage() {
   const isLoading = loadStatus === 'loading';
 
   const closeSettings = useCallback(() => {
-    navigate({ to: '/' });
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate({ to: '/' });
+    }
   }, [navigate]);
 
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  useGlobalHotkeys(
+    'escape',
+    (event) => {
+      event.preventDefault();
+      closeSettings();
+    },
+    { preventDefault: true }
+  );
+
+  useGlobalHotkeys(
+    'mod+comma',
+    (event) => {
+      event.preventDefault();
+      closeSettings();
+    },
+    { preventDefault: true }
+  );
 
   const sections = useMemo<Array<{ id: SectionId; label: string; icon: LucideIcon }>>(
     () => [
@@ -53,25 +75,12 @@ export function SettingsPage() {
   };
 
   return (
-    <Modal
-      isOpen
-      onClose={closeSettings}
-      size="lg"
-      panelClassName="flex h-[min(90vh,760px)] w-full overflow-hidden rounded-lg border border-base-200 bg-base-100 text-base-content shadow-[0_30px_80px_rgba(15,23,42,0.2)]"
-    >
-      <button
-        type="button"
-        onClick={closeSettings}
-        aria-label={t('settings.back')}
-        className="btn btn-ghost btn-circle btn-sm absolute right-4 top-4 z-20"
-      >
-        <X className="h-4 w-4" />
-      </button>
-
+    <div className="flex min-h-screen w-screen overflow-hidden bg-base-200 text-base-content">
       <SettingsSidebar
         sections={sections}
         activeSection={activeSection}
         onSectionClick={setActiveSection}
+        onBack={closeSettings}
         isLoading={isLoading}
         error={loadError}
       />
@@ -79,6 +88,6 @@ export function SettingsPage() {
       <div className="flex-1 bg-base-100 px-6 py-10 sm:px-10">
         <div className="mx-auto max-w-3xl space-y-8">{renderActiveSection()}</div>
       </div>
-    </Modal>
+    </div>
   );
 }

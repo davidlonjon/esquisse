@@ -63,6 +63,7 @@
     "title": "Paramètres",
     "description": "Ajustez Esquisse à votre flux d'écriture.",
     "back": "Retour à l'éditeur",
+    "backToApp": "Retour à l'application",
     "loading": "Chargement des paramètres...",
     "sections": {
       "appearance": "Apparence",

@@ -40,7 +40,7 @@ export function EditorPage() {
         wordCountLabel={controller.hud.wordCountLabel}
         sessionLabel={controller.hud.sessionLabel}
         snapshotLabel={controller.hud.snapshotLabel}
-        disabled={controller.isSettingsRoute}
+        disabled={false}
       />
       <Editor
         content={controller.content}
