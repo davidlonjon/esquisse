@@ -97,7 +97,11 @@ export function updateEntry(id: string, updates: UpdateEntryInput): Entry {
     }
 
     if (fields.length === 0) {
-      return getEntryById(id)!;
+      const entry = getEntryById(id);
+      if (!entry) {
+        throw new Error(`Entry with id ${id} not found`);
+      }
+      return entry;
     }
 
     fields.push('updated_at = ?');
@@ -105,7 +109,11 @@ export function updateEntry(id: string, updates: UpdateEntryInput): Entry {
 
     db.run(`UPDATE entries SET ${fields.join(', ')} WHERE id = ?`, values);
 
-    return getEntryById(id)!;
+    const updated = getEntryById(id);
+    if (!updated) {
+      throw new Error(`Entry with id ${id} not found after update`);
+    }
+    return updated;
   });
 }
 

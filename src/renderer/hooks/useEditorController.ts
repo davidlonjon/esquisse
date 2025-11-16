@@ -125,7 +125,9 @@ export function useEditorController(): EditorController {
     }
 
     void (async () => {
+      // Wait for entry to exist before triggering auto-save to prevent race condition
       await ensureEntryExists(newContent);
+      // Only trigger auto-save after entry is confirmed to exist
       triggerAutoSave(newContent);
     })();
   };

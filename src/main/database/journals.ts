@@ -89,7 +89,11 @@ export function updateJournal(id: string, updates: UpdateJournalInput): Journal 
     }
 
     if (fields.length === 0) {
-      return getJournalById(id)!;
+      const journal = getJournalById(id);
+      if (!journal) {
+        throw new Error(`Journal with id ${id} not found`);
+      }
+      return journal;
     }
 
     fields.push('updated_at = ?');
@@ -97,7 +101,11 @@ export function updateJournal(id: string, updates: UpdateJournalInput): Journal 
 
     db.run(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`, values);
 
-    return getJournalById(id)!;
+    const updated = getJournalById(id);
+    if (!updated) {
+      throw new Error(`Journal with id ${id} not found after update`);
+    }
+    return updated;
   });
 }
 
