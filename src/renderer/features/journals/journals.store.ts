@@ -1,15 +1,9 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
 import { journalService } from '@services/journal.service';
 import type { CreateJournalInput, Journal, UpdateJournalInput } from '@shared/types';
-
-import {
-  createAsyncSlice,
-  getErrorMessage,
-  toAsyncSlice,
-  type AsyncSlice,
-} from '../../store/utils';
 
 type JournalLookup = Record<string, Journal>;
 

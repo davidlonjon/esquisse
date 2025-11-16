@@ -1,14 +1,8 @@
 import { create } from 'zustand';
 
+import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
 import { settingsService } from '@services/settings.service';
 import type { Settings, UpdateSettingsInput } from '@shared/types';
-
-import {
-  createAsyncSlice,
-  getErrorMessage,
-  toAsyncSlice,
-  type AsyncSlice,
-} from '../../store/utils';
 
 interface SettingsProgressState {
   load: AsyncSlice;

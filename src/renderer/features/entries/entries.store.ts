@@ -1,15 +1,9 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
 import { entryService } from '@services/entry.service';
 import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
-
-import {
-  createAsyncSlice,
-  getErrorMessage,
-  toAsyncSlice,
-  type AsyncSlice,
-} from '../../store/utils';
 
 type EntryLookup = Record<string, Entry>;
 
