@@ -9,18 +9,20 @@ import * as entryDb from '../../database/entries';
 vi.mock('../../database/entries');
 
 // Mock the safe handler registration
-const mockHandlers = new Map<string, Function>();
+const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
 vi.mock('../../ipc/safe-handler', () => ({
-  registerSafeHandler: vi.fn((channel: string, _schema: unknown, handler: Function) => {
-    mockHandlers.set(channel, handler);
-  }),
+  registerSafeHandler: vi.fn(
+    (channel: string, _schema: unknown, handler: (...args: unknown[]) => unknown) => {
+      mockHandlers.set(channel, handler);
+    }
+  ),
 }));
 
 // Import after mocks are set up
 import { registerEntryHandlers } from './entry.ipc';
 
 describe('entry.ipc.ts - Entry IPC Handlers', () => {
-  const mockEvent = {} as any;
+  const mockEvent = {} as never;
 
   beforeEach(() => {
     vi.clearAllMocks();

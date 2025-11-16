@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { IPC_CHANNELS } from '@shared/ipc';
-import type { AppSettings } from '@shared/types';
+import type { Settings } from '@shared/types';
 
 import * as settingsDb from '../../database/settings';
 
@@ -9,18 +9,20 @@ import * as settingsDb from '../../database/settings';
 vi.mock('../../database/settings');
 
 // Mock the safe handler registration
-const mockHandlers = new Map<string, Function>();
+const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
 vi.mock('../../ipc/safe-handler', () => ({
-  registerSafeHandler: vi.fn((channel: string, _schema: unknown, handler: Function) => {
-    mockHandlers.set(channel, handler);
-  }),
+  registerSafeHandler: vi.fn(
+    (channel: string, _schema: unknown, handler: (...args: unknown[]) => unknown) => {
+      mockHandlers.set(channel, handler);
+    }
+  ),
 }));
 
 // Import after mocks are set up
 import { registerSettingsHandlers } from './settings.ipc';
 
 describe('settings.ipc.ts - Settings IPC Handlers', () => {
-  const mockEvent = {} as any;
+  const mockEvent = {} as never;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -38,7 +40,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
 
   describe('SETTINGS_GET handler', () => {
     it('should return default settings', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -57,7 +59,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
     });
 
     it('should return custom settings', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'dark',
         fontSize: 20,
         fontFamily: 'Monaco',
@@ -75,7 +77,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
     });
 
     it('should call getSettings without parameters', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -96,7 +98,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
 
   describe('SETTINGS_SET handler', () => {
     it('should update single setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'dark',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -115,7 +117,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
     });
 
     it('should update multiple settings', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'dark',
         fontSize: 20,
         fontFamily: 'Monaco',
@@ -150,7 +152,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
     });
 
     it('should update theme setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'light',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -162,14 +164,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ theme: 'light' }]);
+      const result = (await handler(mockEvent, [{ theme: 'light' }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ theme: 'light' });
       expect(result.theme).toBe('light');
     });
 
     it('should update fontSize setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 24,
         fontFamily: 'system-ui',
@@ -181,14 +183,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ fontSize: 24 }]);
+      const result = (await handler(mockEvent, [{ fontSize: 24 }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ fontSize: 24 });
       expect(result.fontSize).toBe(24);
     });
 
     it('should update fontFamily setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'Consolas',
@@ -200,14 +202,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ fontFamily: 'Consolas' }]);
+      const result = (await handler(mockEvent, [{ fontFamily: 'Consolas' }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ fontFamily: 'Consolas' });
       expect(result.fontFamily).toBe('Consolas');
     });
 
     it('should update autoSave setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -219,14 +221,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ autoSave: false }]);
+      const result = (await handler(mockEvent, [{ autoSave: false }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ autoSave: false });
       expect(result.autoSave).toBe(false);
     });
 
     it('should update autoSaveInterval setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -238,14 +240,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ autoSaveInterval: 45000 }]);
+      const result = (await handler(mockEvent, [{ autoSaveInterval: 45000 }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ autoSaveInterval: 45000 });
       expect(result.autoSaveInterval).toBe(45000);
     });
 
     it('should update language setting', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -257,14 +259,14 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
-      const result = await handler(mockEvent, [{ language: 'fr' }]);
+      const result = (await handler(mockEvent, [{ language: 'fr' }])) as Settings;
 
       expect(settingsDb.setSettings).toHaveBeenCalledWith({ language: 'fr' });
       expect(result.language).toBe('fr');
     });
 
     it('should handle empty update object', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -283,7 +285,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
     });
 
     it('should handle partial updates preserving other settings', async () => {
-      const mockSettings: AppSettings = {
+      const mockSettings: Settings = {
         theme: 'dark',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -328,7 +330,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
 
   describe('Integration Tests', () => {
     it('should support getting and setting settings workflow', async () => {
-      const defaultSettings: AppSettings = {
+      const defaultSettings: Settings = {
         theme: 'system',
         fontSize: 16,
         fontFamily: 'system-ui',
@@ -337,7 +339,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      const updatedSettings: AppSettings = {
+      const updatedSettings: Settings = {
         theme: 'dark',
         fontSize: 20,
         fontFamily: 'Monaco',

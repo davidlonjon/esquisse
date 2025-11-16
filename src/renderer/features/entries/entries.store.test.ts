@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { entryService } from '@services/entry.service';
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
+import type { CreateEntryInput, UpdateEntryInput } from '@shared/types';
 
 import { createMockEntry } from '../../test/utils';
 

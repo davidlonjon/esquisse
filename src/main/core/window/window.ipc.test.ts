@@ -1,17 +1,17 @@
+/* eslint-disable import/order */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
 import { IPC_CHANNELS } from '@shared/ipc';
-
 import * as windowManager from './window-manager';
+/* eslint-enable import/order */
 
 // Mock window-manager module
 vi.mock('./window-manager');
 
 // Mock Electron ipcMain
-const mockHandlers = new Map<string, Function>();
+const mockHandlers = new Map<string, (...args: unknown[]) => void>();
 vi.mock('electron', () => ({
   ipcMain: {
-    on: vi.fn((channel: string, handler: Function) => {
+    on: vi.fn((channel: string, handler: (...args: unknown[]) => void) => {
       mockHandlers.set(channel, handler);
     }),
   },
@@ -45,7 +45,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
 
   describe('WINDOW_MINIMIZE handler', () => {
     it('should minimize the main window', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MINIMIZE)!;
       handler();
@@ -76,7 +76,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
   describe('WINDOW_MAXIMIZE handler', () => {
     it('should maximize window when not maximized', () => {
       mockWindow.isMaximized.mockReturnValue(false);
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MAXIMIZE)!;
       handler();
@@ -89,7 +89,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
 
     it('should unmaximize window when maximized', () => {
       mockWindow.isMaximized.mockReturnValue(true);
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MAXIMIZE)!;
       handler();
@@ -110,7 +110,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
     });
 
     it('should toggle between maximized and unmaximized states', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MAXIMIZE)!;
 
@@ -166,7 +166,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
 
   describe('Integration Tests', () => {
     it('should support full window lifecycle', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
       vi.mocked(windowManager.closeMainWindow).mockImplementation(() => {
         /* mock */
       });
@@ -194,7 +194,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
     });
 
     it('should handle multiple minimize calls', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MINIMIZE)!;
       handler();
@@ -205,7 +205,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
     });
 
     it('should handle multiple maximize/unmaximize toggles', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MAXIMIZE)!;
 
       // Maximize
@@ -227,7 +227,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
 
   describe('Edge Cases', () => {
     it('should handle undefined window', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(undefined as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(undefined as never);
 
       const minimizeHandler = mockHandlers.get(IPC_CHANNELS.WINDOW_MINIMIZE)!;
       const maximizeHandler = mockHandlers.get(IPC_CHANNELS.WINDOW_MAXIMIZE)!;
@@ -240,7 +240,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
       let callCount = 0;
       vi.mocked(windowManager.getMainWindow).mockImplementation(() => {
         callCount++;
-        return callCount === 1 ? (mockWindow as any) : null;
+        return callCount === 1 ? (mockWindow as never) : null;
       });
 
       const handler = mockHandlers.get(IPC_CHANNELS.WINDOW_MINIMIZE)!;
@@ -251,7 +251,7 @@ describe('window.ipc.ts - Window IPC Handlers', () => {
     });
 
     it('should handle rapid window control calls', () => {
-      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as any);
+      vi.mocked(windowManager.getMainWindow).mockReturnValue(mockWindow as never);
       mockWindow.isMaximized.mockReturnValue(false);
 
       const minimizeHandler = mockHandlers.get(IPC_CHANNELS.WINDOW_MINIMIZE)!;

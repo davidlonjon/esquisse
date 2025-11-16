@@ -1,26 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { IPC_CHANNELS } from '@shared/ipc';
+import type { Journal } from '@shared/types';
 
 import * as journalDb from '../../database/journals';
-import type { Journal } from '@shared/types';
 
 // Mock the database module
 vi.mock('../../database/journals');
 
 // Mock the safe handler registration
-const mockHandlers = new Map<string, Function>();
+const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
 vi.mock('../../ipc/safe-handler', () => ({
-  registerSafeHandler: vi.fn((channel: string, _schema: unknown, handler: Function) => {
-    mockHandlers.set(channel, handler);
-  }),
+  registerSafeHandler: vi.fn(
+    (channel: string, _schema: unknown, handler: (...args: unknown[]) => unknown) => {
+      mockHandlers.set(channel, handler);
+    }
+  ),
 }));
 
 // Import after mocks are set up
 import { registerJournalHandlers } from './journal.ipc';
 
 describe('journal.ipc.ts - Journal IPC Handlers', () => {
-  const mockEvent = {} as any;
+  const mockEvent = {} as never;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -261,10 +263,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
       vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
-      const result = await handler(mockEvent, [
-        'journal-1',
-        { description: 'New Description' },
-      ]);
+      const result = await handler(mockEvent, ['journal-1', { description: 'New Description' }]);
 
       expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', {
         description: 'New Description',
@@ -283,10 +282,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
       vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
-      const result = await handler(mockEvent, [
-        'journal-1',
-        { description: null, color: null },
-      ]);
+      const result = await handler(mockEvent, ['journal-1', { description: null, color: null }]);
 
       expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', {
         description: null,
@@ -336,9 +332,9 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_CREATE)!;
 
-      await expect(
-        handler(mockEvent, [{ name: 'Test Journal' }])
-      ).rejects.toThrow('Database connection failed');
+      await expect(handler(mockEvent, [{ name: 'Test Journal' }])).rejects.toThrow(
+        'Database connection failed'
+      );
     });
 
     it('should propagate errors from getAllJournals', async () => {
@@ -360,9 +356,9 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
 
-      await expect(
-        handler(mockEvent, ['journal-1', { name: 'New Name' }])
-      ).rejects.toThrow('Update failed');
+      await expect(handler(mockEvent, ['journal-1', { name: 'New Name' }])).rejects.toThrow(
+        'Update failed'
+      );
     });
   });
 });

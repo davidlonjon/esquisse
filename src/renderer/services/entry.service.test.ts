@@ -27,7 +27,7 @@ describe('entry.service.ts - Entry Service', () => {
     if (originalWindowApi) {
       window.api = originalWindowApi;
     } else {
-      delete (window as any).api;
+      delete (window as { api?: ElectronAPI }).api;
     }
   });
 

@@ -26,7 +26,7 @@ describe('journal.service.ts - Journal Service', () => {
     if (originalWindowApi) {
       window.api = originalWindowApi;
     } else {
-      delete (window as any).api;
+      delete (window as { api?: ElectronAPI }).api;
     }
   });
 
@@ -87,11 +87,10 @@ describe('journal.service.ts - Journal Service', () => {
     });
 
     it('should throw error when window.api is unavailable', async () => {
-      delete (window as any).api;
+      const windowWithOptionalApi = window as { api?: ElectronAPI };
+      delete windowWithOptionalApi.api;
 
-      await expect(journalService.list()).rejects.toThrow(
-        'Electron renderer API is unavailable.'
-      );
+      await expect(journalService.list()).rejects.toThrow('Electron renderer API is unavailable.');
     });
   });
 

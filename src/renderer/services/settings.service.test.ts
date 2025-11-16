@@ -24,7 +24,7 @@ describe('settings.service.ts - Settings Service', () => {
     if (originalWindowApi) {
       window.api = originalWindowApi;
     } else {
-      delete (window as any).api;
+      delete (window as { api?: ElectronAPI }).api;
     }
   });
 

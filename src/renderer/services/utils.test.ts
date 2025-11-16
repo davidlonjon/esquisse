@@ -83,7 +83,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
       if (originalWindowApi) {
         window.api = originalWindowApi;
       } else {
-        delete (window as any).api;
+        delete (window as { api?: ElectronAPI }).api;
       }
     });
 
@@ -100,13 +100,13 @@ describe('utils.ts - Renderer Service Utilities', () => {
     });
 
     it('should throw error when window.api is undefined', () => {
-      delete (window as any).api;
+      delete (window as { api?: ElectronAPI }).api;
 
       expect(() => getWindowAPI()).toThrow('Electron renderer API is unavailable.');
     });
 
     it('should throw error when window.api is null', () => {
-      (window as any).api = null;
+      (window as { api: ElectronAPI | null }).api = null;
 
       expect(() => getWindowAPI()).toThrow('Electron renderer API is unavailable.');
     });
@@ -188,7 +188,9 @@ describe('utils.ts - Renderer Service Utilities', () => {
     it('should throw default error for failed result without message', () => {
       const result: Result<string> = {
         ok: false,
-        error: {},
+        error: {
+          message: '',
+        },
       };
 
       expect(() => resolveResult(result)).toThrow('Unknown IPC error');
@@ -198,6 +200,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
       const result: Result<string> = {
         ok: false,
         error: {
+          message: '',
           code: 'ERR_CODE',
         },
       };
