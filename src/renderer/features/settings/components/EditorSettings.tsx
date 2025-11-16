@@ -1,25 +1,23 @@
 import { Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { Settings } from '@shared/types';
+import { selectEditorSettings, useSettingsStore } from '@features/settings';
 import { Badge } from '@ui/Badge';
 import { Input } from '@ui/Input';
 import { Slider } from '@ui/Slider';
 
-interface EditorSettingsProps {
-  fontSize: Settings['fontSize'];
-  fontFamily: Settings['fontFamily'];
-  onFontSizeChange: (value: number) => void;
-  onFontFamilyChange: (value: string) => void;
-}
-
-export function EditorSettings({
-  fontSize,
-  fontFamily,
-  onFontSizeChange,
-  onFontFamilyChange,
-}: EditorSettingsProps) {
+export function EditorSettings() {
   const { t } = useTranslation();
+  const { fontSize, fontFamily } = useSettingsStore(selectEditorSettings);
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
+
+  const handleFontSizeChange = async (value: number) => {
+    await updateSettings({ fontSize: value });
+  };
+
+  const handleFontFamilyChange = async (value: string) => {
+    await updateSettings({ fontFamily: value });
+  };
 
   return (
     <section className="space-y-8">
@@ -49,7 +47,7 @@ export function EditorSettings({
             min={12}
             max={28}
             value={fontSize}
-            onChange={(event) => onFontSizeChange(Number(event.target.value))}
+            onChange={(event) => void handleFontSizeChange(Number(event.target.value))}
             className="mt-4"
           />
           <div className="mt-2 flex justify-between text-xs text-base-content/60">
@@ -66,7 +64,7 @@ export function EditorSettings({
             id="font-family"
             type="text"
             value={fontFamily}
-            onChange={(event) => onFontFamilyChange(event.target.value)}
+            onChange={(event) => void handleFontFamilyChange(event.target.value)}
             className="mt-3 w-full"
           />
         </div>

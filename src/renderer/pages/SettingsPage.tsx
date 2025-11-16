@@ -15,17 +15,10 @@ import {
 import { Modal } from '@ui/Modal';
 
 export function SettingsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SectionId>('appearance');
-  const theme = useSettingsStore((state) => state.theme);
-  const language = useSettingsStore((state) => state.language);
-  const fontSize = useSettingsStore((state) => state.fontSize);
-  const fontFamily = useSettingsStore((state) => state.fontFamily);
-  const autoSave = useSettingsStore((state) => state.autoSave);
-  const autoSaveInterval = useSettingsStore((state) => state.autoSaveInterval);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
-  const updateSettings = useSettingsStore((state) => state.updateSettings);
   const loadStatus = useSettingsStore((state) => state.progress.load.status);
   const loadError = useSettingsStore((state) => state.progress.load.error);
   const isLoading = loadStatus === 'loading';
@@ -37,31 +30,6 @@ export function SettingsPage() {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
-
-  const handleThemeChange = async (value: 'system' | 'light' | 'dark') => {
-    await updateSettings({ theme: value });
-  };
-
-  const handleLanguageChange = async (value: 'en' | 'fr') => {
-    await updateSettings({ language: value });
-    await i18n.changeLanguage(value);
-  };
-
-  const handleFontSizeChange = async (value: number) => {
-    await updateSettings({ fontSize: value });
-  };
-
-  const handleFontFamilyChange = async (value: string) => {
-    await updateSettings({ fontFamily: value });
-  };
-
-  const handleAutoSaveToggle = async () => {
-    await updateSettings({ autoSave: !autoSave });
-  };
-
-  const handleAutoSaveIntervalChange = async (seconds: number) => {
-    await updateSettings({ autoSaveInterval: seconds * 1000 });
-  };
 
   const sections = useMemo<Array<{ id: SectionId; label: string; icon: LucideIcon }>>(
     () => [
@@ -75,33 +43,12 @@ export function SettingsPage() {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'appearance':
-        return (
-          <AppearanceSettings
-            theme={theme}
-            language={language}
-            onThemeChange={handleThemeChange}
-            onLanguageChange={handleLanguageChange}
-          />
-        );
+        return <AppearanceSettings />;
       case 'editor':
-        return (
-          <EditorSettings
-            fontSize={fontSize}
-            fontFamily={fontFamily}
-            onFontSizeChange={handleFontSizeChange}
-            onFontFamilyChange={handleFontFamilyChange}
-          />
-        );
+        return <EditorSettings />;
       case 'autosave':
       default:
-        return (
-          <AutosaveSettings
-            autoSave={autoSave}
-            autoSaveInterval={autoSaveInterval}
-            onAutoSaveToggle={handleAutoSaveToggle}
-            onAutoSaveIntervalChange={handleAutoSaveIntervalChange}
-          />
-        );
+        return <AutosaveSettings />;
     }
   };
 

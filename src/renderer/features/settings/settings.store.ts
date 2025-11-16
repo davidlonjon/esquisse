@@ -100,3 +100,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
 export const selectSettings = (state: SettingsState): Settings => pickSettings(state);
 export const selectSettingsProgress = (state: SettingsState) => state.progress;
+
+export const selectAppearanceSettings = (state: SettingsState) => ({
+  theme: state.theme,
+  language: state.language,
+});
+
+export const selectEditorSettings = (state: SettingsState) => ({
+  fontSize: state.fontSize,
+  fontFamily: state.fontFamily,
+});
+
+export const selectAutosaveSettings = (state: SettingsState) => ({
+  autoSave: state.autoSave,
+  autoSaveInterval: state.autoSaveInterval,
+});

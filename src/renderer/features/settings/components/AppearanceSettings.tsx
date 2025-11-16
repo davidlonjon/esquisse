@@ -1,7 +1,8 @@
 import { Check, Languages, Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { Settings } from '@shared/types';
+import { selectAppearanceSettings, useSettingsStore } from '@features/settings';
+import i18n from '@lib/i18n';
 import { Button } from '@ui/Button';
 import { Select } from '@ui/Select';
 
@@ -16,20 +17,19 @@ const LANGUAGE_OPTIONS: Array<{ value: 'en' | 'fr'; labelKey: string }> = [
   { value: 'fr', labelKey: 'settings.options.language.fr' },
 ];
 
-interface AppearanceSettingsProps {
-  theme: Settings['theme'];
-  language: Settings['language'];
-  onThemeChange: (value: 'system' | 'light' | 'dark') => void;
-  onLanguageChange: (value: 'en' | 'fr') => void;
-}
-
-export function AppearanceSettings({
-  theme,
-  language,
-  onThemeChange,
-  onLanguageChange,
-}: AppearanceSettingsProps) {
+export function AppearanceSettings() {
   const { t } = useTranslation();
+  const { theme, language } = useSettingsStore(selectAppearanceSettings);
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
+
+  const handleThemeChange = async (value: 'system' | 'light' | 'dark') => {
+    await updateSettings({ theme: value });
+  };
+
+  const handleLanguageChange = async (value: 'en' | 'fr') => {
+    await updateSettings({ language: value });
+    await i18n.changeLanguage(value);
+  };
 
   return (
     <section className="space-y-8">
@@ -55,7 +55,7 @@ export function AppearanceSettings({
                   key={option.value}
                   variant={isActive ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => onThemeChange(option.value)}
+                  onClick={() => void handleThemeChange(option.value)}
                   className="justify-between shadow-sm"
                 >
                   {t(option.labelKey)}
@@ -77,7 +77,7 @@ export function AppearanceSettings({
           <Select
             id="language-select"
             value={language}
-            onChange={(event) => onLanguageChange(event.target.value as 'en' | 'fr')}
+            onChange={(event) => void handleLanguageChange(event.target.value as 'en' | 'fr')}
             className="mt-3 w-full"
           >
             {LANGUAGE_OPTIONS.map((option) => (

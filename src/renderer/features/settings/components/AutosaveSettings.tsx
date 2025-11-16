@@ -1,26 +1,24 @@
 import { Clock3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { Settings } from '@shared/types';
+import { selectAutosaveSettings, useSettingsStore } from '@features/settings';
 import { Badge } from '@ui/Badge';
 import { Slider } from '@ui/Slider';
 import { Toggle } from '@ui/Toggle';
 
-interface AutosaveSettingsProps {
-  autoSave: Settings['autoSave'];
-  autoSaveInterval: Settings['autoSaveInterval'];
-  onAutoSaveToggle: () => void;
-  onAutoSaveIntervalChange: (seconds: number) => void;
-}
-
-export function AutosaveSettings({
-  autoSave,
-  autoSaveInterval,
-  onAutoSaveToggle,
-  onAutoSaveIntervalChange,
-}: AutosaveSettingsProps) {
+export function AutosaveSettings() {
   const { t } = useTranslation();
+  const { autoSave, autoSaveInterval } = useSettingsStore(selectAutosaveSettings);
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
   const autoSaveSeconds = Math.round(autoSaveInterval / 1000);
+
+  const handleAutoSaveToggle = async () => {
+    await updateSettings({ autoSave: !autoSave });
+  };
+
+  const handleAutoSaveIntervalChange = async (seconds: number) => {
+    await updateSettings({ autoSaveInterval: seconds * 1000 });
+  };
 
   return (
     <section className="space-y-8">
@@ -40,7 +38,7 @@ export function AutosaveSettings({
             <p className="text-sm font-medium text-base-content">{t('settings.fields.autoSave')}</p>
             <p className="text-xs text-base-content/60">{t('settings.sections.autosave')}</p>
           </div>
-          <Toggle checked={autoSave} onChange={onAutoSaveToggle} />
+          <Toggle checked={autoSave} onChange={() => void handleAutoSaveToggle()} />
         </div>
 
         <div>
@@ -58,7 +56,7 @@ export function AutosaveSettings({
             min={5}
             max={120}
             value={autoSaveSeconds}
-            onChange={(event) => onAutoSaveIntervalChange(Number(event.target.value))}
+            onChange={(event) => void handleAutoSaveIntervalChange(Number(event.target.value))}
             className="mt-4"
           />
           <div className="mt-2 flex justify-between text-xs text-base-content/60">
