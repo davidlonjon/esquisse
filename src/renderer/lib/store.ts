@@ -1,3 +1,5 @@
+import { getErrorMessage } from './utils';
+
 export type RequestStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface AsyncSlice {
@@ -5,8 +7,7 @@ export interface AsyncSlice {
   error: string | null;
 }
 
-export const getErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
+export { getErrorMessage };
 
 export const createAsyncSlice = (): AsyncSlice => ({ status: 'idle', error: null });
 

@@ -1,8 +1,8 @@
+import { getErrorMessage } from '@lib/utils';
 import type { ElectronAPI } from '@shared/ipc';
 import type { Result } from '@shared/types';
 
-export const getErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
+export { getErrorMessage };
 
 export const getWindowAPI = (): ElectronAPI => {
   if (!window.api) {
