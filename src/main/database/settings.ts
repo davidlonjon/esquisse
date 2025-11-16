@@ -1,6 +1,6 @@
 import type { Settings } from '@shared/types';
 
-import { getDatabase, saveDatabase } from './index';
+import { getDatabase, withTransaction } from './index';
 
 const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
@@ -45,20 +45,19 @@ export function getSettings(): Settings {
  * Set settings (partial update)
  */
 export function setSettings(updates: Partial<Settings>): Settings {
-  const db = getDatabase();
-  const now = new Date().toISOString();
+  return withTransaction((db) => {
+    const now = new Date().toISOString();
 
-  for (const [key, value] of Object.entries(updates)) {
-    db.run(`INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
-      key,
-      JSON.stringify(value),
-      now,
-    ]);
-  }
+    for (const [key, value] of Object.entries(updates)) {
+      db.run(`INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+        key,
+        JSON.stringify(value),
+        now,
+      ]);
+    }
 
-  saveDatabase();
-
-  return getSettings();
+    return getSettings();
+  });
 }
 
 /**

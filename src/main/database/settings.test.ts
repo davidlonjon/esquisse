@@ -13,6 +13,7 @@ vi.mock('./index', async () => {
     ...actual,
     getDatabase: vi.fn(),
     saveDatabase: vi.fn(),
+    withTransaction: vi.fn(),
   };
 });
 
@@ -22,6 +23,13 @@ describe('settings.ts - Database Settings Operations', () => {
   beforeEach(() => {
     const db = getTestDatabase();
     vi.mocked(indexModule.getDatabase).mockReturnValue(db);
+    // Mock withTransaction to execute the callback with the test database
+    // and call saveDatabase (as the real implementation does)
+    vi.mocked(indexModule.withTransaction).mockImplementation((fn) => {
+      const result = fn(db);
+      indexModule.saveDatabase();
+      return result;
+    });
   });
 
   describe('getSettings', () => {
