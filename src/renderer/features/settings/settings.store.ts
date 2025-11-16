@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
 import { settingsService } from '@services/settings.service';
@@ -34,63 +35,63 @@ const pickSettings = (state: SettingsState): Settings => ({
   language: state.language,
 });
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
-  ...defaultSettings,
-  hasLoaded: false,
-  progress: {
-    load: createAsyncSlice(),
-    save: createAsyncSlice(),
-  },
+export const useSettingsStore = create(
+  immer<SettingsState>((set, get) => ({
+    ...defaultSettings,
+    hasLoaded: false,
+    progress: {
+      load: createAsyncSlice(),
+      save: createAsyncSlice(),
+    },
 
-  loadSettings: async (options) => {
-    if (get().hasLoaded && !options?.force) {
-      return pickSettings(get());
-    }
+    loadSettings: async (options) => {
+      if (get().hasLoaded && !options?.force) {
+        return pickSettings(get());
+      }
 
-    set((state) => ({
-      progress: { ...state.progress, load: toAsyncSlice('loading') },
-    }));
+      set((state) => {
+        state.progress.load = toAsyncSlice('loading');
+      });
 
-    try {
-      const settings = await settingsService.get();
-      set((state) => ({
-        ...state,
-        ...settings,
-        hasLoaded: true,
-        progress: { ...state.progress, load: toAsyncSlice('success') },
-      }));
-      return settings;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, load: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
+      try {
+        const settings = await settingsService.get();
+        set((state) => {
+          Object.assign(state, settings);
+          state.hasLoaded = true;
+          state.progress.load = toAsyncSlice('success');
+        });
+        return settings;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.load = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
 
-  updateSettings: async (updates) => {
-    set((state) => ({
-      progress: { ...state.progress, save: toAsyncSlice('loading') },
-    }));
+    updateSettings: async (updates) => {
+      set((state) => {
+        state.progress.save = toAsyncSlice('loading');
+      });
 
-    try {
-      const settings = await settingsService.update(updates);
-      set((state) => ({
-        ...state,
-        ...settings,
-        progress: { ...state.progress, save: toAsyncSlice('success') },
-      }));
-      return settings;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      set((state) => ({
-        progress: { ...state.progress, save: toAsyncSlice('error', message) },
-      }));
-      throw error;
-    }
-  },
-}));
+      try {
+        const settings = await settingsService.update(updates);
+        set((state) => {
+          Object.assign(state, settings);
+          state.progress.save = toAsyncSlice('success');
+        });
+        return settings;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        set((state) => {
+          state.progress.save = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+  }))
+);
 
 export const selectSettings = (state: SettingsState): Settings => pickSettings(state);
 export const selectSettingsProgress = (state: SettingsState) => state.progress;
