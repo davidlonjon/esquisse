@@ -88,8 +88,8 @@ Security notes: validate untrusted data server-side, never leak filesystem paths
 2. Touch shared types before main/preload/renderer.
 3. Add/adjust Zustand store logic, then UI components/pages.
 4. Update shortcut docs (`config/shortcuts.ts`) when binding keys.
-5. Run `npm run lint`, `npm run type-check`, and appropriate tests before committing.
-6. Keep commits minimal, descriptive, and free of secrets.
+5. Run `npm run validate` and `npm run test` before committing.
+6. Keep commits minimal, descriptive, and free of secrets. Do not add co-author metadata to commits. Also use conventional commits.
 
 ## 10. When to Add More LLM Guides?
 
