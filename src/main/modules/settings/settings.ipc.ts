@@ -6,23 +6,13 @@
 import { z } from 'zod';
 
 import { IPC_CHANNELS } from '@shared/ipc';
+import { UpdateSettingsInputSchema } from '@shared/types';
 
 import * as settingsDb from '../../database/settings';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
 const emptyArgsSchema = z.tuple([]);
-const updateSettingsSchema = z.tuple([
-  z
-    .object({
-      theme: z.enum(['light', 'dark', 'system']).optional(),
-      fontSize: z.number().min(10).max(48).optional(),
-      fontFamily: z.string().optional(),
-      autoSave: z.boolean().optional(),
-      autoSaveInterval: z.number().min(1000).optional(),
-      language: z.enum(['en', 'fr']).optional(),
-    })
-    .partial(),
-]);
+const updateSettingsSchema = z.tuple([UpdateSettingsInputSchema]);
 
 /**
  * Register all settings-related IPC handlers

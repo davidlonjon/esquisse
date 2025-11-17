@@ -6,30 +6,16 @@
 import { z } from 'zod';
 
 import { IPC_CHANNELS } from '@shared/ipc';
+import { CreateJournalInputSchema, IdSchema, UpdateJournalInputSchema } from '@shared/types';
 
 import * as journalDb from '../../database/journals';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
-const createJournalSchema = z.tuple([
-  z.object({
-    name: z.string().min(1),
-    description: z.string().max(200).optional(),
-    color: z.string().max(50).optional(),
-  }),
-]);
+const createJournalSchema = z.tuple([CreateJournalInputSchema]);
 
-const updateJournalSchema = z.tuple([
-  z.string().min(1),
-  z
-    .object({
-      name: z.string().min(1).optional(),
-      description: z.string().max(200).optional().nullable(),
-      color: z.string().max(50).optional().nullable(),
-    })
-    .partial(),
-]);
+const updateJournalSchema = z.tuple([IdSchema, UpdateJournalInputSchema]);
 
-const idParamSchema = z.tuple([z.string().min(1)]);
+const idParamSchema = z.tuple([IdSchema]);
 const emptyArgsSchema = z.tuple([]);
 
 /**

@@ -6,32 +6,22 @@
 import { z } from 'zod';
 
 import { IPC_CHANNELS } from '@shared/ipc';
+import {
+  CreateEntryInputSchema,
+  IdSchema,
+  SearchQuerySchema,
+  UpdateEntryInputSchema,
+} from '@shared/types';
 
 import * as entryDb from '../../database/entries';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
-const createEntrySchema = z.tuple([
-  z.object({
-    journalId: z.string().min(1),
-    title: z.string().optional(),
-    content: z.string(),
-    tags: z.array(z.string()).optional(),
-  }),
-]);
+const createEntrySchema = z.tuple([CreateEntryInputSchema]);
 
-const listEntriesSchema = z.tuple([z.string().optional()]);
-const entryIdSchema = z.tuple([z.string().min(1)]);
-const updateEntrySchema = z.tuple([
-  z.string().min(1),
-  z
-    .object({
-      title: z.string().optional().nullable(),
-      content: z.string().optional(),
-      tags: z.array(z.string()).optional().nullable(),
-    })
-    .partial(),
-]);
-const searchSchema = z.tuple([z.string().min(1)]);
+const listEntriesSchema = z.tuple([IdSchema.optional()]);
+const entryIdSchema = z.tuple([IdSchema]);
+const updateEntrySchema = z.tuple([IdSchema, UpdateEntryInputSchema]);
+const searchSchema = z.tuple([SearchQuerySchema]);
 
 /**
  * Register all entry-related IPC handlers
