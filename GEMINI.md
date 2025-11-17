@@ -11,15 +11,16 @@
 
 ## 2. Essential Commands
 
-| Purpose         | Command                                                    |
-| --------------- | ---------------------------------------------------------- |
-| Dev app         | `npm start`                                                |
-| Type safety     | `npm run type-check` (tsc --noEmit)                        |
-| Lint & format   | `npm run lint`, `npm run lint:fix`, `npm run format`       |
-| Tests           | `npm test` (watch), `npm run test:run`, `npm run test:e2e` |
-| Packaging       | `npm run package` / `npm run make`                         |
-| Clean / rebuild | `npm run clean`, `npm run rebuild`                         |
-| Full gate       | `npm run validate`                                         |
+| Purpose         | Command                                                        |
+| --------------- | -------------------------------------------------------------- |
+| Dev app         | `npm start`                                                    |
+| Type safety     | `npm run type-check` (tsc --noEmit)                            |
+| Lint & format   | `npm run lint`, `npm run lint:fix`, `npm run format`           |
+| Tests           | `npm test` (watch), `npm run test:run`, `npm run test:e2e`     |
+| Packaging       | `npm run package` / `npm run make`                             |
+| Clean / rebuild | `npm run clean`, `npm run rebuild`                             |
+| Full gate       | `npm run validate`                                             |
+| Migrations      | `npm run migrate:create`, `migrate:status`, `migrate:snapshot` |
 
 Husky runs lint-staged → ESLint, Prettier, and `node scripts/run-type-check.js` on staged files.
 
@@ -33,9 +34,61 @@ Husky runs lint-staged → ESLint, Prettier, and `node scripts/run-type-check.js
 ## 4. Data & Persistence
 
 - SQLite is loaded via sql.js (WASM). DB lives in memory; call `saveDatabase()` after every write to persist to disk.
-- Default schema defined in `src/main/database/schema.sql`, copied at build time. Schema updates require editing the SQL file plus migration-safe code paths.
+- Schema evolution uses a migration system tracked in `schema_migrations` table. Migrations run automatically on app startup.
 - Domain CRUD modules live under `src/main/database/*.ts`; favor parameterized statements and UTC ISO timestamps.
 - Foreign keys are ON; deleting a journal cascades to entries. Tags are stored as JSON strings.
+
+### Database Migrations
+
+**Migration System** (`src/main/database/migrations.ts`):
+
+- Migrations are defined as TypeScript objects with `id` and `up()` function
+- `runMigrations()` applies pending migrations automatically on startup
+- Each migration runs in a transaction with automatic rollback on error
+- Applied migrations are tracked in `schema_migrations` table
+
+**Creating Migrations**:
+
+```bash
+# Create new migration (adds to migrations.ts)
+npm run migrate:create add_new_field
+
+# View all defined migrations
+npm run migrate:status
+
+# Snapshot schema for version control
+npm run migrate:snapshot
+```
+
+**Migration Workflow**:
+
+1. Create migration: `npm run migrate:create <name>`
+2. Edit `src/main/database/migrations.ts` to implement the `up` function
+3. Update TypeScript types in `src/shared/types/`
+4. Test migration: `npm test -- migrations.test.ts`
+5. Update `schema.sql` if this represents the "current" schema
+6. Run app - migration applies automatically
+7. Snapshot schema: `npm run migrate:snapshot`
+
+**Best Practices**:
+
+- Always use `IF NOT EXISTS` / `IF EXISTS` for idempotency
+- Keep migrations small and focused
+- Never modify existing migrations after deployment
+- Test with real data before deploying
+- See `docs/MIGRATIONS.md` for comprehensive guide
+
+**Example Migration**:
+
+```typescript
+{
+  id: '003_add_archived_field',
+  up: (db) => {
+    db.run('ALTER TABLE entries ADD COLUMN archived INTEGER DEFAULT 0');
+    db.run('CREATE INDEX IF NOT EXISTS idx_entries_archived ON entries(archived)');
+  },
+}
+```
 
 ## 5. IPC Workflow (additive checklist)
 
