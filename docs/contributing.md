@@ -3,7 +3,7 @@
 ## Principles
 
 - Small, focused pull requests are easier to review and revert.
-- Keep functions under ~50 lines and React components under ~200 lines. Extract hooks/components when logic grows.
+- Keep functions under \~50 lines and React components under \~200 lines. Extract hooks/components when logic grows.
 - Prefer explicit types, discriminated unions, and type guards over `any`.
 - All IPC interactions must be typed end-to-end and wrapped in try/catch.
 

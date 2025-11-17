@@ -1,0 +1,1246 @@
+# Esquisse Refactoring Roadmap
+
+> Comprehensive refactoring plan with prioritized improvements, detailed implementation guidance, and progress tracking.
+
+**Last Updated:** November 2025
+**Status:** Planning Phase
+
+---
+
+## How to Use This Document
+
+- Each refactor item has a **Priority** (Critical/High/Medium/Low), **Status** checkbox, and **Effort** estimate
+- Work through items in priority order unless dependencies dictate otherwise
+- Check off `[ ]` boxes as work completes
+- Update "Status Notes" section when starting or completing an item
+
+---
+
+## Critical Priority
+
+### 1. Database Migration Framework
+
+**Status:** ✓ Completed (November 2025)
+
+**Why:** Current "re-run schema" approach will cause data loss as the app evolves. Users need safe, versioned schema updates.
+
+**Current State:**
+
+- `schema.sql` is applied on first launch
+- No mechanism for evolving schema without data loss
+- No version tracking in database
+
+**Target State:**
+
+- Versioned migration system using `PRAGMA user_version`
+- Incremental `.sql` or TypeScript migration files
+- Safe forward/backward migration paths
+- CLI tools for generating and testing migrations
+
+**Implementation Steps:**
+
+1. **Add version tracking**
+   - Read current `PRAGMA user_version` on DB init
+   - Store current schema version in constants (e.g., `CURRENT_SCHEMA_VERSION = 1`)
+
+2. **Create migration infrastructure**
+   - New directory: `src/main/database/migrations/`
+   - Migration file naming: `001_initial_schema.sql`, `002_add_tags_table.sql`, etc.
+   - Migration runner in `src/main/database/migrator.ts`
+
+3. **Migration runner logic**
+
+   ```typescript
+   interface Migration {
+     version: number;
+     name: string;
+     up: (db: Database) => void;
+     down?: (db: Database) => void; // optional rollback
+   }
+   ```
+
+   - Check current version vs. target
+   - Apply migrations sequentially
+   - Update `user_version` after each successful migration
+   - Wrap in transactions for atomicity
+
+4. **Snapshot current schema**
+   - Save current `schema.sql` as `migrations/001_initial_schema.sql`
+   - Document baseline version in README
+
+5. **Add migration CLI**
+   - `npm run migrate:create <name>` - Generate new migration template
+   - `npm run migrate:up` - Apply pending migrations
+   - `npm run migrate:status` - Show current version and pending migrations
+
+6. **Testing**
+   - Unit tests for migration runner
+   - Integration tests with sample data across versions
+   - Test rollback scenarios (if implemented)
+
+**Dependencies:** None
+
+**Effort:** \~2-3 days
+
+**References:**
+
+- SQLite PRAGMA user_version: <https://www.sqlite.org/pragma.html#pragma_user_version>
+- Migration pattern examples: node-sqlite3 migrations, Knex.js
+
+---
+
+## High Priority
+
+### 2. Type-Safe IPC Contracts with Runtime Validation
+
+**Status:** ☐ Not Started
+
+**Why:** Eliminate drift between renderer, preload, and main. Catch serialization bugs and contract violations at runtime.
+
+**Current State:**
+
+- Types defined in `src/shared/types` and `src/shared/ipc/api.types.ts`
+- Channel constants in `src/shared/ipc/channels.ts`
+- No runtime validation of payloads
+- Type safety only at compile time
+
+**Target State:**
+
+- Single source of truth using Zod schemas
+- Derive TypeScript types from schemas
+- Runtime validation in IPC handlers
+- Automated contract testing
+
+**Implementation Steps:**
+
+1. **Create IPC schema definitions**
+   - New file: `src/shared/ipc/schemas.ts`
+   - Define Zod schemas for all IPC methods:
+
+   ```typescript
+   export const JournalSchemas = {
+     getAll: {
+       request: z.void(),
+       response: z.array(JournalSchema),
+     },
+     create: {
+       request: z.object({ name: z.string(), description: z.string().optional() }),
+       response: JournalSchema,
+     },
+     // ... etc
+   };
+   ```
+
+2. **Generate types from schemas**
+   - Extract types: `type GetAllJournalsResponse = z.infer<typeof JournalSchemas.getAll.response>`
+   - Update `api.types.ts` to use derived types
+   - Remove duplicate type definitions
+
+3. **Create validation middleware**
+   - `src/main/ipc/validator.ts`:
+
+   ```typescript
+   export function validateIpcHandler<TReq, TRes>(
+     requestSchema: z.ZodType<TReq>,
+     responseSchema: z.ZodType<TRes>,
+     handler: (params: TReq) => Promise<TRes>
+   ) {
+     return async (event: IpcMainInvokeEvent, rawParams: unknown) => {
+       const params = requestSchema.parse(rawParams); // throws on invalid
+       const result = await handler(params);
+       return responseSchema.parse(result); // validates response
+     };
+   }
+   ```
+
+4. **Apply validation to handlers**
+   - Wrap all IPC handlers with `validateIpcHandler`
+   - Centralize error handling for validation failures
+   - Log validation errors with structured details
+
+5. **Update preload layer**
+   - Ensure preload methods use schema-derived types
+   - Consider adding request validation in preload for faster feedback
+
+6. **Add contract tests**
+   - Test that each IPC channel validates requests/responses correctly
+   - Test invalid payloads throw appropriate errors
+   - Ensure serialization edge cases are handled (Dates, undefined, etc.)
+
+**Dependencies:** None (Zod already in dependencies)
+
+**Effort:** \~3-4 days
+
+**Breaking Changes:** None if done incrementally per feature area
+
+---
+
+### 3. Finite-State Machine Stores
+
+**Status:** ☐ Not Started
+
+**Why:** Eliminate race conditions and invalid states in async operations (autosave, initialization, loading). Improve debuggability and observability.
+
+**Current State:**
+
+- Boolean flags: `isLoading`, `isSaving`, `error`
+- Possible invalid combinations (e.g., `isLoading && isSaving`)
+- Race conditions in autosave logic
+
+**Target State:**
+
+- Explicit state machines for complex flows
+- Impossible to enter invalid states
+- Clear state transitions
+- Better error handling and recovery
+
+**Implementation Steps:**
+
+1. **Identify state machine candidates**
+   - Entry/journal CRUD operations
+   - Autosave flow
+   - App initialization sequence
+   - Settings persistence
+
+2. **Choose approach**
+   - Option A: Zustand with discriminated unions (lightweight)
+   - Option B: XState integration (more complex flows)
+   - **Recommendation:** Start with Zustand state machines, add XState only if needed
+
+3. **Implement entry store state machine**
+
+   ```typescript
+   type EntryState =
+     | { status: 'idle'; data: Entry | null; error: null }
+     | { status: 'loading'; data: null; error: null }
+     | { status: 'saving'; data: Entry; error: null }
+     | { status: 'success'; data: Entry; error: null }
+     | { status: 'error'; data: Entry | null; error: Error };
+
+   interface EntryStore {
+     state: EntryState;
+     // Actions that transition state
+     loadEntry: (id: string) => Promise<void>;
+     saveEntry: (entry: Entry) => Promise<void>;
+     // ... etc
+   }
+   ```
+
+4. **Add state transition guards**
+   - Only allow valid transitions (e.g., `loading` -> `success` or `error`)
+   - Log invalid transition attempts
+   - Provide clear error messages
+
+5. **Update UI to consume discriminated state**
+   - Replace `if (isLoading)` with `if (state.status === 'loading')`
+   - TypeScript will enforce exhaustive matching
+   - Simplify conditional rendering logic
+
+6. **Add autosave state machine**
+
+   ```typescript
+   type AutosaveState =
+     | { status: 'idle' }
+     | { status: 'dirty'; lastEdit: number }
+     | { status: 'saving'; pendingContent: string }
+     | { status: 'saved'; timestamp: number }
+     | { status: 'error'; error: Error; retryCount: number };
+   ```
+
+7. **Add DevTools integration**
+   - Use Zustand DevTools middleware
+   - Visualize state transitions
+   - Enable time-travel debugging
+
+**Dependencies:** None
+
+**Effort:** \~4-5 days (2 days for entry store, 2 days for autosave, 1 day for testing)
+
+**Migration Path:** Can be done feature-by-feature without breaking changes
+
+---
+
+### 4. Typed Configuration Pipeline
+
+**Status:** ☐ Not Started
+
+**Why:** Prevent configuration drift between Forge, Vite, and Tailwind. Ensure TypeScript paths mirror Vite aliases.
+
+**Current State:**
+
+- Separate config files with duplicated constants
+- Paths/aliases defined in multiple places
+- No validation of config values
+
+**Target State:**
+
+- Single source of truth for shared config
+- Zod-validated configuration factory
+- Type-safe access to config values
+- Guaranteed consistency across tools
+
+**Implementation Steps:**
+
+1. **Create shared config module**
+   - New file: `config/index.ts`
+
+   ```typescript
+   import { z } from 'zod';
+
+   const ConfigSchema = z.object({
+     paths: z.object({
+       src: z.string(),
+       main: z.string(),
+       preload: z.string(),
+       renderer: z.string(),
+       shared: z.string(),
+     }),
+     aliases: z.record(z.string(), z.string()),
+     ports: z.object({
+       dev: z.number(),
+     }),
+     build: z.object({
+       outDir: z.string(),
+       assetsDir: z.string(),
+     }),
+   });
+
+   export type Config = z.infer<typeof ConfigSchema>;
+
+   export const config = ConfigSchema.parse({
+     paths: {
+       src: './src',
+       main: './src/main',
+       preload: './src/preload',
+       renderer: './src/renderer',
+       shared: './src/shared',
+     },
+     aliases: {
+       '@': './src/renderer',
+       '@shared': './src/shared',
+     },
+     // ... etc
+   });
+   ```
+
+2. **Update Vite config**
+   - Import `config` object
+   - Use `config.aliases` for `resolve.alias`
+   - Use `config.paths` for build inputs/outputs
+
+3. **Update TypeScript config**
+   - Generate `paths` from `config.aliases`
+   - Ensure 1:1 mapping with Vite aliases
+
+4. **Update Forge config**
+   - Use `config.paths` for entry points
+   - Use `config.build` for output directories
+
+5. **Update Tailwind config**
+   - Use `config.paths` for content globs
+
+6. **Add config validation script**
+   - `npm run validate:config` - Check all configs use shared values
+   - Run in CI to catch drift
+
+7. **Document config system**
+   - Add comments explaining each config value
+   - Document how to add new shared values
+
+**Dependencies:** None
+
+**Effort:** \~2 days
+
+**Breaking Changes:** None (internal refactor)
+
+---
+
+### 5. Continuous Integration Suite
+
+**Status:** ☐ Not Started
+
+**Why:** Ensure quality across platforms before releasing. Catch platform-specific bugs early.
+
+**Current State:**
+
+- `npm run validate` runs locally
+- No automated cross-platform testing
+- No artifact uploads or coverage reports
+
+**Target State:**
+
+- GitHub Actions workflow for macOS/Linux/Windows
+- Automated test suite on every PR
+- Coverage reports and packaged builds as artifacts
+- Pre-release smoke tests
+
+**Implementation Steps:**
+
+1. **Create CI script**
+   - New file: `scripts/ci-validate.js`
+   - Runs: lint, type-check, test:run, test:e2e (headless)
+   - Exits with error code on any failure
+   - Add `npm run validate:ci` script
+
+2. **Create GitHub Actions workflow**
+   - New file: `.github/workflows/ci.yml`
+
+   ```yaml
+   name: CI
+   on: [push, pull_request]
+   jobs:
+     test:
+       strategy:
+         matrix:
+           os: [ubuntu-latest, macos-latest, windows-latest]
+           node: [20]
+       runs-on: ${{ matrix.os }}
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+           with:
+             node-version: ${{ matrix.node }}
+             cache: 'npm'
+         - run: npm ci
+         - run: npm run validate:ci
+         - run: npm run package # dry run
+   ```
+
+3. **Add coverage reporting**
+   - Configure Vitest for coverage output
+   - Upload coverage to artifact storage
+   - Optional: Integrate with Codecov or similar
+
+4. **Add artifact uploads**
+   - Upload packaged builds from `npm run make`
+   - Upload test results and screenshots on failure
+   - Retention: 30 days for PRs, 90 days for releases
+
+5. **Add status badges**
+   - Add CI badge to README
+   - Show build status per platform
+
+6. **Create pre-release workflow**
+   - Triggered on tag push
+   - Runs full validation
+   - Builds for all platforms
+   - Uploads release artifacts
+
+**Dependencies:** None
+
+**Effort:** \~2 days
+
+**Cost:** Free for public repos, uses GitHub Actions minutes for private repos
+
+---
+
+## Medium Priority
+
+### 6. Domain Repositories Pattern
+
+**Status:** ☐ Not Started
+
+**Why:** Separate business logic from IPC/infrastructure. Enable future platform targets (web/PWA) to reuse core logic.
+
+**Current State:**
+
+- Database CRUD in `src/main/database/*.ts`
+- IPC handlers call DB functions directly
+- Business rules mixed with data access
+
+**Target State:**
+
+- Repository layer for data access
+- Service layer for business logic
+- IPC handlers are thin controllers
+- Portable domain logic
+
+**Implementation Steps:**
+
+1. **Create repository pattern**
+   - New directory: `src/main/domain/journals/journal.repository.ts`
+
+   ```typescript
+   export interface JournalRepository {
+     findAll(): Promise<Journal[]>;
+     findById(id: string): Promise<Journal | null>;
+     create(data: CreateJournalData): Promise<Journal>;
+     update(id: string, data: UpdateJournalData): Promise<Journal>;
+     delete(id: string): Promise<void>;
+   }
+
+   export class SqliteJournalRepository implements JournalRepository {
+     // Implementation using sql.js
+   }
+   ```
+
+2. **Create service layer**
+   - New file: `src/main/domain/journals/journal.service.ts`
+
+   ```typescript
+   export class JournalService {
+     constructor(private repository: JournalRepository) {}
+
+     async createJournal(name: string, description?: string): Promise<Journal> {
+       // Business rules: validate name, check duplicates, etc.
+       return this.repository.create({ name, description });
+     }
+
+     // Other business logic methods
+   }
+   ```
+
+3. **Update IPC handlers**
+   - Inject services into handlers
+   - Handlers become thin controllers:
+
+   ```typescript
+   ipcMain.handle('journal:create', async (event, { name, description }) => {
+     return journalService.createJournal(name, description);
+   });
+   ```
+
+4. **Migrate existing database modules**
+   - Start with `journals.ts` -> `JournalRepository`
+   - Then `entries.ts` -> `EntryRepository`
+   - Extract business logic into services
+
+5. **Add dependency injection**
+   - Create service registry/container
+   - Wire up dependencies on app startup
+   - Makes testing easier (mock repositories)
+
+6. **Update tests**
+   - Test repositories with real SQLite
+   - Test services with mock repositories
+   - Test IPC handlers with mock services
+
+**Dependencies:** None, but pairs well with #2 (type-safe IPC)
+
+**Effort:** \~5-6 days (1-2 days per domain)
+
+**Migration Path:** Can be done domain-by-domain
+
+**Future Benefit:** If you ever build a web version, services can be shared
+
+---
+
+### 7. Automated Schema Snapshots
+
+**Status:** ☐ Not Started
+
+**Why:** Track schema evolution over time. Make it easier to generate migrations. Audit schema changes in version control.
+
+**Current State:**
+
+- `schema.sql` is modified in place
+- No historical record of schema versions
+- Hard to diff between releases
+
+**Target State:**
+
+- Snapshot of schema at each release
+- Easy to generate migrations by diffing snapshots
+- Clear audit trail in git history
+
+**Implementation Steps:**
+
+1. **Create snapshot script**
+   - New file: `scripts/snapshot-schema.js`
+   - Reads `src/main/database/schema.sql`
+   - Writes to `src/main/database/snapshots/schema-v{VERSION}.sql`
+   - Version from package.json or manual input
+
+2. **Add npm script**
+   - `npm run schema:snapshot` - Create snapshot for current version
+
+3. **Add to release checklist**
+   - Run snapshot script before version bump
+   - Commit snapshot with version tag
+
+4. **Create schema diff tool**
+   - Script to compare two snapshots
+   - Highlight added/removed tables, columns, indexes
+   - Output migration skeleton
+
+5. **Document process**
+   - Add to CONTRIBUTING.md
+   - Explain when and how to snapshot
+
+**Dependencies:** Works best with #1 (migration framework)
+
+**Effort:** \~1 day
+
+---
+
+### 8. IPC Error Boundaries
+
+**Status:** ☐ Not Started
+
+**Why:** Gracefully handle IPC failures in UI. Provide recovery options. Improve user experience during errors.
+
+**Current State:**
+
+- IPC errors caught in try/catch blocks
+- Error handling varies across features
+- No centralized error recovery UI
+
+**Target State:**
+
+- React Error Boundaries for IPC failures
+- Consistent error UI with recovery actions
+- Automatic retry for transient failures
+- Fallback UI for critical failures
+
+**Implementation Steps:**
+
+1. **Create custom error types**
+
+   ```typescript
+   export class IpcError extends Error {
+     constructor(
+       public channel: string,
+       public code: string,
+       message: string,
+       public isRetryable: boolean = false
+     ) {
+       super(message);
+     }
+   }
+   ```
+
+2. **Create IPC Error Boundary component**
+   - New file: `src/renderer/components/error-boundaries/IpcErrorBoundary.tsx`
+
+   ```typescript
+   export class IpcErrorBoundary extends Component {
+     state = { hasError: false, error: null };
+
+     static getDerivedStateFromError(error) {
+       if (error instanceof IpcError) {
+         return { hasError: true, error };
+       }
+       throw error; // Re-throw if not IPC error
+     }
+
+     render() {
+       if (this.state.hasError) {
+         return <IpcErrorFallback error={this.state.error} onRetry={...} />;
+       }
+       return this.props.children;
+     }
+   }
+   ```
+
+3. **Create error fallback UI**
+   - Show error message
+   - Offer retry button for retryable errors
+   - Offer "Reload App" for critical errors
+   - Log error details for debugging
+
+4. **Wrap feature areas**
+   - Wrap each major feature in `<IpcErrorBoundary>`
+   - Journals list, entry editor, settings
+   - Allow graceful degradation per feature
+
+5. **Add automatic retry logic**
+   - Retry transient errors (network-like issues) automatically
+   - Exponential backoff
+   - Max retry count
+
+6. **Add error reporting hook**
+   - Optional: send errors to local log file
+   - Never send data externally (privacy-first)
+
+**Dependencies:** None
+
+**Effort:** \~2 days
+
+---
+
+### 9. Type-Safe Internationalization
+
+**Status:** ☐ Not Started
+
+**Why:** Catch missing translation keys at compile time. Ensure type safety across locales.
+
+**Current State:**
+
+- Translation files in `src/renderer/locales/{locale}/common.json`
+- `useTranslation()` uses string keys
+- No compile-time validation of keys
+
+**Target State:**
+
+- Generated TypeScript types from translation files
+- Autocomplete for translation keys
+- Compile error on missing/misspelled keys
+
+**Implementation Steps:**
+
+1. **Install i18next TypeScript support**
+   - Already using `react-i18next`, just need type generation
+
+2. **Create type generation script**
+   - New file: `scripts/generate-i18n-types.js`
+   - Reads `en/common.json` (base locale)
+   - Generates TypeScript interface
+
+3. **Configure i18next with types**
+
+   ```typescript
+   // src/renderer/i18n/types.ts
+   import type common from '../locales/en/common.json';
+
+   declare module 'i18next' {
+     interface CustomTypeOptions {
+       defaultNS: 'common';
+       resources: {
+         common: typeof common;
+       };
+     }
+   }
+   ```
+
+4. **Update translation usage**
+   - `t('key')` now has autocomplete
+   - TypeScript errors on invalid keys
+
+5. **Add validation for other locales**
+   - Script to check `fr/common.json` has all keys from `en/common.json`
+   - Run in `npm run validate`
+
+6. **Add to pre-commit hook**
+   - Regenerate types when `en/common.json` changes
+   - Validate other locales
+
+**Dependencies:** None
+
+**Effort:** \~1 day
+
+**References:** <https://react.i18next.com/latest/typescript>
+
+---
+
+## Low Priority (Future-Proofing)
+
+### 10. Database Transaction Helpers
+
+**Status:** ☐ Not Started
+
+**Why:** Ensure data integrity for multi-step operations. Prevent partial writes on error.
+
+**Current State:**
+
+- Operations execute independently
+- No explicit transaction management
+- Risk of partial updates on error
+
+**Target State:**
+
+- Transaction wrapper utilities
+- Automatic rollback on error
+- Nested transaction support
+
+**Implementation Steps:**
+
+1. **Create transaction wrapper**
+
+   ```typescript
+   export async function withTransaction<T>(
+     db: Database,
+     fn: (db: Database) => Promise<T>
+   ): Promise<T> {
+     db.run('BEGIN TRANSACTION');
+     try {
+       const result = await fn(db);
+       db.run('COMMIT');
+       return result;
+     } catch (error) {
+       db.run('ROLLBACK');
+       throw error;
+     }
+   }
+   ```
+
+2. **Identify multi-step operations**
+   - Creating entry with tags
+   - Deleting journal with entries
+   - Importing multiple entries
+
+3. **Wrap in transactions**
+
+   ```typescript
+   async createEntryWithTags(entry: Entry, tags: string[]) {
+     return withTransaction(db, async (db) => {
+       const newEntry = await createEntry(db, entry);
+       await addTagsToEntry(db, newEntry.id, tags);
+       return newEntry;
+     });
+   }
+   ```
+
+4. **Add savepoint support**
+   - For nested transactions
+   - Use SAVEPOINT/RELEASE/ROLLBACK TO
+
+5. **Test error scenarios**
+   - Ensure rollback works
+   - Test nested transactions
+
+**Dependencies:** None, but pairs well with #6 (repository pattern)
+
+**Effort:** \~1-2 days
+
+---
+
+### 11. Background Worker for Database Operations
+
+**Status:** ☐ Not Started
+
+**Why:** Prevent UI freezing during large operations. Keep main process responsive for window management.
+
+**Current State:**
+
+- All sql.js operations run in main process
+- Large exports/imports could freeze UI
+- No parallelization of DB work
+
+**Target State:**
+
+- Dedicated worker thread for sql.js
+- MessagePort communication via Electron
+- Main process delegates heavy DB work
+
+**When to Implement:** Only if users report freezing during large operations. Profile first.
+
+**Implementation Steps:**
+
+1. **Profile current performance**
+   - Test with large datasets (1000+ entries)
+   - Measure time for exports, searches, bulk operations
+   - Only proceed if >100ms blocking time
+
+2. **Create database worker**
+   - New file: `src/main/workers/database.worker.ts`
+   - Load sql.js in worker context
+   - Handle DB operations via message passing
+
+3. **Set up MessagePort communication**
+
+   ```typescript
+   // Main process
+   const worker = new Worker('./database.worker.js');
+   const { port1, port2 } = new MessageChannelMain();
+   worker.postMessage({ port: port2 }, [port2]);
+
+   // Worker
+   parentPort.on('message', ({ port }) => {
+     port.on('message', handleDbOperation);
+   });
+   ```
+
+4. **Create worker API**
+   - Type-safe message protocol
+   - Request/response pattern
+   - Error propagation
+
+5. **Migrate heavy operations**
+   - Start with exports
+   - Then imports
+   - Then search/filter operations
+
+6. **Add progress reporting**
+   - Stream progress events for long operations
+   - Update UI with progress bar
+
+**Dependencies:** None, but pairs well with #1 (migrations) and #6 (repositories)
+
+**Effort:** \~4-5 days
+
+**Complexity:** High - adds architectural complexity, only worth it if needed
+
+---
+
+### 12. Snapshot & Write-Ahead Log Strategy
+
+**Status:** ☐ Not Started
+
+**Why:** Minimize data loss. Faster recovery from crashes.
+
+**Current State:**
+
+- `saveDatabase()` writes entire DB to disk after every change
+- `backup.ts` exists but not integrated into save flow
+- No incremental persistence
+
+**Target State:**
+
+- Periodic encrypted snapshots
+- Write-ahead log for changes since last snapshot
+- Auto-save job on timer and graceful shutdown
+
+**When to Implement:** Only if current save strategy causes performance issues or data loss is reported.
+
+**Implementation Steps:**
+
+1. **Assess current save performance**
+   - Measure time to `saveDatabase()` with realistic data
+   - Check if it blocks user input
+   - Only proceed if >50ms or causing issues
+
+2. **Implement WAL approach**
+   - Write changes to append-only log file
+   - Periodic snapshot writes full DB
+   - On startup: load snapshot + replay WAL
+
+3. **Create snapshot scheduler**
+   - Snapshot every N minutes or M changes
+   - Background task doesn't block UI
+
+4. **Integrate existing backup.ts**
+   - Auto-backup after snapshot
+   - Encrypted backup to separate directory
+
+5. **Add crash recovery**
+   - Detect unclean shutdown
+   - Replay WAL on next startup
+   - Verify DB integrity
+
+**Dependencies:** Works well with #11 (background worker)
+
+**Effort:** \~5-6 days
+
+**Complexity:** High - significant change to persistence model
+
+---
+
+### 13. Feature-Driven Routing Shells
+
+**Status:** ☐ Not Started
+
+**Why:** Optimize bundle size. Lazy-load feature-specific code. Better code splitting.
+
+**Current State:**
+
+- Two routes: `/` (editor) and `/settings`
+- All code loads on startup
+- No route-level code splitting
+
+**Target State:**
+
+- Route-level layout components
+- Lazy-loaded feature bundles
+- Suspense boundaries per route
+
+**When to Implement:** When you have >5 routes or bundle size >500KB
+
+**Implementation Steps:**
+
+1. **Add route-level layouts**
+
+   ```typescript
+   // src/renderer/layouts/EditorLayout.tsx
+   export const EditorLayout = () => (
+     <EditorProvider>
+       <Suspense fallback={<EditorSkeleton />}>
+         <Outlet />
+       </Suspense>
+     </EditorProvider>
+   );
+   ```
+
+2. **Lazy-load route components**
+
+   ```typescript
+   const routes = [
+     {
+       path: '/',
+       element: <EditorLayout />,
+       children: [
+         { index: true, lazy: () => import('./pages/EditorPage') }
+       ]
+     },
+     {
+       path: '/settings',
+       lazy: () => import('./pages/SettingsPage')
+     }
+   ];
+   ```
+
+3. **Add Suspense boundaries**
+   - Show loading skeleton during code load
+   - Prevent layout shift
+
+4. **Analyze bundle splits**
+   - Use Vite's rollup visualizer
+   - Ensure each route has separate chunk
+
+**Dependencies:** None
+
+**Effort:** \~1-2 days
+
+**ROI:** Low until app grows significantly
+
+---
+
+### 14. Offline-First Sync Preparation
+
+**Status:** ☐ Not Started
+
+**Why:** Prepare architecture for future multi-device sync. Simplify conflict resolution.
+
+**Current State:**
+
+- Direct mutations of entries/journals
+- No command queue or sync mechanism
+- Local-only storage
+
+**Target State:**
+
+- Command/event sourcing pattern
+- Local mutations enqueue sync operations
+- Eventual consistency model ready
+
+**When to Implement:** Only if multi-device sync is on roadmap
+
+**Implementation Steps:**
+
+1. **Design command queue**
+
+   ```typescript
+   interface Command {
+     id: string;
+     type: 'create' | 'update' | 'delete';
+     entity: 'entry' | 'journal';
+     payload: unknown;
+     timestamp: number;
+     synced: boolean;
+   }
+   ```
+
+2. **Create command bus**
+   - Dispatch commands instead of direct mutations
+   - Commands update local state + enqueue for sync
+
+3. **Implement optimistic updates**
+   - UI updates immediately
+   - Sync happens in background
+   - Rollback on conflict
+
+4. **Add conflict resolution strategy**
+   - Last-write-wins
+   - Or merge strategies for text content
+
+5. **Create sync engine stub**
+   - Process command queue
+   - For now, just marks commands as synced
+   - Future: integrate with backend
+
+**Dependencies:** Works well with #6 (repositories) and #3 (state machines)
+
+**Effort:** \~1 week
+
+**ROI:** Zero unless you build multi-device sync
+
+---
+
+### 15. Observability & Structured Logging
+
+**Status:** ☐ Not Started
+
+**Why:** Diagnose production issues. Monitor performance. Understand usage patterns.
+
+**Current State:**
+
+- Ad-hoc console.log statements
+- No structured logging
+- No performance metrics
+
+**Target State:**
+
+- Structured logging with levels (debug/info/warn/error)
+- Optional local telemetry (with user opt-in)
+- Performance monitoring for IPC, autosave, rendering
+
+**When to Implement:** When you have users reporting bugs you can't reproduce
+
+**Implementation Steps:**
+
+1. **Create logging infrastructure**
+
+   ```typescript
+   // src/shared/logging/logger.ts
+   interface LogEvent {
+     timestamp: number;
+     level: 'debug' | 'info' | 'warn' | 'error';
+     category: string;
+     message: string;
+     context?: Record<string, unknown>;
+   }
+
+   export const logger = {
+     debug: (category: string, message: string, context?) => {...},
+     info: (category: string, message: string, context?) => {...},
+     // ... etc
+   };
+   ```
+
+2. **Add log transports**
+   - Console transport (dev mode)
+   - File transport (production, rotate daily)
+   - Optional: Remote transport (with opt-in)
+
+3. **Instrument critical paths**
+   - IPC handler entry/exit with timing
+   - Database operation timing
+   - Autosave success/failure
+   - HUD usage events
+
+4. **Create performance monitoring**
+
+   ```typescript
+   const timer = logger.startTimer('ipc.journal.create');
+   try {
+     const result = await createJournal(...);
+     timer.done({ success: true });
+     return result;
+   } catch (error) {
+     timer.done({ success: false, error: error.message });
+     throw error;
+   }
+   ```
+
+5. **Add privacy-safe telemetry**
+   - Settings toggle: "Help improve Esquisse by sharing anonymous usage data"
+   - Only collect: feature usage counts, performance metrics, error rates
+   - Never collect: journal content, user data, filesystem paths
+
+6. **Create log viewer**
+   - Settings page: "View Logs"
+   - Show recent errors
+   - Export logs for bug reports
+
+**Dependencies:** None
+
+**Effort:** \~3-4 days
+
+**Privacy Consideration:** Must be opt-in and clearly communicated
+
+---
+
+## Progress Tracking
+
+### Status Summary
+
+| Priority  | Total  | Not Started | In Progress | Completed |
+| --------- | ------ | ----------- | ----------- | --------- |
+| Critical  | 1      | 0           | 0           | 1         |
+| High      | 4      | 4           | 0           | 0         |
+| Medium    | 4      | 4           | 0           | 0         |
+| Low       | 6      | 6           | 0           | 0         |
+| **Total** | **15** | **14**      | **0**       | **1**     |
+
+### Status Notes
+
+_Add notes here when starting or completing items_
+
+**Example:**
+
+- `2025-01-15`: Started #1 (Migration Framework) - created initial migrator.ts
+- `2025-01-18`: Completed #1 - all tests passing, documentation updated
+
+---
+
+## Dependencies Graph
+
+```
+#1 Migration Framework (standalone)
+  ↓
+#7 Schema Snapshots (enhances #1)
+
+#2 Type-safe IPC (standalone)
+
+#3 Finite-State Stores (standalone)
+  ↓
+#14 Offline-First Sync (builds on #3)
+
+#4 Typed Config (standalone)
+
+#5 CI Suite (standalone)
+
+#6 Domain Repositories (standalone)
+  ↓
+#10 Transaction Helpers (enhances #6)
+  ↓
+#11 Background Worker (enhances #6, #10)
+  ↓
+#12 Snapshot & WAL (enhances #11)
+
+#8 IPC Error Boundaries (standalone)
+
+#9 Type-safe i18n (standalone)
+
+#13 Route Splitting (standalone, low ROI currently)
+
+#15 Observability (standalone)
+```
+
+---
+
+## Recommended Implementation Order
+
+### Phase 1: Foundation (Critical + High Priority)
+
+1. Migration Framework (#1) - 2-3 days
+2. Type-safe IPC (#2) - 3-4 days
+3. Finite-State Stores (#3) - 4-5 days
+4. Typed Config (#4) - 2 days
+5. CI Suite (#5) - 2 days
+
+**Total: \~13-18 days (2.5-3.5 weeks)**
+
+### Phase 2: Architecture (Medium Priority - as needed)
+
+6. Domain Repositories (#6) - 5-6 days
+7. Schema Snapshots (#7) - 1 day
+8. IPC Error Boundaries (#8) - 2 days
+9. Type-safe i18n (#9) - 1 day
+
+**Total: \~9-10 days (2 weeks)**
+
+### Phase 3: Optimization (Low Priority - only if needed)
+
+10-15. Implement based on actual performance issues and feature roadmap
+
+---
+
+## Notes for Contributors
+
+- **Before starting any item:** Read the full implementation steps and verify dependencies
+- **During work:** Update the Status checkbox and add notes to "Status Notes" section
+- **On completion:** Check off item, update Status Summary table, add completion note
+- **If blocked:** Document blocker in Status Notes and consider if dependencies need to be addressed first
+- **Testing:** Each refactor should include tests - unit tests for logic, integration tests for flows
+- **Documentation:** Update README, CLAUDE.md, or other docs if behavior changes
+
+---
+
+## References
+
+- [CLAUDE.md](../CLAUDE.md) - Main engineering guidelines
+- [AGENTS.md](../AGENTS.md) - Agent-specific guidelines
+- [SQLite Pragma Documentation](https://www.sqlite.org/pragma.html)
+- [Zod Documentation](https://zod.dev/)
+- [XState Documentation](https://xstate.js.org/) (if needed for complex state machines)
+- [Electron IPC Best Practices](https://www.electronjs.org/docs/latest/tutorial/ipc)
+- [React 19 Features](https://react.dev/blog/2024/04/25/react-19) (use, defer, etc.)
+
+---
+
+**Last reviewed:** November 2025
+**Next review:** After Phase 1 completion
+
+**Actual Progress:**
+
+- `2025-11-17`: Completed #1 (Migration Framework) - System was already implemented with migrations.ts and comprehensive tests. Added CLI tools (create/status/snapshot), created baseline schema snapshot (v1.0.0), and wrote comprehensive MIGRATIONS.md documentation. All 19 tests passing.
