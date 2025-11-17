@@ -176,6 +176,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
         ok: false,
         error: {
           message: 'Operation failed',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -200,6 +201,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
         ok: false,
         error: {
           message: '',
+          code: 'EMPTY_MESSAGE_ERROR',
         },
       };
 
@@ -223,6 +225,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
         ok: false,
         error: {
           message: '',
+          code: 'EMPTY_MESSAGE_ERROR',
         },
       };
 
@@ -234,6 +237,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
         ok: false,
         error: {
           message: '   ',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -245,6 +249,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
         ok: false,
         error: {
           message: 'Error:\n  - Detail 1\n  - Detail 2',
+          code: 'TEST_ERROR',
         },
       };
 

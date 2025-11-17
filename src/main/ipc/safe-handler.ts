@@ -3,6 +3,7 @@ import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { ZodError, type ZodTypeAny, type infer as Infer } from 'zod';
 
 import type { Result, ResultError } from '@shared/types';
+import { IPC_ERROR_CODES } from '@shared/types';
 
 import { logger } from '../logger';
 
@@ -15,7 +16,7 @@ const formatError = (error: unknown): ResultError => {
   if (error instanceof ZodError) {
     return {
       message: 'Invalid IPC payload received.',
-      code: 'IPC_VALIDATION_ERROR',
+      code: IPC_ERROR_CODES.VALIDATION_ERROR,
       details: error.issues,
     };
   }
@@ -23,13 +24,13 @@ const formatError = (error: unknown): ResultError => {
   if (error instanceof Error) {
     return {
       message: error.message,
-      code: 'IPC_HANDLER_ERROR',
+      code: IPC_ERROR_CODES.HANDLER_ERROR,
     };
   }
 
   return {
     message: 'Unknown IPC error occurred.',
-    code: 'IPC_UNKNOWN_ERROR',
+    code: IPC_ERROR_CODES.UNKNOWN_ERROR,
   };
 };
 

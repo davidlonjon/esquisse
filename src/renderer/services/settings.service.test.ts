@@ -79,6 +79,7 @@ describe('settings.service.ts - Settings Service', () => {
         ok: false,
         error: {
           message: 'Failed to fetch settings',
+          code: 'TEST_ERROR',
         },
       };
 

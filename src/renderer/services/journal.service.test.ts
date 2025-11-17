@@ -78,6 +78,7 @@ describe('journal.service.ts - Journal Service', () => {
         ok: false,
         error: {
           message: 'Failed to fetch journals',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -256,6 +257,7 @@ describe('journal.service.ts - Journal Service', () => {
         ok: false,
         error: {
           message: 'Update failed',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -295,6 +297,7 @@ describe('journal.service.ts - Journal Service', () => {
         ok: false,
         error: {
           message: 'Deletion failed',
+          code: 'TEST_ERROR',
         },
       };
 

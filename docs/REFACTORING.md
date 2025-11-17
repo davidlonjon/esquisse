@@ -93,7 +93,7 @@
 
 ### 2. Type-Safe IPC Contracts with Runtime Validation
 
-**Status:** ☐ Not Started
+**Status:** ✓ Completed (November 2025)
 
 **Why:** Eliminate drift between renderer, preload, and main. Catch serialization bugs and contract violations at runtime.
 

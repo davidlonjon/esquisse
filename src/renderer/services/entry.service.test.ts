@@ -105,6 +105,7 @@ describe('entry.service.ts - Entry Service', () => {
         ok: false,
         error: {
           message: 'Failed to fetch entries',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -336,6 +337,7 @@ describe('entry.service.ts - Entry Service', () => {
         ok: false,
         error: {
           message: 'Update failed',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -375,6 +377,7 @@ describe('entry.service.ts - Entry Service', () => {
         ok: false,
         error: {
           message: 'Deletion failed',
+          code: 'TEST_ERROR',
         },
       };
 
@@ -441,6 +444,7 @@ describe('entry.service.ts - Entry Service', () => {
         ok: false,
         error: {
           message: 'Search failed',
+          code: 'TEST_ERROR',
         },
       };
 

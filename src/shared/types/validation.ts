@@ -78,3 +78,39 @@ export const SearchQuerySchema = z
   .string()
   .min(1, 'Search query is required')
   .max(255, 'Search query is too long');
+
+// Response validation schemas
+export const JournalSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  color: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const EntrySchema = z.object({
+  id: z.string(),
+  journalId: z.string(),
+  title: z.string().optional(),
+  content: z.string(),
+  tags: z.array(z.string()).optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const SettingsSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system']),
+  fontSize: z.number().int(),
+  fontFamily: z.string(),
+  autoSave: z.boolean(),
+  autoSaveInterval: z.number().int(),
+  language: z.enum(['en', 'fr']),
+});
+
+export const BackupInfoSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  date: z.string(),
+  size: z.number().int(),
+});
