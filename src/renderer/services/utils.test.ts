@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ElectronAPI } from '@shared/ipc';
 import type { Result } from '@shared/types';
 
-import { getErrorMessage, getWindowAPI, resolveResult } from './utils';
+import { getErrorMessage, getWindowAPI, resolveResult, IpcError } from './utils';
 
 describe('utils.ts - Renderer Service Utilities', () => {
   describe('getErrorMessage', () => {
@@ -127,6 +127,15 @@ describe('utils.ts - Renderer Service Utilities', () => {
   });
 
   describe('resolveResult', () => {
+    let consoleErrorSpy: { mockRestore: () => void };
+
+    beforeEach(() => {
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      consoleErrorSpy.mockRestore();
+    });
     it('should return data for successful result', () => {
       const result: Result<string> = {
         ok: true,
@@ -171,6 +180,7 @@ describe('utils.ts - Renderer Service Utilities', () => {
       };
 
       expect(() => resolveResult(result)).toThrow('Operation failed');
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('should throw error for failed result with message and code', () => {
@@ -239,6 +249,54 @@ describe('utils.ts - Renderer Service Utilities', () => {
       };
 
       expect(() => resolveResult(result)).toThrow('Error:\n  - Detail 1\n  - Detail 2');
+    });
+
+    it('should append detail info when provided', () => {
+      const details = ['Title is required', 'Content cannot be empty'];
+      const result: Result<string> = {
+        ok: false,
+        error: {
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details,
+        },
+      };
+
+      expect(() => resolveResult(result)).toThrow(
+        'Validation failed (VALIDATION_ERROR)\nDetails: Title is required; Content cannot be empty'
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[IPC] Renderer call failed',
+        expect.objectContaining({
+          code: 'VALIDATION_ERROR',
+          details,
+          message: 'Validation failed',
+        })
+      );
+    });
+
+    it('should throw an IpcError instance with metadata', () => {
+      const detailPayload = { field: 'name', issue: 'missing' };
+      const result: Result<string> = {
+        ok: false,
+        error: {
+          message: 'Payload invalid',
+          code: 'INVALID_PAYLOAD',
+          details: detailPayload,
+        },
+      };
+
+      try {
+        resolveResult(result);
+        expect.fail('Expected resolveResult to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(IpcError);
+        const ipcError = error as IpcError;
+        expect(ipcError.code).toBe('INVALID_PAYLOAD');
+        expect(ipcError.details).toEqual(detailPayload);
+        expect(ipcError.message).toContain('Payload invalid (INVALID_PAYLOAD)');
+        expect(ipcError.message).toContain('"field":"name"');
+      }
     });
 
     it('should handle null data in successful result', () => {

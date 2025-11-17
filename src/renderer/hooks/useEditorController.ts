@@ -8,8 +8,8 @@ import {
   useEditorContentStore,
 } from '@features/editor';
 import { selectCurrentEntry, selectEntries, useEntryStore } from '@features/entries';
-import { selectCurrentJournal, useJournalStore } from '@features/journals';
 import { useAutoSave } from '@hooks/useAutoSave';
+import { useEntryDraft } from '@hooks/useEntryDraft';
 import { useEntryNavigation } from '@hooks/useEntryNavigation';
 import { useHud } from '@hooks/useHud';
 import { useInitialization } from '@hooks/useInitialization';
@@ -53,9 +53,6 @@ export function useEditorController(): EditorController {
   const entries = useEntryStore(selectEntries);
   const currentEntry = useEntryStore(selectCurrentEntry);
   const updateEntry = useEntryStore((state) => state.updateEntry);
-  const createEntry = useEntryStore((state) => state.createEntry);
-  const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
-  const currentJournal = useJournalStore(selectCurrentJournal);
 
   const currentEntryRef = useRef(currentEntry);
   useEffect(() => {
@@ -71,6 +68,10 @@ export function useEditorController(): EditorController {
     defaultJournalName,
     showHudTemporarily,
     resetSessionTimer,
+  });
+
+  const { ensureEntryExists } = useEntryDraft({
+    onEntryCreated: showHudTemporarily,
   });
 
   const autoSave = useAutoSave({
@@ -93,29 +94,6 @@ export function useEditorController(): EditorController {
   useEffect(() => {
     setEditorLastSaved(autoSavedAt);
   }, [autoSavedAt, setEditorLastSaved]);
-
-  const ensureEntryExists = useCallback(
-    async (html: string) => {
-      const hasContent = getWordCountFromHTML(html) > 0;
-      const activeEntry = currentEntryRef.current;
-      if (!hasContent || !currentJournal) {
-        return activeEntry;
-      }
-
-      if (activeEntry) {
-        return activeEntry;
-      }
-
-      const createdEntry = await createEntry({
-        journalId: currentJournal.id,
-        content: html,
-      });
-      setCurrentEntry(createdEntry);
-      showHudTemporarily();
-      return createdEntry;
-    },
-    [createEntry, currentJournal, setCurrentEntry, showHudTemporarily]
-  );
 
   const handleContentChange = (newContent: string) => {
     setEditorContent(newContent);
