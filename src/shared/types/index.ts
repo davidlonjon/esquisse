@@ -8,3 +8,4 @@ export * from './entry.types';
 export * from './settings.types';
 export * from './result.types';
 export * from './validation';
+export * from './backup.types';

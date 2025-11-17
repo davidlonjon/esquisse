@@ -8,16 +8,68 @@ import { runMigrations } from './migrations';
 
 let db: Database | null = null;
 let dbPath: string | null = null;
+let saveInFlight: Promise<void> | null = null;
+let pendingSave = false;
+
+const writeDatabaseFile = (): Buffer => {
+  if (!db) {
+    throw new Error('Database not initialized');
+  }
+  const data = db.export();
+  return Buffer.from(data);
+};
+
+const scheduleSave = () => {
+  if (!db || !dbPath) {
+    return;
+  }
+
+  if (saveInFlight) {
+    pendingSave = true;
+    return;
+  }
+
+  pendingSave = false;
+  const buffer = writeDatabaseFile();
+
+  saveInFlight = fs.promises
+    .writeFile(dbPath, buffer)
+    .catch((error) => {
+      console.error('Failed to write database file:', error);
+    })
+    .finally(() => {
+      saveInFlight = null;
+      if (pendingSave) {
+        scheduleSave();
+      }
+    });
+};
+
+function flushDatabaseSync() {
+  if (!db || !dbPath) {
+    return;
+  }
+  const buffer = writeDatabaseFile();
+  fs.writeFileSync(dbPath, buffer);
+  pendingSave = false;
+}
+
+export function forceFlushDatabase(): void {
+  flushDatabaseSync();
+}
+
+export function getDatabasePath(): string {
+  if (!dbPath) {
+    throw new Error('Database path not initialized');
+  }
+  return dbPath;
+}
 
 /**
  * Save database to file
  */
 function saveDatabase(): void {
-  if (db && dbPath) {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
-  }
+  scheduleSave();
 }
 
 /**
@@ -71,7 +123,7 @@ export async function initializeDatabase(): Promise<Database> {
     db.run('PRAGMA foreign_keys = ON');
 
     runMigrations(db);
-    saveDatabase();
+    flushDatabaseSync();
 
     console.log('Database initialized successfully');
 
@@ -95,9 +147,16 @@ export function getDatabase(): Database {
 /**
  * Close the database connection
  */
-export function closeDatabase(): void {
+export async function closeDatabase(): Promise<void> {
   if (db) {
-    saveDatabase();
+    if (saveInFlight) {
+      try {
+        await saveInFlight;
+      } catch {
+        // already logged inside scheduleSave
+      }
+    }
+    flushDatabaseSync();
     db.close();
     db = null;
     console.log('Database connection closed');

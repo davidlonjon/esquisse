@@ -5,6 +5,7 @@ import started from 'electron-squirrel-startup';
 import { createMainWindow, registerWindowHandlers } from './core/window';
 import { initializeDatabase, closeDatabase } from './database';
 import { logger } from './logger';
+import { registerBackupHandlers } from './modules/backup';
 import { registerEntryHandlers } from './modules/entry';
 import { registerJournalHandlers } from './modules/journal';
 import { registerSettingsHandlers } from './modules/settings';
@@ -22,6 +23,7 @@ function registerIPCHandlers(): void {
   registerJournalHandlers();
   registerEntryHandlers();
   registerSettingsHandlers();
+  registerBackupHandlers();
 }
 
 process.on('unhandledRejection', (reason) => {
@@ -66,14 +68,15 @@ if (!started) {
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    closeDatabase();
-    app.quit();
+    void closeDatabase().finally(() => {
+      app.quit();
+    });
   }
 });
 
 // Clean up before quitting
 app.on('before-quit', () => {
-  closeDatabase();
+  void closeDatabase();
 });
 
 app.on('activate', () => {

@@ -26,4 +26,9 @@ export const IPC_CHANNELS = {
   WINDOW_MINIMIZE: 'window:minimize',
   WINDOW_MAXIMIZE: 'window:maximize',
   WINDOW_CLOSE: 'window:close',
+
+  // Backups
+  BACKUP_CREATE: 'backup:create',
+  BACKUP_LIST: 'backup:list',
+  BACKUP_RESTORE: 'backup:restore',
 } as const;

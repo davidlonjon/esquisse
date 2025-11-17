@@ -12,6 +12,7 @@ import type {
   Settings,
   UpdateSettingsInput,
   Result,
+  BackupInfo,
 } from '../types';
 
 export interface ElectronAPI {
@@ -33,6 +34,11 @@ export interface ElectronAPI {
   // Settings
   getSettings: () => Promise<Result<Settings>>;
   setSettings: (settings: UpdateSettingsInput) => Promise<Result<Settings>>;
+
+  // Backups
+  createBackup: () => Promise<Result<string | null>>;
+  listBackups: () => Promise<Result<BackupInfo[]>>;
+  restoreBackup: (path: string) => Promise<Result<boolean>>;
 
   // Window operations
   minimizeWindow: () => void;

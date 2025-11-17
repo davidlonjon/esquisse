@@ -5,6 +5,7 @@
 
 import type { ElectronAPI } from '@shared/ipc';
 
+import { backupAPI } from './backup.api';
 import { entryAPI } from './entry.api';
 import { journalAPI } from './journal.api';
 import { settingsAPI } from './settings.api';
@@ -17,5 +18,6 @@ export const electronAPI: ElectronAPI = {
   ...journalAPI,
   ...entryAPI,
   ...settingsAPI,
+  ...backupAPI,
   ...windowAPI,
 };
