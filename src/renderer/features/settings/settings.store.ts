@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
-import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
+import { createAsyncSlice, withAsyncHandler, type AsyncSlice } from '@lib/store';
 import { settingsService } from '@services/settings.service';
 import type { Settings, UpdateSettingsInput } from '@shared/types';
 
@@ -49,46 +49,24 @@ export const useSettingsStore = create(
         return pickSettings(get());
       }
 
-      set((state) => {
-        state.progress.load = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'load', async () => {
         const settings = await settingsService.get();
         set((state) => {
           Object.assign(state, settings);
           state.hasLoaded = true;
-          state.progress.load = toAsyncSlice('success');
         });
         return settings;
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.load = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
 
     updateSettings: async (updates) => {
-      set((state) => {
-        state.progress.save = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'save', async () => {
         const settings = await settingsService.update(updates);
         set((state) => {
           Object.assign(state, settings);
-          state.progress.save = toAsyncSlice('success');
         });
         return settings;
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.save = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
   }))
 );

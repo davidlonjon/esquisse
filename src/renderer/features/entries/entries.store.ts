@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
-import { createAsyncSlice, getErrorMessage, toAsyncSlice, type AsyncSlice } from '@lib/store';
+import { createAsyncSlice, toAsyncSlice, withAsyncHandler, type AsyncSlice } from '@lib/store';
 import { entryService } from '@services/entry.service';
 import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
 
@@ -80,11 +80,7 @@ export const useEntryStore = create(
     ...createInitialState(),
 
     loadEntries: async (journalId) => {
-      set((state) => {
-        state.progress.load = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'load', async () => {
         const entries = await entryService.list(journalId);
         const lookup = createLookup(entries);
 
@@ -93,51 +89,28 @@ export const useEntryStore = create(
           state.entryLookup = lookup;
           state.currentEntryId =
             state.currentEntryId && lookup[state.currentEntryId] ? state.currentEntryId : null;
-          state.progress.load = toAsyncSlice('success');
         });
 
         return entries;
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.load = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
 
     createEntry: async (entry) => {
-      set((state) => {
-        state.progress.save = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'save', async () => {
         const newEntry = await entryService.create(entry);
         set((state) => {
           state.entries.unshift(newEntry);
           state.entryLookup[newEntry.id] = newEntry;
-          state.progress.save = toAsyncSlice('success');
         });
         return newEntry;
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.save = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
 
     updateEntry: async (id, updates) => {
-      set((state) => {
-        state.progress.save = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'save', async () => {
         const updated = await entryService.update(id, updates);
         set((state) => {
           if (!state.entryLookup[id]) {
-            state.progress.save = toAsyncSlice('success');
             return;
           }
 
@@ -151,30 +124,17 @@ export const useEntryStore = create(
           if (searchResultIndex !== -1) {
             state.search.results[searchResultIndex] = updated;
           }
-
-          state.progress.save = toAsyncSlice('success');
         });
 
         return updated;
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.save = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
 
     deleteEntry: async (id) => {
-      set((state) => {
-        state.progress.remove = toAsyncSlice('loading');
-      });
-
-      try {
+      return withAsyncHandler(set, 'remove', async () => {
         await entryService.remove(id);
         set((state) => {
           if (!state.entryLookup[id]) {
-            state.progress.remove = toAsyncSlice('success');
             return;
           }
 
@@ -192,38 +152,30 @@ export const useEntryStore = create(
           if (searchResultIndex !== -1) {
             state.search.results.splice(searchResultIndex, 1);
           }
-
-          state.progress.remove = toAsyncSlice('success');
         });
-      } catch (error) {
-        const message = getErrorMessage(error);
-        set((state) => {
-          state.progress.remove = toAsyncSlice('error', message);
-        });
-        throw error;
-      }
+      });
     },
 
     searchEntries: async (query) => {
       set((state) => {
-        state.progress.search = toAsyncSlice('loading');
         state.search.status = toAsyncSlice('loading');
       });
 
       try {
-        const results = await entryService.search(query);
-        set((state) => {
-          state.search.query = query;
-          state.search.results = results;
-          state.search.status = toAsyncSlice('success');
-          state.progress.search = toAsyncSlice('success');
+        return await withAsyncHandler(set, 'search', async () => {
+          const results = await entryService.search(query);
+          set((state) => {
+            state.search.query = query;
+            state.search.results = results;
+            state.search.status = toAsyncSlice('success');
+          });
+          return results;
         });
-        return results;
       } catch (error) {
-        const message = getErrorMessage(error);
+        // Also update search.status on error (progress.search is handled by withAsyncHandler)
+        const message = error instanceof Error ? error.message : String(error);
         set((state) => {
           state.search.status = toAsyncSlice('error', message);
-          state.progress.search = toAsyncSlice('error', message);
         });
         throw error;
       }
