@@ -5,6 +5,11 @@
  * Note: 'mod' means Cmd on macOS and Ctrl on Windows/Linux
  */
 
+import type { TFunction } from 'i18next';
+
+// Extract valid translation keys from i18next
+type TranslationKey = Parameters<TFunction>[0];
+
 export type ShortcutCategory = 'navigation' | 'ui' | 'editor' | 'modal';
 
 export type ShortcutId =
@@ -18,8 +23,8 @@ export type ShortcutId =
   | 'closeModal';
 
 export interface ShortcutDisplayMetadata {
-  labelKey: string;
-  descriptionKey?: string;
+  labelKey: TranslationKey;
+  descriptionKey?: TranslationKey;
   combos: {
     mac: string;
     windows: string;

@@ -21,7 +21,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
-    "validate": "npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:md && npm run lint:strict && npm run type-check",
+    "validate:translations": "node scripts/validate-translations.js",
+    "validate": "npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:md && npm run lint:strict && npm run type-check && npm run validate:translations",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run --passWithNoTests",
@@ -41,6 +42,10 @@
     "*.css": [
       "stylelint --fix",
       "prettier --write"
+    ],
+    "src/renderer/locales/**/*.json": [
+      "prettier --write",
+      "node scripts/validate-translations.js"
     ],
     "*.json": [
       "prettier --write"

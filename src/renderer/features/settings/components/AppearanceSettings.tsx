@@ -5,16 +5,16 @@ import { useSettingsStore } from '@features/settings';
 import i18n from '@lib/i18n';
 import { Button, Select } from '@ui';
 
-const THEME_OPTIONS: Array<{ value: 'system' | 'light' | 'dark'; labelKey: string }> = [
+const THEME_OPTIONS = [
   { value: 'system', labelKey: 'settings.options.theme.system' },
   { value: 'light', labelKey: 'settings.options.theme.light' },
   { value: 'dark', labelKey: 'settings.options.theme.dark' },
-];
+] as const;
 
-const LANGUAGE_OPTIONS: Array<{ value: 'en' | 'fr'; labelKey: string }> = [
+const LANGUAGE_OPTIONS = [
   { value: 'en', labelKey: 'settings.options.language.en' },
   { value: 'fr', labelKey: 'settings.options.language.fr' },
-];
+] as const;
 
 export function AppearanceSettings() {
   const { t } = useTranslation();

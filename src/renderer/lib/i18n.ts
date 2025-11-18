@@ -7,6 +7,9 @@ import { initReactI18next } from 'react-i18next';
 import en from '../locales/en/common.json';
 import fr from '../locales/fr/common.json';
 
+// Import type declarations for type-safe translation keys
+import './i18n.types';
+
 void i18next
   .use(LanguageDetector)
   .use(initReactI18next)

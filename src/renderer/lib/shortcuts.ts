@@ -44,8 +44,10 @@ export function getShortcutDisplayInfo(
   return {
     id,
     combo,
-    label: t(metadata.labelKey),
-    description: metadata.descriptionKey ? t(metadata.descriptionKey) : undefined,
+    // Type assertion needed here because labelKey/descriptionKey come from configuration
+    // and TypeScript can't narrow the union type to specific literals at runtime
+    label: t(metadata.labelKey as never),
+    description: metadata.descriptionKey ? t(metadata.descriptionKey as never) : undefined,
   };
 }
 
