@@ -24,6 +24,47 @@
 
 Husky runs lint-staged → ESLint, Prettier, and `node scripts/run-type-check.js` on staged files.
 
+## 2.1. Destructive Command Safety
+
+**CRITICAL: Destructive Command Policy**
+
+- **NEVER run destructive git, terminal, or SQL commands without EXPLICIT user permission**
+- This includes but is not limited to:
+  - **Git**: `git reset --hard`, `git push --force`, `git clean -fd`, `git branch -D`, any command that modifies history or deletes data
+  - **Terminal**: `rm -rf`, any command that permanently deletes files/directories
+  - **SQL**: `DROP TABLE`, `DROP DATABASE`, `DELETE FROM` (without WHERE or with broad conditions), `TRUNCATE TABLE`, `ALTER TABLE DROP COLUMN`, direct schema modifications bypassing migrations
+  - Any operation that destroys data, modifies schema outside the migration system, or cannot be easily undone
+
+**Required Workflow for Potentially Destructive Operations**:
+
+1. **ASK FIRST**: Always ask the user for explicit permission before running any destructive command
+2. **EXPLAIN**: Clearly explain what the command will do and what will be lost/changed
+3. **ALTERNATIVES**: Suggest safer alternatives when possible (e.g., `git stash` instead of `git reset --hard`, or migrations instead of direct SQL)
+4. **WAIT**: Never assume permission; wait for explicit "yes" or confirmation
+
+**Safe Commands** (no permission needed):
+
+- Read-only git: `git log`, `git status`, `git diff`, `git show`, `git reflog`
+- Non-destructive git: `git add`, `git commit`, `git checkout -b` (new branches), `git stash`
+- Read-only SQL: `SELECT` queries, schema inspection
+- Migration tools: `npm run migrate:create`, `npm run migrate:status`, `npm run migrate:snapshot`
+- Standard builds/tests: `npm test`, `npm run build`, `npm run validate`
+
+**Database-Specific Rules**:
+
+- ALL schema changes MUST go through the migration system (`src/main/database/migrations.ts`)
+- NEVER run direct SQL schema modifications (use migrations instead)
+- Data deletions require explicit permission and should be done through tested code paths
+
+**Examples**:
+
+- ❌ WRONG: Running `git reset --hard HEAD~15` to troubleshoot
+- ✅ RIGHT: "I see the issue. Would you like me to run `git reset --hard 1d39e85` to recover your commits? This will discard any uncommitted changes."
+- ❌ WRONG: Running `db.run('DROP TABLE entries')` to test something
+- ✅ RIGHT: "To modify the schema, we should create a migration using `npm run migrate:create`. Would you like me to do that?"
+
+This applies to all destructive operations, not just the examples listed.
+
 ## 3. Layered Architecture
 
 1. **Main (`src/main`)**: Window lifecycle, IPC registration, SQLite access. Keep side effects behind services/modules; never expose Node APIs directly.
