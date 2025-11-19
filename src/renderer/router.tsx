@@ -3,31 +3,46 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
-  Outlet,
+  lazyRouteComponent,
 } from '@tanstack/react-router';
 
-import { EditorPage } from '@pages/EditorPage';
-import { SettingsPage } from '@pages/SettingsPage';
+import { RootLayout } from '@/layouts';
 
+/**
+ * Root route with error boundary and suspense
+ */
 const RootRoute = createRootRoute({
-  component: Outlet,
+  component: RootLayout,
 });
 
+/**
+ * Editor route - lazy loaded for code splitting
+ */
 const editorRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/',
-  component: EditorPage,
+  component: lazyRouteComponent(() =>
+    import('@pages/EditorPage').then((m) => ({ default: m.EditorPage }))
+  ),
 });
 
+/**
+ * Settings route - lazy loaded for code splitting
+ */
 const settingsRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/settings',
-  component: SettingsPage,
+  component: lazyRouteComponent(() =>
+    import('@pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+  ),
 });
 
 const routeTree = RootRoute.addChildren([editorRoute, settingsRoute]);
 
-export const router = createRouter({ routeTree });
+export const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

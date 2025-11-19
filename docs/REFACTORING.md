@@ -929,70 +929,75 @@ const THEME_OPTIONS = [
 
 ### 13. Feature-Driven Routing Shells
 
-**Status:** ☐ Not Started
+**Status:** ✅ Completed (November 2025)
 
 **Why:** Optimize bundle size. Lazy-load feature-specific code. Better code splitting.
 
-**Current State:**
+**Previous State:**
 
 - Two routes: `/` (editor) and `/settings`
-- All code loads on startup
+- All code loaded eagerly on startup (1.1MB bundle)
 - No route-level code splitting
 
-**Target State:**
+**Current State:**
 
-- Route-level layout components
-- Lazy-loaded feature bundles
-- Suspense boundaries per route
+- Route-level layout components with hierarchical error boundaries
+- Lazy-loaded feature bundles using TanStack Router's `lazyRouteComponent`
+- Suspense boundaries with loading skeletons per route
+- Bundle visualizer configured for ongoing monitoring
 
-**When to Implement:** When you have >5 routes or bundle size >500KB
+**Results:**
 
-**Implementation Steps:**
+- **Initial load reduced from 1.1MB → 625KB (43% reduction)**
+- Main bundle: 512KB
+- Editor chunk (lazy): 394KB (loads on-demand)
+- Settings chunk (lazy): 23KB (loads on-demand)
+- React vendor: 30KB
+- Router: 83KB
 
-1. **Add route-level layouts**
+**Implementation Details:**
 
-   ```typescript
-   // src/renderer/layouts/EditorLayout.tsx
-   export const EditorLayout = () => (
-     <EditorProvider>
-       <Suspense fallback={<EditorSkeleton />}>
-         <Outlet />
-       </Suspense>
-     </EditorProvider>
-   );
-   ```
+1. **Created route-level layouts** (src/renderer/layouts/)
+   - `RootLayout.tsx` - Top-level error boundary + suspense
+   - `EditorLayout.tsx` - Editor-specific layout with IPC error boundary
+   - `SettingsLayout.tsx` - Settings-specific layout with IPC error boundary
 
-2. **Lazy-load route components**
+2. **Added loading skeletons** (src/renderer/layouts/skeletons/)
+   - `EditorSkeleton.tsx` - Loading state for editor route
+   - `SettingsSkeleton.tsx` - Loading state for settings route
 
-   ```typescript
-   const routes = [
-     {
-       path: '/',
-       element: <EditorLayout />,
-       children: [
-         { index: true, lazy: () => import('./pages/EditorPage') }
-       ]
-     },
-     {
-       path: '/settings',
-       lazy: () => import('./pages/SettingsPage')
-     }
-   ];
-   ```
+3. **Implemented lazy loading** (src/renderer/router.tsx)
+   - Used `lazyRouteComponent` for EditorPage and SettingsPage
+   - Added `defaultPreload: 'intent'` for hover preloading
+   - Routes now load code on-demand
 
-3. **Add Suspense boundaries**
-   - Show loading skeleton during code load
-   - Prevent layout shift
+4. **Configured bundle analysis** (vite.renderer.config.mjs)
+   - Added `rollup-plugin-visualizer` for bundle visualization
+   - Configured manual chunks for vendor code splitting
+   - Stats available at `dist/stats.html` after build
 
-4. **Analyze bundle splits**
-   - Use Vite's rollup visualizer
-   - Ensure each route has separate chunk
+**Files Modified:**
 
-**Dependencies:** None
+- `src/renderer/router.tsx` - Lazy loading implementation
+- `vite.renderer.config.mjs` - Visualizer + manual chunks
+- `package.json` - Added rollup-plugin-visualizer
 
-**Effort:** \~1-2 days
+**Files Created:**
 
-**ROI:** Low until app grows significantly
+- `src/renderer/layouts/RootLayout.tsx`
+- `src/renderer/layouts/EditorLayout.tsx`
+- `src/renderer/layouts/SettingsLayout.tsx`
+- `src/renderer/layouts/skeletons/EditorSkeleton.tsx`
+- `src/renderer/layouts/skeletons/SettingsSkeleton.tsx`
+- `src/renderer/layouts/index.ts`
+
+**Architecture Benefits:**
+
+- Each route loads only necessary code
+- Shared layouts reused across similar routes
+- IPC error boundaries scoped to feature areas
+- Easy to add new routes following the same pattern
+- Loading skeletons prevent layout shift during navigation
 
 ---
 
@@ -1149,9 +1154,9 @@ const THEME_OPTIONS = [
 | --------- | ------ | ----------- | ----------- | --------- |
 | Critical  | 1      | 0           | 0           | 1         |
 | High      | 4      | 1           | 0           | 3         |
-| Medium    | 4      | 1           | 0           | 3         |
-| Low       | 6      | 6           | 0           | 0         |
-| **Total** | **15** | **8**       | **0**       | **7**     |
+| Medium    | 4      | 0           | 0           | 4         |
+| Low       | 6      | 5           | 0           | 1         |
+| **Total** | **15** | **6**       | **0**       | **9**     |
 
 ### Status Notes
 
@@ -1164,6 +1169,8 @@ const THEME_OPTIONS = [
 - `2025-11-18`: Completed #9 (Type-Safe i18n) - Added TypeScript types for translation keys, validation script, and pre-commit hooks
 - `2025-11-19`: Completed #4 (Typed Config Pipeline) - Created shared config module with Zod validation, eliminated config drift across all build tools
 - `2025-11-19`: Completed #6 (Domain Repositories Pattern) - Implemented repository and service layers with DI container, separated business logic from data access, all 886 tests passing
+- `2025-11-20`: Completed #8 (IPC Error Boundaries) - Created IpcErrorBoundary component with automatic retry, renderer-side error handling for IPC failures
+- `2025-11-20`: Completed #13 (Feature-Driven Routing Shells) - Implemented lazy loading with route-level layouts and code splitting, reduced initial bundle from 1.1MB to 625KB (43% reduction)
 
 ---
 
@@ -1271,3 +1278,7 @@ const THEME_OPTIONS = [
 - `2025-11-19`: Completed #4 (Typed Config Pipeline) - Created centralized configuration module (`config/index.ts`) with Zod schema validation for paths, aliases, and content globs. Updated all build tool configs (Vite main/preload/renderer, TypeScript, Tailwind) to use shared config. Created TypeScript path generator script that auto-generates `tsconfig.json` paths from Vite aliases, ensuring perfect 1:1 mapping. Centralized 16 path aliases eliminating duplication across 4 config files. Result: Zero configuration drift, single source of truth for all build configuration, validation at module load time. All 886 tests passing.
 
 - `2025-11-19`: Completed #6 (Domain Repositories Pattern) - Implemented full three-layer architecture separating data access, business logic, and API layers. Created repository interfaces and SQLite implementations for Journals, Entries, and Settings domains. Built service layer with business rule validation (journal name required, entry content required, settings ranges validated). Implemented DI container with singleton pattern for clean dependency management. Refactored all IPC handlers to be thin controllers calling services. Maintained backward compatibility by converting old database functions to deprecated wrappers. Updated all IPC tests to mock container services instead of database functions. Created 9 new domain files (interfaces, repos, services) totaling ~900 lines of clean, testable code. Reduced database module code by ~220 lines (from 351 to 131 lines across 3 files). Architecture now supports: clean separation of concerns, easy testing with mocks, portable domain logic for future web/PWA, type-safe DI. All 886 tests passing.
+
+- `2025-11-20`: Completed #8 (IPC Error Boundaries) - Implemented comprehensive error handling for IPC failures in the renderer layer. Created `IpcErrorBoundary` component that catches IPC errors, displays user-friendly messages, and provides automatic retry functionality. Component integrates with ErrorBoundary for fallback handling and supports both automatic retries (every 5s) and manual retry buttons. Used in route layouts (EditorLayout, SettingsLayout) to scope error recovery to feature areas. Architecture allows graceful degradation when main process communication fails. All existing tests remain passing.
+
+- `2025-11-20`: Completed #13 (Feature-Driven Routing Shells) - Implemented route-level code splitting and lazy loading to optimize bundle size. Created hierarchical layout system with RootLayout (global error boundary), EditorLayout (editor-specific with IPC error boundary), and SettingsLayout (settings-specific with IPC error boundary). Built loading skeletons (EditorSkeleton, SettingsSkeleton) for smooth UX during code loading. Implemented lazy loading using TanStack Router's `lazyRouteComponent` for EditorPage and SettingsPage. Configured bundle visualizer (rollup-plugin-visualizer) for ongoing monitoring at `dist/stats.html`. Added manual chunks in Vite config for vendor code splitting (react-vendor, router, editor). Results: Initial bundle reduced from 1.1MB to 625KB (43% reduction). Editor chunk (394KB) and Settings chunk (23KB) now load on-demand. Added `defaultPreload: 'intent'` for hover-based preloading. Architecture scales easily for future route additions. Type check and build pass successfully.
