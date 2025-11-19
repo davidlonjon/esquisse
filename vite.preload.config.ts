@@ -1,13 +1,13 @@
-import { join } from 'path';
-
 import { defineConfig } from 'vite';
+
+import { config } from './config/index';
 
 // https://vitejs.dev/config
 export default defineConfig({
   resolve: {
     alias: {
-      '@shared': join(__dirname, './src/shared'),
-      '@preload': join(__dirname, './src/preload'),
+      '@shared': config.aliases['@shared'],
+      '@preload': config.aliases['@preload'],
     },
   },
   build: {

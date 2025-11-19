@@ -22,6 +22,7 @@
       "@shared/*": ["./src/shared/*"],
       "@main/*": ["./src/main/*"],
       "@preload/*": ["./src/preload/*"],
+      "@test/*": ["./src/test/*"],
       "@features/*": ["./src/renderer/features/*"],
       "@components/*": ["./src/renderer/components/*"],
       "@ui": ["./src/renderer/components/ui/index.ts"],
@@ -33,8 +34,7 @@
       "@config/*": ["./src/renderer/config/*"],
       "@lib/*": ["./src/renderer/lib/*"],
       "@styles/*": ["./src/renderer/styles/*"],
-      "@pages/*": ["./src/renderer/pages/*"],
-      "@test/*": ["./src/test/*"]
+      "@pages/*": ["./src/renderer/pages/*"]
     }
   },
   "include": ["src/**/*", "forge.env.d.ts"],

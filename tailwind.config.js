@@ -1,10 +1,9 @@
+import { getTailwindContent } from './config/index.ts';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['class'],
-  content: [
-    './index.html',
-    './src/renderer/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: getTailwindContent(),
   theme: {
     extend: {
       borderRadius: {

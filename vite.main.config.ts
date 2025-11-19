@@ -3,12 +3,14 @@ import { join, dirname } from 'path';
 
 import { defineConfig } from 'vite';
 
+import { config } from './config/index';
+
 // https://vitejs.dev/config
 export default defineConfig({
   resolve: {
     alias: {
-      '@shared': join(__dirname, './src/shared'),
-      '@main': join(__dirname, './src/main'),
+      '@shared': config.aliases['@shared'],
+      '@main': config.aliases['@main'],
     },
   },
   build: {
@@ -21,8 +23,8 @@ export default defineConfig({
       name: 'copy-schema',
       closeBundle() {
         // Copy schema.sql to build directory
-        const schemaSource = join(__dirname, 'src/main/database/schema.sql');
-        const schemaTarget = join(__dirname, '.vite/build/schema.sql');
+        const schemaSource = join(config.paths.main, 'database/schema.sql');
+        const schemaTarget = join(config.paths.build, 'schema.sql');
         try {
           mkdirSync(dirname(schemaTarget), { recursive: true });
           copyFileSync(schemaSource, schemaTarget);
