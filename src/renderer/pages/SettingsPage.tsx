@@ -4,6 +4,7 @@ import { Clock3, Palette, Type } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { IpcErrorBoundary, IpcErrorFallback } from '@components/layout';
 import { useSettingsStore } from '@features/settings';
 import {
   AppearanceSettings,
@@ -85,9 +86,15 @@ export function SettingsPage() {
         error={loadError}
       />
 
-      <div className="flex-1 bg-base-100 px-6 py-10 sm:px-10">
-        <div className="mx-auto max-w-3xl space-y-8">{renderActiveSection()}</div>
-      </div>
+      <IpcErrorBoundary
+        fallback={(error, retry) => (
+          <IpcErrorFallback error={error} retry={retry} variant="inline" />
+        )}
+      >
+        <div className="flex-1 bg-base-100 px-6 py-10 sm:px-10">
+          <div className="mx-auto max-w-3xl space-y-8">{renderActiveSection()}</div>
+        </div>
+      </IpcErrorBoundary>
     </div>
   );
 }

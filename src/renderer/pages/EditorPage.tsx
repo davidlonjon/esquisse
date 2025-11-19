@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { IpcErrorBoundary, IpcErrorFallback } from '@components/layout';
 import { Editor } from '@features/editor';
 import { EditorErrorToast, EditorHud, EditorStatus } from '@features/editor/components';
 import { useEditorController } from '@hooks/useEditorController';
@@ -33,27 +34,33 @@ export function EditorPage() {
   }
 
   return (
-    <div className="relative h-screen w-screen">
-      <EditorHud
-        isVisible={controller.hud.isVisible}
-        dateLabel={controller.hud.dateLabel}
-        wordCountLabel={controller.hud.wordCountLabel}
-        sessionLabel={controller.hud.sessionLabel}
-        snapshotLabel={controller.hud.snapshotLabel}
-        disabled={false}
-      />
-      <Editor
-        content={controller.content}
-        onChange={controller.handleContentChange}
-        onSave={controller.handleManualSave}
-        focusMode={true}
-        typewriterMode={true}
-        placeholder={controller.placeholder}
-      />
-
-      {controller.apiError && (
-        <EditorErrorToast message={controller.apiError} onDismiss={controller.clearApiError} />
+    <IpcErrorBoundary
+      fallback={(error, retry) => (
+        <IpcErrorFallback error={error} retry={retry} variant="fullscreen" />
       )}
-    </div>
+    >
+      <div className="relative h-screen w-screen">
+        <EditorHud
+          isVisible={controller.hud.isVisible}
+          dateLabel={controller.hud.dateLabel}
+          wordCountLabel={controller.hud.wordCountLabel}
+          sessionLabel={controller.hud.sessionLabel}
+          snapshotLabel={controller.hud.snapshotLabel}
+          disabled={false}
+        />
+        <Editor
+          content={controller.content}
+          onChange={controller.handleContentChange}
+          onSave={controller.handleManualSave}
+          focusMode={true}
+          typewriterMode={true}
+          placeholder={controller.placeholder}
+        />
+
+        {controller.apiError && (
+          <EditorErrorToast message={controller.apiError} onDismiss={controller.clearApiError} />
+        )}
+      </div>
+    </IpcErrorBoundary>
   );
 }

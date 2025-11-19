@@ -79,16 +79,40 @@ const logResultError = (error: ResultError) => {
 export class IpcError extends Error {
   code?: string;
   details?: unknown;
+  channel?: string;
+  isRetryable: boolean;
 
-  constructor(message: string, code?: string, details?: unknown) {
+  constructor(
+    message: string,
+    code?: string,
+    details?: unknown,
+    channel?: string,
+    isRetryable: boolean = false
+  ) {
     super(message);
     this.name = 'IpcError';
     this.code = code;
     this.details = details;
+    this.channel = channel;
+    this.isRetryable = isRetryable;
+  }
+
+  /**
+   * Create a retryable IpcError (e.g., network timeout, temporary DB lock)
+   */
+  static retryable(message: string, code?: string, details?: unknown, channel?: string): IpcError {
+    return new IpcError(message, code, details, channel, true);
+  }
+
+  /**
+   * Create a non-retryable IpcError (e.g., validation error, not found)
+   */
+  static fatal(message: string, code?: string, details?: unknown, channel?: string): IpcError {
+    return new IpcError(message, code, details, channel, false);
   }
 }
 
-export const resolveResult = <T>(result: Result<T>): T => {
+export const resolveResult = <T>(result: Result<T>, channel?: string): T => {
   if (result.ok) {
     return result.data;
   }
@@ -96,5 +120,5 @@ export const resolveResult = <T>(result: Result<T>): T => {
   logResultError(result.error);
 
   const message = buildErrorMessage(result.error);
-  throw new IpcError(message, result.error.code, result.error.details);
+  throw new IpcError(message, result.error.code, result.error.details, channel);
 };
