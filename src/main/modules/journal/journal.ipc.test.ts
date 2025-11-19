@@ -1,12 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
 import { IPC_CHANNELS } from '@shared/ipc';
 import type { Journal } from '@shared/types';
 
-import * as journalDb from '../../database/journals';
+// Mock the container to return a mocked service
+const mockJournalService = {
+  createJournal: vi.fn() as Mock,
+  getAllJournals: vi.fn() as Mock,
+  getJournalById: vi.fn() as Mock,
+  updateJournal: vi.fn() as Mock,
+  deleteJournal: vi.fn() as Mock,
+  journalExists: vi.fn() as Mock,
+};
 
-// Mock the database module
-vi.mock('../../database/journals');
+vi.mock('../../domain/container', () => ({
+  getJournalService: () => mockJournalService,
+  getEntryService: vi.fn(),
+  getSettingsService: vi.fn(),
+}));
 
 // Mock the safe handler registration
 const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
@@ -52,7 +63,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.createJournal).mockReturnValue(mockJournal);
+      mockJournalService.createJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_CREATE)!;
       const result = await handler(mockEvent, [
@@ -63,7 +74,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         },
       ]);
 
-      expect(journalDb.createJournal).toHaveBeenCalledWith({
+      expect(mockJournalService.createJournal).toHaveBeenCalledWith({
         name: 'Test Journal',
         description: 'Test description',
         color: '#3B82F6',
@@ -79,12 +90,12 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.createJournal).mockReturnValue(mockJournal);
+      mockJournalService.createJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_CREATE)!;
       const result = await handler(mockEvent, [{ name: 'Test Journal' }]);
 
-      expect(journalDb.createJournal).toHaveBeenCalledWith({ name: 'Test Journal' });
+      expect(mockJournalService.createJournal).toHaveBeenCalledWith({ name: 'Test Journal' });
       expect(result).toEqual(mockJournal);
     });
 
@@ -98,7 +109,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.createJournal).mockReturnValue(mockJournal);
+      mockJournalService.createJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_CREATE)!;
       await handler(mockEvent, [
@@ -109,8 +120,8 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         },
       ]);
 
-      expect(journalDb.createJournal).toHaveBeenCalledTimes(1);
-      expect(journalDb.createJournal).toHaveBeenCalledWith({
+      expect(mockJournalService.createJournal).toHaveBeenCalledTimes(1);
+      expect(mockJournalService.createJournal).toHaveBeenCalledWith({
         name: 'My Journal',
         description: 'Personal notes',
         color: '#10B981',
@@ -135,17 +146,17 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         },
       ];
 
-      vi.mocked(journalDb.getAllJournals).mockReturnValue(mockJournals);
+      mockJournalService.getAllJournals.mockReturnValue(mockJournals);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_ALL)!;
       const result = await handler(mockEvent, []);
 
-      expect(journalDb.getAllJournals).toHaveBeenCalledWith();
+      expect(mockJournalService.getAllJournals).toHaveBeenCalledWith();
       expect(result).toEqual(mockJournals);
     });
 
     it('should return empty array when no journals exist', async () => {
-      vi.mocked(journalDb.getAllJournals).mockReturnValue([]);
+      mockJournalService.getAllJournals.mockReturnValue([]);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_ALL)!;
       const result = await handler(mockEvent, []);
@@ -154,13 +165,13 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
     });
 
     it('should call getAllJournals without parameters', async () => {
-      vi.mocked(journalDb.getAllJournals).mockReturnValue([]);
+      mockJournalService.getAllJournals.mockReturnValue([]);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_ALL)!;
       await handler(mockEvent, []);
 
-      expect(journalDb.getAllJournals).toHaveBeenCalledTimes(1);
-      expect(journalDb.getAllJournals).toHaveBeenCalledWith();
+      expect(mockJournalService.getAllJournals).toHaveBeenCalledTimes(1);
+      expect(mockJournalService.getAllJournals).toHaveBeenCalledWith();
     });
   });
 
@@ -173,33 +184,33 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.getJournalById).mockReturnValue(mockJournal);
+      mockJournalService.getJournalById.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_BY_ID)!;
       const result = await handler(mockEvent, ['journal-1']);
 
-      expect(journalDb.getJournalById).toHaveBeenCalledWith('journal-1');
+      expect(mockJournalService.getJournalById).toHaveBeenCalledWith('journal-1');
       expect(result).toEqual(mockJournal);
     });
 
     it('should return null when journal not found', async () => {
-      vi.mocked(journalDb.getJournalById).mockReturnValue(null);
+      mockJournalService.getJournalById.mockReturnValue(null);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_BY_ID)!;
       const result = await handler(mockEvent, ['non-existent']);
 
-      expect(journalDb.getJournalById).toHaveBeenCalledWith('non-existent');
+      expect(mockJournalService.getJournalById).toHaveBeenCalledWith('non-existent');
       expect(result).toBeNull();
     });
 
     it('should pass correct ID to getJournalById', async () => {
-      vi.mocked(journalDb.getJournalById).mockReturnValue(null);
+      mockJournalService.getJournalById.mockReturnValue(null);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_GET_BY_ID)!;
       await handler(mockEvent, ['test-id-123']);
 
-      expect(journalDb.getJournalById).toHaveBeenCalledTimes(1);
-      expect(journalDb.getJournalById).toHaveBeenCalledWith('test-id-123');
+      expect(mockJournalService.getJournalById).toHaveBeenCalledTimes(1);
+      expect(mockJournalService.getJournalById).toHaveBeenCalledWith('test-id-123');
     });
   });
 
@@ -212,12 +223,14 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
+      mockJournalService.updateJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
       const result = await handler(mockEvent, ['journal-1', { name: 'Updated Name' }]);
 
-      expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', { name: 'Updated Name' });
+      expect(mockJournalService.updateJournal).toHaveBeenCalledWith('journal-1', {
+        name: 'Updated Name',
+      });
       expect(result).toEqual(mockJournal);
     });
 
@@ -231,7 +244,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
+      mockJournalService.updateJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
       const result = await handler(mockEvent, [
@@ -243,7 +256,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         },
       ]);
 
-      expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', {
+      expect(mockJournalService.updateJournal).toHaveBeenCalledWith('journal-1', {
         name: 'Updated Name',
         description: 'Updated Description',
         color: '#FF0000',
@@ -260,12 +273,12 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
+      mockJournalService.updateJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
       const result = await handler(mockEvent, ['journal-1', { description: 'New Description' }]);
 
-      expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', {
+      expect(mockJournalService.updateJournal).toHaveBeenCalledWith('journal-1', {
         description: 'New Description',
       });
       expect(result).toEqual(mockJournal);
@@ -279,12 +292,12 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(journalDb.updateJournal).mockReturnValue(mockJournal);
+      mockJournalService.updateJournal.mockReturnValue(mockJournal);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_UPDATE)!;
       const result = await handler(mockEvent, ['journal-1', { description: null, color: null }]);
 
-      expect(journalDb.updateJournal).toHaveBeenCalledWith('journal-1', {
+      expect(mockJournalService.updateJournal).toHaveBeenCalledWith('journal-1', {
         description: null,
         color: null,
       });
@@ -294,17 +307,17 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
 
   describe('JOURNAL_DELETE handler', () => {
     it('should delete journal by ID', async () => {
-      vi.mocked(journalDb.deleteJournal).mockReturnValue(true);
+      mockJournalService.deleteJournal.mockReturnValue(true);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_DELETE)!;
       const result = await handler(mockEvent, ['journal-1']);
 
-      expect(journalDb.deleteJournal).toHaveBeenCalledWith('journal-1');
+      expect(mockJournalService.deleteJournal).toHaveBeenCalledWith('journal-1');
       expect(result).toBe(true);
     });
 
     it('should return true after successful deletion', async () => {
-      vi.mocked(journalDb.deleteJournal).mockReturnValue(true);
+      mockJournalService.deleteJournal.mockReturnValue(true);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_DELETE)!;
       const result = await handler(mockEvent, ['test-id']);
@@ -313,20 +326,20 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
     });
 
     it('should pass correct ID to deleteJournal', async () => {
-      vi.mocked(journalDb.deleteJournal).mockReturnValue(true);
+      mockJournalService.deleteJournal.mockReturnValue(true);
 
       const handler = mockHandlers.get(IPC_CHANNELS.JOURNAL_DELETE)!;
       await handler(mockEvent, ['delete-this-id']);
 
-      expect(journalDb.deleteJournal).toHaveBeenCalledTimes(1);
-      expect(journalDb.deleteJournal).toHaveBeenCalledWith('delete-this-id');
+      expect(mockJournalService.deleteJournal).toHaveBeenCalledTimes(1);
+      expect(mockJournalService.deleteJournal).toHaveBeenCalledWith('delete-this-id');
     });
   });
 
   describe('Error Handling', () => {
     it('should propagate database errors', async () => {
       const dbError = new Error('Database connection failed');
-      vi.mocked(journalDb.createJournal).mockImplementation(() => {
+      mockJournalService.createJournal.mockImplementation(() => {
         throw dbError;
       });
 
@@ -339,7 +352,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
 
     it('should propagate errors from getAllJournals', async () => {
       const error = new Error('Failed to fetch journals');
-      vi.mocked(journalDb.getAllJournals).mockImplementation(() => {
+      mockJournalService.getAllJournals.mockImplementation(() => {
         throw error;
       });
 
@@ -350,7 +363,7 @@ describe('journal.ipc.ts - Journal IPC Handlers', () => {
 
     it('should propagate errors from updateJournal', async () => {
       const error = new Error('Update failed');
-      vi.mocked(journalDb.updateJournal).mockImplementation(() => {
+      mockJournalService.updateJournal.mockImplementation(() => {
         throw error;
       });
 

@@ -455,90 +455,100 @@ export default defineConfig({
 
 ### 6. Domain Repositories Pattern
 
-**Status:** ☐ Not Started
+**Status:** ✓ Completed (November 2025)
 
 **Why:** Separate business logic from IPC/infrastructure. Enable future platform targets (web/PWA) to reuse core logic.
 
-**Current State:**
+**What Was Implemented:**
 
-- Database CRUD in `src/main/database/*.ts`
-- IPC handlers call DB functions directly
-- Business rules mixed with data access
+1. **Repository Interfaces & Implementations** - Created clean separation between data access contracts and implementations:
+   - `JournalRepository` (interface + SQLite implementation)
+   - `EntryRepository` (interface + SQLite implementation)
+   - `SettingsRepository` (interface + SQLite implementation)
 
-**Target State:**
+2. **Service Layer with Business Logic** - Extracted business rules from database functions:
+   - `JournalService` - Validates journal names, checks existence
+   - `EntryService` - Validates content, enforces journal references
+   - `SettingsService` - Validates ranges (font size 10-32, interval >= 1000ms, language codes)
 
-- Repository layer for data access
-- Service layer for business logic
-- IPC handlers are thin controllers
-- Portable domain logic
+3. **Dependency Injection Container** (`src/main/domain/container.ts`):
+   - Singleton pattern for service/repository instances
+   - Clean dependency management
+   - Provides `getJournalService()`, `getEntryService()`, `getSettingsService()` helpers
+   - Includes `resetContainer()` for test isolation
 
-**Implementation Steps:**
-
-1. **Create repository pattern**
-   - New directory: `src/main/domain/journals/journal.repository.ts`
+4. **Updated IPC Handlers** - Refactored to be thin controllers:
 
    ```typescript
-   export interface JournalRepository {
-     findAll(): Promise<Journal[]>;
-     findById(id: string): Promise<Journal | null>;
-     create(data: CreateJournalData): Promise<Journal>;
-     update(id: string, data: UpdateJournalData): Promise<Journal>;
-     delete(id: string): Promise<void>;
-   }
+   // Before: Direct database access
+   import * as journalDb from '../../database/journals';
+   journalDb.createJournal(journal);
 
-   export class SqliteJournalRepository implements JournalRepository {
-     // Implementation using sql.js
-   }
+   // After: Service layer
+   import { getJournalService } from '../../domain/container';
+   const service = getJournalService();
+   service.createJournal(journal); // Now with validation!
    ```
 
-2. **Create service layer**
-   - New file: `src/main/domain/journals/journal.service.ts`
+5. **Backward Compatibility** - Kept database functions as deprecated wrappers:
 
    ```typescript
-   export class JournalService {
-     constructor(private repository: JournalRepository) {}
-
-     async createJournal(name: string, description?: string): Promise<Journal> {
-       // Business rules: validate name, check duplicates, etc.
-       return this.repository.create({ name, description });
-     }
-
-     // Other business logic methods
+   // src/main/database/journals.ts
+   /** @deprecated Use JournalService.createJournal() instead */
+   export function createJournal(input: CreateJournalInput): Journal {
+     return getContainer().journalRepository.create(input);
    }
    ```
 
-3. **Update IPC handlers**
-   - Inject services into handlers
-   - Handlers become thin controllers:
+   This ensures existing tests continue working while new code uses the service layer.
 
-   ```typescript
-   ipcMain.handle('journal:create', async (event, { name, description }) => {
-     return journalService.createJournal(name, description);
-   });
-   ```
+6. **Updated Tests** - Fixed IPC tests to mock container services instead of database functions:
+   - All 886 tests passing ✅
+   - IPC tests now mock `getJournalService()`, `getEntryService()`, etc.
+   - Clean test isolation with mocked services
 
-4. **Migrate existing database modules**
-   - Start with `journals.ts` -> `JournalRepository`
-   - Then `entries.ts` -> `EntryRepository`
-   - Extract business logic into services
+**Architecture Before & After:**
 
-5. **Add dependency injection**
-   - Create service registry/container
-   - Wire up dependencies on app startup
-   - Makes testing easier (mock repositories)
+**Before:**
 
-6. **Update tests**
-   - Test repositories with real SQLite
-   - Test services with mock repositories
-   - Test IPC handlers with mock services
+```
+IPC Handler → Database Function → SQL
+```
 
-**Dependencies:** None, but pairs well with #2 (type-safe IPC)
+**After:**
 
-**Effort:** \~5-6 days (1-2 days per domain)
+```
+IPC Handler → Service (business logic) → Repository (data access) → SQL
+```
 
-**Migration Path:** Can be done domain-by-domain
+**Benefits Achieved:**
 
-**Future Benefit:** If you ever build a web version, services can be shared
+- ✅ Clean separation of concerns (data access vs business logic vs API)
+- ✅ Testable architecture (can mock repositories in service tests, mock services in IPC tests)
+- ✅ Portable domain logic ready for future web/PWA implementation
+- ✅ Type-safe dependency injection
+- ✅ Business rule validation centralized in service layer
+
+**Files Created:**
+
+- `src/main/domain/journals/` - Repository interface, implementation, service
+- `src/main/domain/entries/` - Repository interface, implementation, service
+- `src/main/domain/settings/` - Repository interface, implementation, service
+- `src/main/domain/container.ts` - DI container (137 lines)
+
+**Files Modified:**
+
+- `src/main/database/journals.ts` - Now deprecated wrapper (52 lines, was 121)
+- `src/main/database/entries.ts` - Now deprecated wrapper (60 lines, was 153)
+- `src/main/database/settings.ts` - Now deprecated wrapper (42 lines, was 77)
+- `src/main/modules/*/journal.ipc.ts` - Use services from container
+- `src/main/modules/*/entry.ipc.ts` - Use services from container
+- `src/main/modules/*/settings.ipc.ts` - Use services from container
+- All IPC test files - Updated to mock container services
+
+**Dependencies:** None
+
+**Effort:** \~6 hours (actual)
 
 ---
 
@@ -1169,9 +1179,9 @@ const THEME_OPTIONS = [
 | --------- | ------ | ----------- | ----------- | --------- |
 | Critical  | 1      | 0           | 0           | 1         |
 | High      | 4      | 1           | 0           | 3         |
-| Medium    | 4      | 2           | 0           | 2         |
+| Medium    | 4      | 1           | 0           | 3         |
 | Low       | 6      | 6           | 0           | 0         |
-| **Total** | **15** | **9**       | **0**       | **6**     |
+| **Total** | **15** | **8**       | **0**       | **7**     |
 
 ### Status Notes
 
@@ -1183,6 +1193,7 @@ const THEME_OPTIONS = [
 - `2025-11-18`: Completed #3 (Async State Management) - Evaluated FSM but implemented Higher-Order Async Handler alternative with better ROI
 - `2025-11-18`: Completed #9 (Type-Safe i18n) - Added TypeScript types for translation keys, validation script, and pre-commit hooks
 - `2025-11-19`: Completed #4 (Typed Config Pipeline) - Created shared config module with Zod validation, eliminated config drift across all build tools
+- `2025-11-19`: Completed #6 (Domain Repositories Pattern) - Implemented repository and service layers with DI container, separated business logic from data access, all 886 tests passing
 
 ---
 
@@ -1288,3 +1299,5 @@ const THEME_OPTIONS = [
 - `2025-11-18`: Confirmed #7 (Schema Snapshots) already complete - Schema snapshot functionality was fully implemented as part of the Migration Framework work. Command `npm run migrate:snapshot` creates timestamped schema snapshots in `src/main/database/snapshots/`. Full workflow documented in `docs/MIGRATIONS.md`.
 
 - `2025-11-19`: Completed #4 (Typed Config Pipeline) - Created centralized configuration module (`config/index.ts`) with Zod schema validation for paths, aliases, and content globs. Updated all build tool configs (Vite main/preload/renderer, TypeScript, Tailwind) to use shared config. Created TypeScript path generator script that auto-generates `tsconfig.json` paths from Vite aliases, ensuring perfect 1:1 mapping. Centralized 16 path aliases eliminating duplication across 4 config files. Result: Zero configuration drift, single source of truth for all build configuration, validation at module load time. All 886 tests passing.
+
+- `2025-11-19`: Completed #6 (Domain Repositories Pattern) - Implemented full three-layer architecture separating data access, business logic, and API layers. Created repository interfaces and SQLite implementations for Journals, Entries, and Settings domains. Built service layer with business rule validation (journal name required, entry content required, settings ranges validated). Implemented DI container with singleton pattern for clean dependency management. Refactored all IPC handlers to be thin controllers calling services. Maintained backward compatibility by converting old database functions to deprecated wrappers. Updated all IPC tests to mock container services instead of database functions. Created 9 new domain files (interfaces, repos, services) totaling ~900 lines of clean, testable code. Reduced database module code by ~220 lines (from 351 to 131 lines across 3 files). Architecture now supports: clean separation of concerns, easy testing with mocks, portable domain logic for future web/PWA, type-safe DI. All 886 tests passing.

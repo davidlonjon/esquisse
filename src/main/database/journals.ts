@@ -1,120 +1,51 @@
-import { randomUUID } from 'crypto';
+/**
+ * Journal Database Functions
+ * Backward-compatible wrapper functions that delegate to the repository layer
+ * @deprecated Use JournalRepository or JournalService instead
+ */
 
 import type { CreateJournalInput, Journal, UpdateJournalInput } from '@shared/types';
 
-import { createPaginationClause, selectOneRow, selectRows, type PaginationOptions } from './utils';
+import { getContainer } from '../domain/container';
 
-import { getDatabase, withTransaction } from './index';
-
-const JOURNAL_COLUMNS =
-  'id, name, description, color, created_at as createdAt, updated_at as updatedAt';
-
-const mapJournalRow = (row: Record<string, unknown>): Journal => ({
-  id: String(row.id),
-  name: String(row.name),
-  description: row.description == null ? undefined : String(row.description),
-  color: row.color == null ? undefined : String(row.color),
-  createdAt: String(row.createdAt),
-  updatedAt: String(row.updatedAt),
-});
+import type { PaginationOptions } from './utils';
 
 /**
  * Create a new journal
+ * @deprecated Use JournalService.createJournal() instead
  */
 export function createJournal(input: CreateJournalInput): Journal {
-  return withTransaction((db) => {
-    const id = randomUUID();
-    const now = new Date().toISOString();
-
-    db.run(
-      `INSERT INTO journals (id, name, description, color, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, input.name, input.description ?? null, input.color ?? null, now, now]
-    );
-
-    return {
-      id,
-      name: input.name,
-      description: input.description,
-      color: input.color,
-      createdAt: now,
-      updatedAt: now,
-    };
-  });
+  return getContainer().journalRepository.create(input);
 }
 
 /**
  * Get all journals
+ * @deprecated Use JournalService.getAllJournals() instead
  */
 export function getAllJournals(options?: PaginationOptions): Journal[] {
-  const db = getDatabase();
-  const { clause, params } = createPaginationClause(options);
-  const rows = selectRows(
-    db,
-    `SELECT ${JOURNAL_COLUMNS} FROM journals ORDER BY updated_at DESC${clause}`,
-    params
-  );
-  return rows.map(mapJournalRow);
+  return getContainer().journalRepository.findAll(options);
 }
 
 /**
  * Get a journal by ID
+ * @deprecated Use JournalService.getJournalById() instead
  */
 export function getJournalById(id: string): Journal | null {
-  const db = getDatabase();
-  const row = selectOneRow(db, `SELECT ${JOURNAL_COLUMNS} FROM journals WHERE id = ?`, [id]);
-  return row ? mapJournalRow(row) : null;
+  return getContainer().journalRepository.findById(id);
 }
 
 /**
  * Update a journal
+ * @deprecated Use JournalService.updateJournal() instead
  */
 export function updateJournal(id: string, updates: UpdateJournalInput): Journal {
-  return withTransaction((db) => {
-    const now = new Date().toISOString();
-    const fields: string[] = [];
-    const values: (string | null)[] = [];
-
-    if (updates.name !== undefined) {
-      fields.push('name = ?');
-      values.push(updates.name ?? null);
-    }
-    if (updates.description !== undefined) {
-      fields.push('description = ?');
-      values.push(updates.description ?? null);
-    }
-    if (updates.color !== undefined) {
-      fields.push('color = ?');
-      values.push(updates.color ?? null);
-    }
-
-    if (fields.length === 0) {
-      const journal = getJournalById(id);
-      if (!journal) {
-        throw new Error(`Journal with id ${id} not found`);
-      }
-      return journal;
-    }
-
-    fields.push('updated_at = ?');
-    values.push(now, id);
-
-    db.run(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`, values);
-
-    const updated = getJournalById(id);
-    if (!updated) {
-      throw new Error(`Journal with id ${id} not found after update`);
-    }
-    return updated;
-  });
+  return getContainer().journalRepository.update(id, updates);
 }
 
 /**
  * Delete a journal (and all its entries due to CASCADE)
+ * @deprecated Use JournalService.deleteJournal() instead
  */
 export function deleteJournal(id: string): boolean {
-  return withTransaction((db) => {
-    db.run('DELETE FROM journals WHERE id = ?', [id]);
-    return true;
-  });
+  return getContainer().journalRepository.delete(id);
 }

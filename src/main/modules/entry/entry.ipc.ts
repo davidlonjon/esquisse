@@ -13,7 +13,7 @@ import {
   UpdateEntryInputSchema,
 } from '@shared/types';
 
-import * as entryDb from '../../database/entries';
+import { getEntryService } from '../../domain/container';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
 const createEntrySchema = z.tuple([CreateEntryInputSchema]);
@@ -27,27 +27,29 @@ const searchSchema = z.tuple([SearchQuerySchema]);
  * Register all entry-related IPC handlers
  */
 export function registerEntryHandlers(): void {
+  const entryService = getEntryService();
+
   registerSafeHandler(IPC_CHANNELS.ENTRY_CREATE, createEntrySchema, async (_event, [entry]) =>
-    entryDb.createEntry(entry)
+    entryService.createEntry(entry)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_GET_ALL, listEntriesSchema, async (_event, [journalId]) =>
-    entryDb.getAllEntries(journalId)
+    entryService.getAllEntries(journalId)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_GET_BY_ID, entryIdSchema, async (_event, [id]) =>
-    entryDb.getEntryById(id)
+    entryService.getEntryById(id)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_UPDATE, updateEntrySchema, async (_event, [id, updates]) =>
-    entryDb.updateEntry(id, updates)
+    entryService.updateEntry(id, updates)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_DELETE, entryIdSchema, async (_event, [id]) =>
-    entryDb.deleteEntry(id)
+    entryService.deleteEntry(id)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_SEARCH, searchSchema, async (_event, [query]) =>
-    entryDb.searchEntries(query)
+    entryService.searchEntries(query)
   );
 }

@@ -1,12 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
 import { IPC_CHANNELS } from '@shared/ipc';
 import type { Entry } from '@shared/types';
 
-import * as entryDb from '../../database/entries';
+// Mock the container to return a mocked service
+const mockEntryService = {
+  createEntry: vi.fn() as Mock,
+  getAllEntries: vi.fn() as Mock,
+  getEntryById: vi.fn() as Mock,
+  updateEntry: vi.fn() as Mock,
+  deleteEntry: vi.fn() as Mock,
+  searchEntries: vi.fn() as Mock,
+  entryExists: vi.fn() as Mock,
+};
+
+vi.mock('../../domain/container', () => ({
+  getEntryService: () => mockEntryService,
+  getJournalService: vi.fn(),
+  getSettingsService: vi.fn(),
+}));
 
 // Mock the database module
-vi.mock('../../database/entries');
 
 // Mock the safe handler registration
 const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
@@ -54,7 +68,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.createEntry).mockReturnValue(mockEntry);
+      mockEntryService.createEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_CREATE)!;
       const result = await handler(mockEvent, [
@@ -66,7 +80,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ]);
 
-      expect(entryDb.createEntry).toHaveBeenCalledWith({
+      expect(mockEntryService.createEntry).toHaveBeenCalledWith({
         journalId: 'journal-1',
         title: 'Test Entry',
         content: '<p>Test content</p>',
@@ -84,7 +98,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.createEntry).mockReturnValue(mockEntry);
+      mockEntryService.createEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_CREATE)!;
       const result = await handler(mockEvent, [
@@ -94,7 +108,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ]);
 
-      expect(entryDb.createEntry).toHaveBeenCalledWith({
+      expect(mockEntryService.createEntry).toHaveBeenCalledWith({
         journalId: 'journal-1',
         content: '<p>Content only</p>',
       });
@@ -110,12 +124,12 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.createEntry).mockReturnValue(mockEntry);
+      mockEntryService.createEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_CREATE)!;
       await handler(mockEvent, [{ journalId: 'journal-1', content: '<p>Simple entry</p>' }]);
 
-      expect(entryDb.createEntry).toHaveBeenCalledTimes(1);
+      expect(mockEntryService.createEntry).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -138,12 +152,12 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ];
 
-      vi.mocked(entryDb.getAllEntries).mockReturnValue(mockEntries);
+      mockEntryService.getAllEntries.mockReturnValue(mockEntries);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_ALL)!;
       const result = await handler(mockEvent, [undefined]);
 
-      expect(entryDb.getAllEntries).toHaveBeenCalledWith(undefined);
+      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith(undefined);
       expect(result).toEqual(mockEntries);
     });
 
@@ -158,17 +172,17 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ];
 
-      vi.mocked(entryDb.getAllEntries).mockReturnValue(mockEntries);
+      mockEntryService.getAllEntries.mockReturnValue(mockEntries);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_ALL)!;
       const result = await handler(mockEvent, ['journal-1']);
 
-      expect(entryDb.getAllEntries).toHaveBeenCalledWith('journal-1');
+      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith('journal-1');
       expect(result).toEqual(mockEntries);
     });
 
     it('should return empty array when no entries exist', async () => {
-      vi.mocked(entryDb.getAllEntries).mockReturnValue([]);
+      mockEntryService.getAllEntries.mockReturnValue([]);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_ALL)!;
       const result = await handler(mockEvent, [undefined]);
@@ -187,17 +201,17 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.getEntryById).mockReturnValue(mockEntry);
+      mockEntryService.getEntryById.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_BY_ID)!;
       const result = await handler(mockEvent, ['entry-1']);
 
-      expect(entryDb.getEntryById).toHaveBeenCalledWith('entry-1');
+      expect(mockEntryService.getEntryById).toHaveBeenCalledWith('entry-1');
       expect(result).toEqual(mockEntry);
     });
 
     it('should return null when entry not found', async () => {
-      vi.mocked(entryDb.getEntryById).mockReturnValue(null);
+      mockEntryService.getEntryById.mockReturnValue(null);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_BY_ID)!;
       const result = await handler(mockEvent, ['non-existent']);
@@ -217,12 +231,14 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.updateEntry).mockReturnValue(mockEntry);
+      mockEntryService.updateEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_UPDATE)!;
       const result = await handler(mockEvent, ['entry-1', { title: 'Updated Title' }]);
 
-      expect(entryDb.updateEntry).toHaveBeenCalledWith('entry-1', { title: 'Updated Title' });
+      expect(mockEntryService.updateEntry).toHaveBeenCalledWith('entry-1', {
+        title: 'Updated Title',
+      });
       expect(result).toEqual(mockEntry);
     });
 
@@ -235,12 +251,12 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.updateEntry).mockReturnValue(mockEntry);
+      mockEntryService.updateEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_UPDATE)!;
       const result = await handler(mockEvent, ['entry-1', { content: '<p>Updated content</p>' }]);
 
-      expect(entryDb.updateEntry).toHaveBeenCalledWith('entry-1', {
+      expect(mockEntryService.updateEntry).toHaveBeenCalledWith('entry-1', {
         content: '<p>Updated content</p>',
       });
       expect(result).toEqual(mockEntry);
@@ -256,12 +272,14 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.updateEntry).mockReturnValue(mockEntry);
+      mockEntryService.updateEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_UPDATE)!;
       const result = await handler(mockEvent, ['entry-1', { tags: ['updated', 'tags'] }]);
 
-      expect(entryDb.updateEntry).toHaveBeenCalledWith('entry-1', { tags: ['updated', 'tags'] });
+      expect(mockEntryService.updateEntry).toHaveBeenCalledWith('entry-1', {
+        tags: ['updated', 'tags'],
+      });
       expect(result).toEqual(mockEntry);
     });
 
@@ -276,7 +294,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.updateEntry).mockReturnValue(mockEntry);
+      mockEntryService.updateEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_UPDATE)!;
       const result = await handler(mockEvent, [
@@ -288,7 +306,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ]);
 
-      expect(entryDb.updateEntry).toHaveBeenCalledWith('entry-1', {
+      expect(mockEntryService.updateEntry).toHaveBeenCalledWith('entry-1', {
         title: 'New Title',
         content: '<p>New content</p>',
         tags: ['new'],
@@ -305,28 +323,31 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      vi.mocked(entryDb.updateEntry).mockReturnValue(mockEntry);
+      mockEntryService.updateEntry.mockReturnValue(mockEntry);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_UPDATE)!;
       await handler(mockEvent, ['entry-1', { title: null, tags: null }]);
 
-      expect(entryDb.updateEntry).toHaveBeenCalledWith('entry-1', { title: null, tags: null });
+      expect(mockEntryService.updateEntry).toHaveBeenCalledWith('entry-1', {
+        title: null,
+        tags: null,
+      });
     });
   });
 
   describe('ENTRY_DELETE handler', () => {
     it('should delete entry by ID', async () => {
-      vi.mocked(entryDb.deleteEntry).mockReturnValue(true);
+      mockEntryService.deleteEntry.mockReturnValue(true);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_DELETE)!;
       const result = await handler(mockEvent, ['entry-1']);
 
-      expect(entryDb.deleteEntry).toHaveBeenCalledWith('entry-1');
+      expect(mockEntryService.deleteEntry).toHaveBeenCalledWith('entry-1');
       expect(result).toBe(true);
     });
 
     it('should return true after successful deletion', async () => {
-      vi.mocked(entryDb.deleteEntry).mockReturnValue(true);
+      mockEntryService.deleteEntry.mockReturnValue(true);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_DELETE)!;
       const result = await handler(mockEvent, ['test-id']);
@@ -348,17 +369,17 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         },
       ];
 
-      vi.mocked(entryDb.searchEntries).mockReturnValue(mockEntries);
+      mockEntryService.searchEntries.mockReturnValue(mockEntries);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_SEARCH)!;
       const result = await handler(mockEvent, ['meeting']);
 
-      expect(entryDb.searchEntries).toHaveBeenCalledWith('meeting');
+      expect(mockEntryService.searchEntries).toHaveBeenCalledWith('meeting');
       expect(result).toEqual(mockEntries);
     });
 
     it('should return empty array when no matches found', async () => {
-      vi.mocked(entryDb.searchEntries).mockReturnValue([]);
+      mockEntryService.searchEntries.mockReturnValue([]);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_SEARCH)!;
       const result = await handler(mockEvent, ['nonexistent']);
@@ -367,19 +388,19 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
     });
 
     it('should handle complex search queries', async () => {
-      vi.mocked(entryDb.searchEntries).mockReturnValue([]);
+      mockEntryService.searchEntries.mockReturnValue([]);
 
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_SEARCH)!;
       await handler(mockEvent, ['project timeline deliverables']);
 
-      expect(entryDb.searchEntries).toHaveBeenCalledWith('project timeline deliverables');
+      expect(mockEntryService.searchEntries).toHaveBeenCalledWith('project timeline deliverables');
     });
   });
 
   describe('Error Handling', () => {
     it('should propagate database errors from createEntry', async () => {
       const error = new Error('Database error');
-      vi.mocked(entryDb.createEntry).mockImplementation(() => {
+      mockEntryService.createEntry.mockImplementation(() => {
         throw error;
       });
 
@@ -392,7 +413,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
 
     it('should propagate errors from searchEntries', async () => {
       const error = new Error('Search failed');
-      vi.mocked(entryDb.searchEntries).mockImplementation(() => {
+      mockEntryService.searchEntries.mockImplementation(() => {
         throw error;
       });
 

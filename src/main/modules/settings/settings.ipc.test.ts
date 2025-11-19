@@ -1,12 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
 import { IPC_CHANNELS } from '@shared/ipc';
 import type { Settings } from '@shared/types';
 
-import * as settingsDb from '../../database/settings';
+// Mock the container to return a mocked service
+const mockSettingsService = {
+  getAllSettings: vi.fn() as Mock,
+  getSetting: vi.fn() as Mock,
+  updateSettings: vi.fn() as Mock,
+  updateSetting: vi.fn() as Mock,
+};
+
+vi.mock('../../domain/container', () => ({
+  getSettingsService: () => mockSettingsService,
+  getJournalService: vi.fn(),
+  getEntryService: vi.fn(),
+}));
 
 // Mock the database module
-vi.mock('../../database/settings');
 
 // Mock the safe handler registration
 const mockHandlers = new Map<string, (...args: unknown[]) => unknown>();
@@ -49,12 +60,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.getSettings).mockReturnValue(mockSettings);
+      mockSettingsService.getAllSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_GET)!;
       const result = await handler(mockEvent, []);
 
-      expect(settingsDb.getSettings).toHaveBeenCalledWith();
+      expect(mockSettingsService.getAllSettings).toHaveBeenCalledWith();
       expect(result).toEqual(mockSettings);
     });
 
@@ -68,7 +79,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'fr',
       };
 
-      vi.mocked(settingsDb.getSettings).mockReturnValue(mockSettings);
+      mockSettingsService.getAllSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_GET)!;
       const result = await handler(mockEvent, []);
@@ -86,13 +97,13 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.getSettings).mockReturnValue(mockSettings);
+      mockSettingsService.getAllSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_GET)!;
       await handler(mockEvent, []);
 
-      expect(settingsDb.getSettings).toHaveBeenCalledTimes(1);
-      expect(settingsDb.getSettings).toHaveBeenCalledWith();
+      expect(mockSettingsService.getAllSettings).toHaveBeenCalledTimes(1);
+      expect(mockSettingsService.getAllSettings).toHaveBeenCalledWith();
     });
   });
 
@@ -107,12 +118,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = await handler(mockEvent, [{ theme: 'dark' }]);
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ theme: 'dark' });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ theme: 'dark' });
       expect(result).toEqual(mockSettings);
     });
 
@@ -126,7 +137,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'fr',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = await handler(mockEvent, [
@@ -140,7 +151,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         },
       ]);
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({
         theme: 'dark',
         fontSize: 20,
         fontFamily: 'Monaco',
@@ -161,12 +172,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ theme: 'light' }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ theme: 'light' });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ theme: 'light' });
       expect(result.theme).toBe('light');
     });
 
@@ -180,12 +191,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ fontSize: 24 }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ fontSize: 24 });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ fontSize: 24 });
       expect(result.fontSize).toBe(24);
     });
 
@@ -199,12 +210,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ fontFamily: 'Consolas' }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ fontFamily: 'Consolas' });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ fontFamily: 'Consolas' });
       expect(result.fontFamily).toBe('Consolas');
     });
 
@@ -218,12 +229,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ autoSave: false }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ autoSave: false });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ autoSave: false });
       expect(result.autoSave).toBe(false);
     });
 
@@ -237,12 +248,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ autoSaveInterval: 45000 }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ autoSaveInterval: 45000 });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ autoSaveInterval: 45000 });
       expect(result.autoSaveInterval).toBe(45000);
     });
 
@@ -256,12 +267,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'fr',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = (await handler(mockEvent, [{ language: 'fr' }])) as Settings;
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ language: 'fr' });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ language: 'fr' });
       expect(result.language).toBe('fr');
     });
 
@@ -275,12 +286,12 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const result = await handler(mockEvent, [{}]);
 
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({});
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({});
       expect(result).toEqual(mockSettings);
     });
 
@@ -294,20 +305,20 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
         language: 'en',
       };
 
-      vi.mocked(settingsDb.setSettings).mockReturnValue(mockSettings);
+      mockSettingsService.updateSettings.mockReturnValue(mockSettings);
 
       const handler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       await handler(mockEvent, [{ theme: 'dark' }]);
 
-      expect(settingsDb.setSettings).toHaveBeenCalledTimes(1);
-      expect(settingsDb.setSettings).toHaveBeenCalledWith({ theme: 'dark' });
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledTimes(1);
+      expect(mockSettingsService.updateSettings).toHaveBeenCalledWith({ theme: 'dark' });
     });
   });
 
   describe('Error Handling', () => {
     it('should propagate database errors from getSettings', async () => {
       const error = new Error('Database error');
-      vi.mocked(settingsDb.getSettings).mockImplementation(() => {
+      mockSettingsService.getAllSettings.mockImplementation(() => {
         throw error;
       });
 
@@ -318,7 +329,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
 
     it('should propagate errors from setSettings', async () => {
       const error = new Error('Update failed');
-      vi.mocked(settingsDb.setSettings).mockImplementation(() => {
+      mockSettingsService.updateSettings.mockImplementation(() => {
         throw error;
       });
 
@@ -349,13 +360,13 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       };
 
       // Get initial settings
-      vi.mocked(settingsDb.getSettings).mockReturnValue(defaultSettings);
+      mockSettingsService.getAllSettings.mockReturnValue(defaultSettings);
       const getHandler = mockHandlers.get(IPC_CHANNELS.SETTINGS_GET)!;
       const initial = await getHandler(mockEvent, []);
       expect(initial).toEqual(defaultSettings);
 
       // Update settings
-      vi.mocked(settingsDb.setSettings).mockReturnValue(updatedSettings);
+      mockSettingsService.updateSettings.mockReturnValue(updatedSettings);
       const setHandler = mockHandlers.get(IPC_CHANNELS.SETTINGS_SET)!;
       const updated = await setHandler(mockEvent, [
         {
@@ -370,7 +381,7 @@ describe('settings.ipc.ts - Settings IPC Handlers', () => {
       expect(updated).toEqual(updatedSettings);
 
       // Get updated settings
-      vi.mocked(settingsDb.getSettings).mockReturnValue(updatedSettings);
+      mockSettingsService.getAllSettings.mockReturnValue(updatedSettings);
       const final = await getHandler(mockEvent, []);
       expect(final).toEqual(updatedSettings);
     });

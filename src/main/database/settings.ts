@@ -1,76 +1,41 @@
+/**
+ * Settings Database Functions
+ * Backward-compatible wrapper functions that delegate to the repository layer
+ * @deprecated Use SettingsRepository or SettingsService instead
+ */
+
 import type { Settings } from '@shared/types';
 
-import { getDatabase, withTransaction } from './index';
-
-const DEFAULT_SETTINGS: Settings = {
-  theme: 'system',
-  fontSize: 16,
-  fontFamily: 'system-ui',
-  autoSave: true,
-  autoSaveInterval: 30000,
-  language: 'en',
-};
+import { getContainer } from '../domain/container';
 
 /**
  * Get all settings
+ * @deprecated Use SettingsService.getAllSettings() instead
  */
 export function getSettings(): Settings {
-  const db = getDatabase();
-  const result = db.exec('SELECT key, value FROM settings');
-
-  const settings: Partial<Settings> = {};
-
-  if (result.length > 0 && result[0].values.length > 0) {
-    const columns = result[0].columns;
-    const values = result[0].values;
-
-    for (const row of values) {
-      const key = row[columns.indexOf('key')] as string;
-      const value = row[columns.indexOf('value')] as string;
-
-      try {
-        settings[key as keyof Settings] = JSON.parse(value);
-      } catch {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        settings[key as keyof Settings] = value as any;
-      }
-    }
-  }
-
-  // Merge with defaults
-  return { ...DEFAULT_SETTINGS, ...settings };
+  return getContainer().settingsRepository.getAll();
 }
 
 /**
  * Set settings (partial update)
+ * @deprecated Use SettingsService.updateSettings() instead
  */
 export function setSettings(updates: Partial<Settings>): Settings {
-  return withTransaction((db) => {
-    const now = new Date().toISOString();
-
-    for (const [key, value] of Object.entries(updates)) {
-      db.run(`INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
-        key,
-        JSON.stringify(value),
-        now,
-      ]);
-    }
-
-    return getSettings();
-  });
+  return getContainer().settingsRepository.updateMultiple(updates);
 }
 
 /**
  * Get a specific setting
+ * @deprecated Use SettingsService.getSetting() instead
  */
 export function getSetting<K extends keyof Settings>(key: K): Settings[K] {
-  const settings = getSettings();
-  return settings[key];
+  return getContainer().settingsRepository.get(key);
 }
 
 /**
  * Set a specific setting
+ * @deprecated Use SettingsService.updateSetting() instead
  */
 export function setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void {
-  setSettings({ [key]: value } as Partial<Settings>);
+  getContainer().settingsRepository.updateSingle(key, value);
 }

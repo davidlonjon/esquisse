@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { IPC_CHANNELS } from '@shared/ipc';
 import { UpdateSettingsInputSchema } from '@shared/types';
 
-import * as settingsDb from '../../database/settings';
+import { getSettingsService } from '../../domain/container';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
 const emptyArgsSchema = z.tuple([]);
@@ -18,11 +18,13 @@ const updateSettingsSchema = z.tuple([UpdateSettingsInputSchema]);
  * Register all settings-related IPC handlers
  */
 export function registerSettingsHandlers(): void {
+  const settingsService = getSettingsService();
+
   registerSafeHandler(IPC_CHANNELS.SETTINGS_GET, emptyArgsSchema, async () =>
-    settingsDb.getSettings()
+    settingsService.getAllSettings()
   );
 
   registerSafeHandler(IPC_CHANNELS.SETTINGS_SET, updateSettingsSchema, async (_event, [settings]) =>
-    settingsDb.setSettings(settings)
+    settingsService.updateSettings(settings)
   );
 }

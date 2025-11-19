@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { IPC_CHANNELS } from '@shared/ipc';
 import { CreateJournalInputSchema, IdSchema, UpdateJournalInputSchema } from '@shared/types';
 
-import * as journalDb from '../../database/journals';
+import { getJournalService } from '../../domain/container';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
 const createJournalSchema = z.tuple([CreateJournalInputSchema]);
@@ -22,25 +22,27 @@ const emptyArgsSchema = z.tuple([]);
  * Register all journal-related IPC handlers
  */
 export function registerJournalHandlers(): void {
+  const journalService = getJournalService();
+
   registerSafeHandler(IPC_CHANNELS.JOURNAL_CREATE, createJournalSchema, async (_event, [journal]) =>
-    journalDb.createJournal(journal)
+    journalService.createJournal(journal)
   );
 
   registerSafeHandler(IPC_CHANNELS.JOURNAL_GET_ALL, emptyArgsSchema, async () =>
-    journalDb.getAllJournals()
+    journalService.getAllJournals()
   );
 
   registerSafeHandler(IPC_CHANNELS.JOURNAL_GET_BY_ID, idParamSchema, async (_event, [id]) =>
-    journalDb.getJournalById(id)
+    journalService.getJournalById(id)
   );
 
   registerSafeHandler(
     IPC_CHANNELS.JOURNAL_UPDATE,
     updateJournalSchema,
-    async (_event, [id, updates]) => journalDb.updateJournal(id, updates)
+    async (_event, [id, updates]) => journalService.updateJournal(id, updates)
   );
 
   registerSafeHandler(IPC_CHANNELS.JOURNAL_DELETE, idParamSchema, async (_event, [id]) =>
-    journalDb.deleteJournal(id)
+    journalService.deleteJournal(id)
   );
 }
