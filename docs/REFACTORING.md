@@ -738,71 +738,113 @@ const THEME_OPTIONS = [
 
 ### 10. Database Transaction Helpers
 
-**Status:** ☐ Not Started
+**Status:** ✅ Completed (November 2025)
 
 **Why:** Ensure data integrity for multi-step operations. Prevent partial writes on error.
 
+**Previous State:**
+
+- Basic `withTransaction` helper existed but was limited
+- No async support
+- No savepoint support for nested transactions
+- No comprehensive tests
+- No documentation
+
 **Current State:**
 
-- Operations execute independently
-- No explicit transaction management
-- Risk of partial updates on error
+- Full-featured transaction module with sync and async support
+- Savepoint support for nested transactions
+- Configurable transaction modes (DEFERRED/IMMEDIATE/EXCLUSIVE)
+- Auto-save configuration
+- Comprehensive test coverage (15 tests passing)
+- Complete documentation
 
-**Target State:**
+**Implementation Summary:**
 
-- Transaction wrapper utilities
-- Automatic rollback on error
-- Nested transaction support
+1. **Created comprehensive transaction module** (`src/main/database/transactions.ts`)
+   - `withTransaction<T>()` - Synchronous transaction wrapper
+   - `withTransactionAsync<T>()` - Async transaction wrapper
+   - `savepoint()` - Manual savepoint management
+   - `withSavepoint<T>()` - Auto-managed savepoint wrapper
+   - `withSavepointAsync<T>()` - Async savepoint wrapper
+   - Support for transaction modes (DEFERRED/IMMEDIATE/EXCLUSIVE)
+   - Configurable auto-save behavior
 
-**Implementation Steps:**
+2. **Updated database index exports** (`src/main/database/index.ts`)
+   - Exported all new transaction helpers
+   - Maintained backward compatibility
 
-1. **Create transaction wrapper**
+3. **Created comprehensive test suite** (`src/main/database/transactions.test.ts`)
+   - 15 tests covering all transaction scenarios
+   - Tests for sync and async operations
+   - Tests for savepoint functionality
+   - Tests for nested savepoints
+   - Error propagation tests
+   - All tests passing
 
-   ```typescript
-   export async function withTransaction<T>(
-     db: Database,
-     fn: (db: Database) => Promise<T>
-   ): Promise<T> {
-     db.run('BEGIN TRANSACTION');
-     try {
-       const result = await fn(db);
-       db.run('COMMIT');
-       return result;
-     } catch (error) {
-       db.run('ROLLBACK');
-       throw error;
-     }
-   }
-   ```
+4. **Created usage documentation** (`docs/TRANSACTIONS.md`)
+   - API reference for all helpers
+   - Transaction mode explanations
+   - Common usage patterns
+   - Error handling guide
+   - Testing guide
+   - Best practices
 
-2. **Identify multi-step operations**
-   - Creating entry with tags
-   - Deleting journal with entries
-   - Importing multiple entries
+**Files Created:**
 
-3. **Wrap in transactions**
+- `src/main/database/transactions.ts` - Transaction helpers module
+- `src/main/database/transactions.test.ts` - Comprehensive tests
+- `docs/TRANSACTIONS.md` - Usage documentation
 
-   ```typescript
-   async createEntryWithTags(entry: Entry, tags: string[]) {
-     return withTransaction(db, async (db) => {
-       const newEntry = await createEntry(db, entry);
-       await addTagsToEntry(db, newEntry.id, tags);
-       return newEntry;
-     });
-   }
-   ```
+**Files Modified:**
 
-4. **Add savepoint support**
-   - For nested transactions
-   - Use SAVEPOINT/RELEASE/ROLLBACK TO
+- `src/main/database/index.ts` - Export transaction helpers
 
-5. **Test error scenarios**
-   - Ensure rollback works
-   - Test nested transactions
+**Integration with Repository Pattern:**
 
-**Dependencies:** None, but pairs well with #6 (repository pattern)
+All repository write operations already use `withTransaction`:
 
-**Effort:** \~1-2 days
+- `JournalRepository.create()` - Transactional
+- `JournalRepository.update()` - Transactional
+- `JournalRepository.delete()` - Transactional
+- `EntryRepository.create()` - Transactional
+- `EntryRepository.update()` - Transactional
+- `EntryRepository.delete()` - Transactional
+
+**Example Usage:**
+
+```typescript
+// Basic transaction
+withTransaction((db) => {
+  db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+  db.run('INSERT INTO entries (id, journal_id, content) VALUES (?, ?, ?)', [
+    entryId,
+    id,
+    'Content',
+  ]);
+}); // Both succeed or both fail
+
+// With savepoints for partial rollback
+withTransaction((db) => {
+  db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+
+  try {
+    withSavepoint(db, (db) => {
+      db.run('INSERT INTO entries (id, journal_id, content) VALUES (?, ?, ?)', [
+        entryId,
+        id,
+        'Content',
+      ]);
+    });
+  } catch (error) {
+    // Entry rolled back, journal preserved
+  }
+});
+```
+
+**Dependencies:** Pairs with #6 (repository pattern, completed)
+
+**Effort:** \~1 day (actual)
 
 ---
 
@@ -1155,8 +1197,8 @@ const THEME_OPTIONS = [
 | Critical  | 1      | 0           | 0           | 1         |
 | High      | 4      | 1           | 0           | 3         |
 | Medium    | 4      | 0           | 0           | 4         |
-| Low       | 6      | 5           | 0           | 1         |
-| **Total** | **15** | **6**       | **0**       | **9**     |
+| Low       | 6      | 4           | 0           | 2         |
+| **Total** | **15** | **5**       | **0**       | **10**    |
 
 ### Status Notes
 
@@ -1171,6 +1213,7 @@ const THEME_OPTIONS = [
 - `2025-11-19`: Completed #6 (Domain Repositories Pattern) - Implemented repository and service layers with DI container, separated business logic from data access, all 886 tests passing
 - `2025-11-20`: Completed #8 (IPC Error Boundaries) - Created IpcErrorBoundary component with automatic retry, renderer-side error handling for IPC failures
 - `2025-11-20`: Completed #13 (Feature-Driven Routing Shells) - Implemented lazy loading with route-level layouts and code splitting, reduced initial bundle from 1.1MB to 625KB (43% reduction)
+- `2025-11-20`: Completed #10 (Database Transaction Helpers) - Created comprehensive transaction module with sync/async support, savepoint functionality, 15 tests passing, complete documentation
 
 ---
 
@@ -1282,3 +1325,5 @@ const THEME_OPTIONS = [
 - `2025-11-20`: Completed #8 (IPC Error Boundaries) - Implemented comprehensive error handling for IPC failures in the renderer layer. Created `IpcErrorBoundary` component that catches IPC errors, displays user-friendly messages, and provides automatic retry functionality. Component integrates with ErrorBoundary for fallback handling and supports both automatic retries (every 5s) and manual retry buttons. Used in route layouts (EditorLayout, SettingsLayout) to scope error recovery to feature areas. Architecture allows graceful degradation when main process communication fails. All existing tests remain passing.
 
 - `2025-11-20`: Completed #13 (Feature-Driven Routing Shells) - Implemented route-level code splitting and lazy loading to optimize bundle size. Created hierarchical layout system with RootLayout (global error boundary), EditorLayout (editor-specific with IPC error boundary), and SettingsLayout (settings-specific with IPC error boundary). Built loading skeletons (EditorSkeleton, SettingsSkeleton) for smooth UX during code loading. Implemented lazy loading using TanStack Router's `lazyRouteComponent` for EditorPage and SettingsPage. Configured bundle visualizer (rollup-plugin-visualizer) for ongoing monitoring at `dist/stats.html`. Added manual chunks in Vite config for vendor code splitting (react-vendor, router, editor). Results: Initial bundle reduced from 1.1MB to 625KB (43% reduction). Editor chunk (394KB) and Settings chunk (23KB) now load on-demand. Added `defaultPreload: 'intent'` for hover-based preloading. Architecture scales easily for future route additions. Type check and build pass successfully.
+
+- `2025-11-20`: Completed #10 (Database Transaction Helpers) - Enhanced existing basic transaction helper with comprehensive features for ensuring data integrity in multi-step operations. Created full transaction module (`src/main/database/transactions.ts`) with five helpers: `withTransaction()` for sync operations, `withTransactionAsync()` for async operations, `savepoint()` for manual savepoint management, `withSavepoint()` and `withSavepointAsync()` for auto-managed savepoints. Added support for configurable transaction modes (DEFERRED/IMMEDIATE/EXCLUSIVE) with IMMEDIATE as default. Enabled auto-save configuration for performance optimization in tests. Updated database index to export all transaction helpers while maintaining backward compatibility. Created comprehensive test suite with 15 tests covering all scenarios: sync/async transactions, savepoint functionality, nested savepoints, error propagation, custom error types. All tests passing. Created complete usage documentation (`docs/TRANSACTIONS.md`) with API reference, transaction mode explanations, common patterns, error handling guide, testing guide, and best practices. All repository write operations already integrated with transactions. Type check passes successfully.

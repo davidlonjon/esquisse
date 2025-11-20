@@ -168,16 +168,16 @@ export async function closeDatabase(): Promise<void> {
  */
 export { saveDatabase };
 
-export function withTransaction<T>(fn: (database: Database) => T): T {
-  const database = getDatabase();
-  database.run('BEGIN IMMEDIATE TRANSACTION');
-  try {
-    const result = fn(database);
-    database.run('COMMIT');
-    saveDatabase();
-    return result;
-  } catch (error) {
-    database.run('ROLLBACK');
-    throw error;
-  }
-}
+/**
+ * Export comprehensive transaction helpers
+ */
+export {
+  withTransaction,
+  withTransactionAsync,
+  savepoint,
+  withSavepoint,
+  withSavepointAsync,
+  type TransactionMode,
+  type TransactionOptions,
+  type Savepoint,
+} from './transactions';
