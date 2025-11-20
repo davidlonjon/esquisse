@@ -7,13 +7,21 @@ import path from 'path';
  * Creates timestamped backups of the database file
  */
 
-const BACKUP_DIR = path.join(app.getPath('userData'), 'backups');
 const MAX_BACKUPS = 10; // Keep only the last 10 backups
+
+/**
+ * Get the backup directory path
+ * Lazy initialization to avoid accessing app.getPath during module load
+ */
+function getBackupDir(): string {
+  return path.join(app.getPath('userData'), 'backups');
+}
 
 /**
  * Ensure backup directory exists
  */
 function ensureBackupDir() {
+  const BACKUP_DIR = getBackupDir();
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
@@ -33,7 +41,7 @@ export function createBackup(dbPath: string): string | null {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `esquisse-backup-${timestamp}.db`;
-    const backupPath = path.join(BACKUP_DIR, backupFileName);
+    const backupPath = path.join(getBackupDir(), backupFileName);
 
     fs.copyFileSync(dbPath, backupPath);
     console.log('Database backup created:', backupPath);
@@ -53,6 +61,7 @@ export function createBackup(dbPath: string): string | null {
  */
 function cleanupOldBackups() {
   try {
+    const BACKUP_DIR = getBackupDir();
     const files = fs.readdirSync(BACKUP_DIR);
     const backupFiles = files
       .filter((file) => file.startsWith('esquisse-backup-') && file.endsWith('.db'))
@@ -101,6 +110,7 @@ export function listBackups(): Array<{ name: string; path: string; date: Date; s
   try {
     ensureBackupDir();
 
+    const BACKUP_DIR = getBackupDir();
     const files = fs.readdirSync(BACKUP_DIR);
     return files
       .filter((file) => file.startsWith('esquisse-backup-') && file.endsWith('.db'))

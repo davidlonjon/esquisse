@@ -4,12 +4,27 @@ import path from 'path';
 
 import initSqlJs, { Database } from 'sql.js';
 
+import { createBackup } from './backup';
 import { runMigrations } from './migrations';
 
 let db: Database | null = null;
 let dbPath: string | null = null;
 let saveInFlight: Promise<void> | null = null;
 let pendingSave = false;
+let saveTimer: NodeJS.Timeout | null = null;
+let backupTimer: NodeJS.Timeout | null = null;
+
+/**
+ * Debounce delay for database saves (milliseconds)
+ * Saves are delayed by this amount to batch rapid successive changes
+ */
+const SAVE_DEBOUNCE_MS = 1000;
+
+/**
+ * Interval for automatic database backups (milliseconds)
+ * Backups are created periodically to enable crash recovery
+ */
+const BACKUP_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
 
 const writeDatabaseFile = (): Buffer => {
   if (!db) {
@@ -66,10 +81,60 @@ export function getDatabasePath(): string {
 }
 
 /**
- * Save database to file
+ * Save database to file with debouncing
+ * Debounces saves to reduce disk I/O during rapid successive changes.
+ * Waits SAVE_DEBOUNCE_MS after the last change before actually saving.
  */
 function saveDatabase(): void {
-  scheduleSave();
+  // Clear any existing timer
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+  }
+
+  // Schedule save after debounce delay
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    scheduleSave();
+  }, SAVE_DEBOUNCE_MS);
+}
+
+/**
+ * Start periodic automatic backups
+ * Creates backups at regular intervals for crash recovery
+ */
+function startAutoBackup(): void {
+  if (!dbPath) {
+    console.warn('Cannot start auto-backup: database path not initialized');
+    return;
+  }
+
+  // Clear any existing timer
+  if (backupTimer) {
+    clearInterval(backupTimer);
+  }
+
+  // Create backup immediately on startup
+  createBackup(dbPath);
+
+  // Schedule periodic backups
+  backupTimer = setInterval(() => {
+    if (dbPath) {
+      createBackup(dbPath);
+    }
+  }, BACKUP_INTERVAL_MS);
+
+  console.log(`Auto-backup started: interval ${BACKUP_INTERVAL_MS / 1000 / 60} minutes`);
+}
+
+/**
+ * Stop periodic automatic backups
+ */
+function stopAutoBackup(): void {
+  if (backupTimer) {
+    clearInterval(backupTimer);
+    backupTimer = null;
+    console.log('Auto-backup stopped');
+  }
 }
 
 /**
@@ -125,6 +190,9 @@ export async function initializeDatabase(): Promise<Database> {
     runMigrations(db);
     flushDatabaseSync();
 
+    // Start periodic automatic backups
+    startAutoBackup();
+
     console.log('Database initialized successfully');
 
     return db;
@@ -146,9 +214,18 @@ export function getDatabase(): Database {
 
 /**
  * Close the database connection
+ * Ensures any pending debounced saves are flushed before closing
+ * Creates final backup on shutdown
  */
 export async function closeDatabase(): Promise<void> {
   if (db) {
+    // Clear debounce timer and flush immediately
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    // Wait for any in-flight save to complete
     if (saveInFlight) {
       try {
         await saveInFlight;
@@ -156,7 +233,16 @@ export async function closeDatabase(): Promise<void> {
         // already logged inside scheduleSave
       }
     }
+
+    // Final synchronous flush to ensure all data is saved
     flushDatabaseSync();
+
+    // Stop auto-backup and create final backup
+    stopAutoBackup();
+    if (dbPath) {
+      createBackup(dbPath);
+    }
+
     db.close();
     db = null;
     console.log('Database connection closed');

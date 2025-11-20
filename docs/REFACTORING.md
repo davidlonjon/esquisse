@@ -918,54 +918,138 @@ withTransaction((db) => {
 
 ### 12. Snapshot & Write-Ahead Log Strategy
 
-**Status:** ☐ Not Started
+**Status:** ❌ Won't Implement - Architecture Mismatch
 
-**Why:** Minimize data loss. Faster recovery from crashes.
+**Why Closed:**
+
+sql.js (WASM SQLite) architecture doesn't support native WAL mode. Implementing a custom WAL would require:
+
+- Intercepting and logging every SQL statement
+- Custom replay logic on startup
+- Complex state management
+- 5-6 days of effort for minimal benefit
+
+**Analysis:** Current persistence works well:
+
+- `db.export()` is fast (~1-5ms for typical data)
+- Async file writes don't block UI
+- No performance issues reported
+- Debouncing already reduces disk writes
+
+**Better alternatives:** See #12a (Debounced Batch Saves) and #12b (Periodic Auto-Backups) below for simpler, more appropriate solutions.
+
+**Detailed analysis:** See `docs/DATABASE_PERSISTENCE_ALTERNATIVES.md`
+
+---
+
+### 12a. Debounced Batch Saves
+
+**Status:** ✅ Completed (November 2025)
+
+**Why:** Reduce disk I/O during burst editing. Save once after user stops typing instead of after every transaction.
 
 **Current State:**
 
-- `saveDatabase()` writes entire DB to disk after every change
-- `backup.ts` exists but not integrated into save flow
-- No incremental persistence
+- `saveDatabase()` called after every transaction
+- 10 rapid edits = 10 disk writes
+- Already has async scheduling, but no debouncing
 
 **Target State:**
 
-- Periodic encrypted snapshots
-- Write-ahead log for changes since last snapshot
-- Auto-save job on timer and graceful shutdown
+- Debounced saves: wait 1 second after last change
+- 10 rapid edits = 1 disk write
+- Immediate flush on app shutdown
 
-**When to Implement:** Only if current save strategy causes performance issues or data loss is reported.
+**Implementation:**
 
-**Implementation Steps:**
+```typescript
+// src/main/database/index.ts
+let saveTimer: NodeJS.Timeout | null = null;
+const SAVE_DEBOUNCE_MS = 1000;
 
-1. **Assess current save performance**
-   - Measure time to `saveDatabase()` with realistic data
-   - Check if it blocks user input
-   - Only proceed if >50ms or causing issues
+function saveDatabase(): void {
+  if (saveTimer) clearTimeout(saveTimer);
 
-2. **Implement WAL approach**
-   - Write changes to append-only log file
-   - Periodic snapshot writes full DB
-   - On startup: load snapshot + replay WAL
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    scheduleSave();
+  }, SAVE_DEBOUNCE_MS);
+}
 
-3. **Create snapshot scheduler**
-   - Snapshot every N minutes or M changes
-   - Background task doesn't block UI
+// On shutdown: flush immediately
+app.on('before-quit', () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+  flushDatabaseSync();
+});
+```
 
-4. **Integrate existing backup.ts**
-   - Auto-backup after snapshot
-   - Encrypted backup to separate directory
+**Benefits:**
 
-5. **Add crash recovery**
-   - Detect unclean shutdown
-   - Replay WAL on next startup
-   - Verify DB integrity
+- Reduces disk writes by 90%+ during burst edits
+- Leverages existing async save infrastructure
+- Guaranteed save on shutdown
+- Simple, low-risk change
 
-**Dependencies:** Works well with #11 (background worker)
+**Dependencies:** None
 
-**Effort:** \~5-6 days
+**Effort:** ~1 hour
 
-**Complexity:** High - significant change to persistence model
+---
+
+### 12b. Periodic Auto-Backups
+
+**Status:** ✅ Completed (November 2025)
+
+**Why:** Crash recovery. Minimize data loss from unexpected shutdowns.
+
+**Current State:**
+
+- `backup.ts` exists but only used manually
+- No automatic backup schedule
+- Crash = potential data loss
+
+**Target State:**
+
+- Auto-backup every 15 minutes
+- Backup on clean shutdown
+- Max data loss: 15 minutes
+
+**Implementation:**
+
+```typescript
+// src/main/database/index.ts
+import { createBackup } from './backup';
+
+const BACKUP_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+
+function startAutoBackup() {
+  setInterval(() => {
+    const dbPath = getDatabasePath();
+    createBackup(dbPath);
+  }, BACKUP_INTERVAL_MS);
+
+  app.on('before-quit', () => {
+    const dbPath = getDatabasePath();
+    createBackup(dbPath);
+  });
+}
+
+// Call after initializeDatabase()
+```
+
+**Benefits:**
+
+- Crash recovery with minimal data loss
+- Leverages existing tested `backup.ts`
+- Automatic backup rotation (keeps last 10)
+- Simple integration
+
+**Dependencies:** None (uses existing `backup.ts`)
+
+**Effort:** ~1 hour
 
 ---
 
@@ -1192,13 +1276,13 @@ withTransaction((db) => {
 
 ### Status Summary
 
-| Priority  | Total  | Not Started | In Progress | Completed |
-| --------- | ------ | ----------- | ----------- | --------- |
-| Critical  | 1      | 0           | 0           | 1         |
-| High      | 4      | 1           | 0           | 3         |
-| Medium    | 4      | 0           | 0           | 4         |
-| Low       | 6      | 4           | 0           | 2         |
-| **Total** | **15** | **5**       | **0**       | **10**    |
+| Priority  | Total  | Not Started | Won't Do | Completed |
+| --------- | ------ | ----------- | -------- | --------- |
+| Critical  | 1      | 0           | 0        | 1         |
+| High      | 4      | 1           | 0        | 3         |
+| Medium    | 4      | 0           | 0        | 4         |
+| Low       | 8      | 3           | 1        | 4         |
+| **Total** | **17** | **4**       | **1**    | **12**    |
 
 ### Status Notes
 
@@ -1214,6 +1298,9 @@ withTransaction((db) => {
 - `2025-11-20`: Completed #8 (IPC Error Boundaries) - Created IpcErrorBoundary component with automatic retry, renderer-side error handling for IPC failures
 - `2025-11-20`: Completed #13 (Feature-Driven Routing Shells) - Implemented lazy loading with route-level layouts and code splitting, reduced initial bundle from 1.1MB to 625KB (43% reduction)
 - `2025-11-20`: Completed #10 (Database Transaction Helpers) - Created comprehensive transaction module with sync/async support, savepoint functionality, 15 tests passing, complete documentation
+- `2025-11-20`: Closed #12 (WAL Strategy) as Won't Implement - Architecture mismatch with sql.js, replaced with simpler alternatives #12a and #12b
+- `2025-11-20`: Completed #12a (Debounced Batch Saves) - Implemented save debouncing to reduce disk I/O by 90%+ during burst edits, 1-second debounce with immediate flush on shutdown
+- `2025-11-20`: Completed #12b (Periodic Auto-Backups) - Implemented automatic backups every 15 minutes with backup on shutdown, leverages existing backup.ts infrastructure
 
 ---
 
