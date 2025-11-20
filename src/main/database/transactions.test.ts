@@ -22,7 +22,6 @@ vi.mock('./index', async () => {
   return {
     ...actual,
     getDatabase: vi.fn(),
-    saveDatabase: vi.fn(),
   };
 });
 
@@ -32,7 +31,6 @@ describe('Transaction Helpers', () => {
   beforeEach(() => {
     const db = getTestDatabase();
     vi.mocked(indexModule.getDatabase).mockReturnValue(db);
-    vi.mocked(indexModule.saveDatabase).mockImplementation(() => {});
   });
 
   describe('withTransaction', () => {
@@ -42,23 +40,20 @@ describe('Transaction Helpers', () => {
       // Execute operation in transaction
       const result = withTransaction(
         (txDb) => {
-          txDb.run(
+          txDb.prepare(
             "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j1', 'Test Journal', datetime('now'), datetime('now'))"
-          );
+          ).run();
           return { id: 'j1' };
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify result
       expect(result).toEqual({ id: 'j1' });
 
       // Verify data was committed
-      const stmt = db.prepare('SELECT id, name FROM journals WHERE id = ?');
-      stmt.bind(['j1']);
-      const hasRow = stmt.step();
-      expect(hasRow).toBe(true);
-      stmt.free();
+      const row = db.prepare('SELECT id, name FROM journals WHERE id = ?').get('j1');
+      expect(row).toBeDefined();
     });
 
     it('should rollback transaction on error', () => {
@@ -68,22 +63,20 @@ describe('Transaction Helpers', () => {
       expect(() => {
         withTransaction(
           (txDb) => {
-            txDb.run(
+            txDb.prepare(
               "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j2', 'Journal 2', datetime('now'), datetime('now'))"
-            );
+            ).run();
             throw new Error('Intentional error');
           },
-          { autoSave: false, database: db }
+          { database: db }
         );
       }).toThrow('Intentional error');
 
       // Verify data was rolled back
-      const stmt = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?');
-      stmt.bind(['j2']);
-      stmt.step();
-      const count = stmt.getAsObject().count;
-      expect(count).toBe(0);
-      stmt.free();
+      const result = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?').get('j2') as {
+        count: number;
+      };
+      expect(result.count).toBe(0);
     });
 
     it('should support different transaction modes', () => {
@@ -92,22 +85,19 @@ describe('Transaction Helpers', () => {
       // Test with EXCLUSIVE mode
       const result = withTransaction(
         (txDb) => {
-          txDb.run(
+          txDb.prepare(
             "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j3', 'Journal 3', datetime('now'), datetime('now'))"
-          );
+          ).run();
           return { success: true };
         },
-        { mode: 'EXCLUSIVE', autoSave: false, database: db }
+        { mode: 'EXCLUSIVE', database: db }
       );
 
       expect(result.success).toBe(true);
 
       // Verify commit
-      const stmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      stmt.bind(['j3']);
-      const hasRow = stmt.step();
-      expect(hasRow).toBe(true);
-      stmt.free();
+      const row = db.prepare('SELECT id FROM journals WHERE id = ?').get('j3');
+      expect(row).toBeDefined();
     });
 
     it('should handle multiple operations in single transaction', () => {
@@ -125,7 +115,7 @@ describe('Transaction Helpers', () => {
             "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e1', 'j4', 'Entry content', datetime('now'), datetime('now'))"
           );
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify both were committed
@@ -159,7 +149,7 @@ describe('Transaction Helpers', () => {
             // Throw error
             throw new Error('Transaction failed');
           },
-          { autoSave: false, database: db }
+          { database: db }
         );
       }).toThrow('Transaction failed');
 
@@ -191,16 +181,14 @@ describe('Transaction Helpers', () => {
           await new Promise((resolve) => setTimeout(resolve, 10));
           return { id: 'j6' };
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       expect(result).toEqual({ id: 'j6' });
 
       // Verify commit
-      const stmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      stmt.bind(['j6']);
-      expect(stmt.step()).toBe(true);
-      stmt.free();
+      const row = db.prepare('SELECT id FROM journals WHERE id = ?').get('j6');
+      expect(row).toBeDefined();
     });
 
     it('should rollback async transaction on error', async () => {
@@ -209,22 +197,21 @@ describe('Transaction Helpers', () => {
       await expect(
         withTransactionAsync(
           async (txDb) => {
-            txDb.run(
+            txDb.prepare(
               "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j7', 'Journal 7', datetime('now'), datetime('now'))"
-            );
+            ).run();
             await new Promise((resolve) => setTimeout(resolve, 10));
             throw new Error('Async error');
           },
-          { autoSave: false, database: db }
+          { database: db }
         )
       ).rejects.toThrow('Async error');
 
       // Verify rollback
-      const stmt = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?');
-      stmt.bind(['j7']);
-      stmt.step();
-      expect(stmt.getAsObject().count).toBe(0);
-      stmt.free();
+      const result = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?').get('j7') as {
+        count: number;
+      };
+      expect(result.count).toBe(0);
     });
   });
 
@@ -250,7 +237,7 @@ describe('Transaction Helpers', () => {
           // Release savepoint (commit inner operation)
           sp.release();
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify both operations committed
@@ -288,7 +275,7 @@ describe('Transaction Helpers', () => {
 
           // Outer transaction continues
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify outer operation committed, inner operation rolled back
@@ -335,7 +322,7 @@ describe('Transaction Helpers', () => {
           );
           sp3.release();
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify: journal committed, e5 and e7 committed, e6 rolled back
@@ -378,7 +365,7 @@ describe('Transaction Helpers', () => {
             );
           });
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify both committed
@@ -413,7 +400,7 @@ describe('Transaction Helpers', () => {
             // Catch and ignore the error to continue outer transaction
           }
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify journal committed, entry rolled back
@@ -447,7 +434,7 @@ describe('Transaction Helpers', () => {
             );
           });
         },
-        { autoSave: false, database: db }
+        { database: db }
       );
 
       // Verify both committed
@@ -485,7 +472,7 @@ describe('Transaction Helpers', () => {
             );
             throw new CustomError('Custom error', 'CUSTOM_CODE');
           },
-          { autoSave: false, database: db }
+          { database: db }
         );
       }).toThrow(CustomError);
     });
@@ -502,7 +489,7 @@ describe('Transaction Helpers', () => {
             );
             throw new Error('Stack test');
           },
-          { autoSave: false, database: db }
+          { database: db }
         );
       } catch (error) {
         caughtError = error as Error;

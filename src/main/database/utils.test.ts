@@ -99,18 +99,18 @@ describe('utils.ts - Database Utility Functions', () => {
 
       // Insert test data
       const now = new Date().toISOString();
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+        now
+      );
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id2',
         'Journal 2',
         now,
-        now,
-      ]);
+        now
+      );
 
       const rows = selectRows(db, 'SELECT id, name FROM journals ORDER BY name');
 
@@ -123,10 +123,9 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(
-        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        ['id1', 'Test Journal', 'Test Description', now, now]
-      );
+      db.prepare(
+        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+      ).run('id1', 'Test Journal', 'Test Description', now, now);
 
       const rows = selectRows(db, 'SELECT id, name, description FROM journals');
 
@@ -141,18 +140,18 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+        now
+      );
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id2',
         'Journal 2',
         now,
-        now,
-      ]);
+        now
+      );
 
       const rows = selectRows(db, 'SELECT * FROM journals WHERE id = ?', ['id1']);
 
@@ -164,10 +163,9 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(
-        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        ['id1', 'Journal 1', null, now, now]
-      );
+      db.prepare(
+        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+      ).run('id1', 'Journal 1', null, now, now);
 
       const rows = selectRows(db, 'SELECT * FROM journals');
 
@@ -178,12 +176,12 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
+        now
+      );
 
       const rows = selectRows(db, 'SELECT * FROM journals');
 
@@ -193,11 +191,11 @@ describe('utils.ts - Database Utility Functions', () => {
     it('should handle different data types', () => {
       const db = getTestDatabase();
 
-      db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+      db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
         'test',
         '{"number": 42, "bool": true}',
-        new Date().toISOString(),
-      ]);
+        new Date().toISOString()
+      );
 
       const rows = selectRows(db, 'SELECT * FROM settings');
 
@@ -218,18 +216,18 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+        now
+      );
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id2',
         'Journal 2',
         now,
-        now,
-      ]);
+        now
+      );
 
       const row = selectOneRow(db, 'SELECT * FROM journals ORDER BY name');
 
@@ -241,10 +239,9 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(
-        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        ['id1', 'Test Journal', 'Test Description', now, now]
-      );
+      db.prepare(
+        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+      ).run('id1', 'Test Journal', 'Test Description', now, now);
 
       const row = selectOneRow(db, 'SELECT id, name, description FROM journals');
 
@@ -259,12 +256,12 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
+        now
+      );
 
       const row = selectOneRow(db, 'SELECT * FROM journals WHERE id = ?', ['id1']);
 
@@ -276,10 +273,9 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(
-        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        ['id1', 'Journal 1', null, now, now]
-      );
+      db.prepare(
+        `INSERT INTO journals (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+      ).run('id1', 'Journal 1', null, now, now);
 
       const row = selectOneRow(db, 'SELECT * FROM journals');
 
@@ -290,12 +286,12 @@ describe('utils.ts - Database Utility Functions', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'id1',
         'Journal 1',
         now,
-        now,
-      ]);
+        now
+      );
 
       const row = selectOneRow(db, 'SELECT * FROM journals');
 
@@ -412,9 +408,11 @@ describe('utils.ts - Database Utility Functions', () => {
       expect(() => runSqlFile(db, schemaPath)).not.toThrow();
 
       // Verify tables exist
-      const result = db.exec(`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`);
+      const result = db
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`)
+        .all() as Array<{ name: string }>;
 
-      const tableNames = result[0].values.map((row) => row[0]);
+      const tableNames = result.map((row) => row.name);
       expect(tableNames).toContain('journals');
       expect(tableNames).toContain('entries');
       expect(tableNames).toContain('settings');
@@ -436,12 +434,12 @@ describe('utils.ts - Database Utility Functions', () => {
 
       // Insert test data
       for (let i = 1; i <= 10; i++) {
-        db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+        db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
           `id${i}`,
           `Journal ${i}`,
           now,
-          now,
-        ]);
+          now
+        );
       }
 
       // Use pagination utilities
@@ -456,17 +454,16 @@ describe('utils.ts - Database Utility Functions', () => {
       const now = new Date().toISOString();
 
       // Insert journals and entries
-      db.run(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`, [
+      db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
         'journal1',
         'Work',
         now,
-        now,
-      ]);
-
-      db.run(
-        `INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        ['entry1', 'journal1', 'Test content', now, now]
+        now
       );
+
+      db.prepare(
+        `INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+      ).run('entry1', 'journal1', 'Test content', now, now);
 
       // Complex join query
       const rows = selectRows(

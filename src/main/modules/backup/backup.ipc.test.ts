@@ -9,7 +9,6 @@ import * as backupService from '../../database/backup';
 // Mock the database module
 vi.mock('../../database', () => ({
   getDatabasePath: vi.fn(),
-  forceFlushDatabase: vi.fn(),
 }));
 
 // Mock the backup service
@@ -61,24 +60,9 @@ describe('backup.ipc.ts - Backup IPC Handlers', () => {
       const handler = mockHandlers.get(IPC_CHANNELS.BACKUP_CREATE)!;
       const result = await handler(mockEvent, []);
 
-      expect(database.forceFlushDatabase).toHaveBeenCalled();
       expect(database.getDatabasePath).toHaveBeenCalled();
       expect(backupService.createBackup).toHaveBeenCalledWith(mockDbPath);
       expect(result).toBe(mockBackupPath);
-    });
-
-    it('should flush database before creating backup', async () => {
-      const mockDbPath = '/path/to/esquisse.db';
-      vi.mocked(database.getDatabasePath).mockReturnValue(mockDbPath);
-      vi.mocked(backupService.createBackup).mockReturnValue('/backup/path');
-
-      const handler = mockHandlers.get(IPC_CHANNELS.BACKUP_CREATE)!;
-      await handler(mockEvent, []);
-
-      // Verify flush is called before createBackup
-      const flushOrder = vi.mocked(database.forceFlushDatabase).mock.invocationCallOrder[0];
-      const createOrder = vi.mocked(backupService.createBackup).mock.invocationCallOrder[0];
-      expect(flushOrder).toBeLessThan(createOrder);
     });
 
     it('should return null if backup creation fails', async () => {
@@ -176,26 +160,9 @@ describe('backup.ipc.ts - Backup IPC Handlers', () => {
       const handler = mockHandlers.get(IPC_CHANNELS.BACKUP_RESTORE)!;
       const result = await handler(mockEvent, [{ path: backupPath }]);
 
-      expect(database.forceFlushDatabase).toHaveBeenCalled();
       expect(database.getDatabasePath).toHaveBeenCalled();
       expect(backupService.restoreBackup).toHaveBeenCalledWith(backupPath, targetDbPath);
       expect(result).toBe(true);
-    });
-
-    it('should flush database before restoring backup', async () => {
-      const backupPath = '/backup/path.db';
-      const targetDbPath = '/target/path.db';
-
-      vi.mocked(database.getDatabasePath).mockReturnValue(targetDbPath);
-      vi.mocked(backupService.restoreBackup).mockReturnValue(true);
-
-      const handler = mockHandlers.get(IPC_CHANNELS.BACKUP_RESTORE)!;
-      await handler(mockEvent, [{ path: backupPath }]);
-
-      // Verify flush is called before restoreBackup
-      const flushOrder = vi.mocked(database.forceFlushDatabase).mock.invocationCallOrder[0];
-      const restoreOrder = vi.mocked(backupService.restoreBackup).mock.invocationCallOrder[0];
-      expect(flushOrder).toBeLessThan(restoreOrder);
     });
 
     it('should return false if restore fails', async () => {

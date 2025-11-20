@@ -83,8 +83,10 @@ describe('entries.ts - Database CRUD Operations', () => {
       const entry = createEntry({ ...mockEntryInput, journalId: testJournalId });
       const db = getTestDatabase();
 
-      const result = db.exec('SELECT tags FROM entries WHERE id = ?', [entry.id]);
-      const tagsJson = result[0].values[0][0] as string;
+      const result = db.prepare('SELECT tags FROM entries WHERE id = ?').get(entry.id) as {
+        tags: string;
+      };
+      const tagsJson = result.tags;
 
       expect(JSON.parse(tagsJson)).toEqual(mockEntryInput.tags);
     });

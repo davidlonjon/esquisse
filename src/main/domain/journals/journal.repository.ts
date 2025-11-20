@@ -1,6 +1,6 @@
 /**
  * SQLite Journal Repository Implementation
- * Handles journal data access using SQLite via sql.js
+ * Handles journal data access using SQLite via better-sqlite3
  */
 
 import { randomUUID } from 'crypto';
@@ -35,11 +35,10 @@ export class JournalRepository implements IJournalRepository {
       const id = randomUUID();
       const now = new Date().toISOString();
 
-      db.run(
+      db.prepare(
         `INSERT INTO journals (id, name, description, color, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [id, input.name, input.description ?? null, input.color ?? null, now, now]
-      );
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).run(id, input.name, input.description ?? null, input.color ?? null, now, now);
 
       return {
         id,
@@ -99,7 +98,7 @@ export class JournalRepository implements IJournalRepository {
       fields.push('updated_at = ?');
       values.push(now, id);
 
-      db.run(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`, values);
+      db.prepare(`UPDATE journals SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 
       const updated = this.findById(id);
       if (!updated) {
@@ -111,7 +110,7 @@ export class JournalRepository implements IJournalRepository {
 
   delete(id: string): boolean {
     return withTransaction((db) => {
-      db.run('DELETE FROM journals WHERE id = ?', [id]);
+      db.prepare('DELETE FROM journals WHERE id = ?').run(id);
       return true;
     });
   }

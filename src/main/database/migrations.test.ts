@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import initSqlJs, { Database } from 'sql.js';
+import Database from 'better-sqlite3';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { tableExists, indexExists } from '@test/helpers/database.helper';
@@ -10,15 +10,12 @@ import { runMigrations } from './migrations';
 import { runSqlScript } from './utils';
 
 describe('migrations.ts - Database Schema Migrations', () => {
-  let db: Database;
+  let db: Database.Database;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Create a fresh database without schema for each test
-    const SQL = await initSqlJs({
-      locateFile: (file) => path.join(process.cwd(), 'node_modules/sql.js/dist', file),
-    });
-    db = new SQL.Database();
-    db.run('PRAGMA foreign_keys = ON');
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
   });
 
   afterEach(() => {
@@ -53,8 +50,10 @@ describe('migrations.ts - Database Schema Migrations', () => {
     it('should record applied migrations in migrations table', () => {
       runMigrations(db);
 
-      const result = db.exec('SELECT id FROM schema_migrations ORDER BY id');
-      const migrationIds = result[0].values.map((row) => row[0]);
+      const result = db.prepare('SELECT id FROM schema_migrations ORDER BY id').all() as Array<{
+        id: string;
+      }>;
+      const migrationIds = result.map((row) => row.id);
 
       expect(migrationIds).toContain('001_initial_schema');
       expect(migrationIds).toContain('002_indexes');
@@ -66,16 +65,18 @@ describe('migrations.ts - Database Schema Migrations', () => {
       runMigrations(db);
       // const afterMigration = new Date().toISOString();
 
-      const result = db.exec('SELECT id, applied_at FROM schema_migrations ORDER BY id');
+      const result = db.prepare('SELECT id, applied_at FROM schema_migrations ORDER BY id').all() as Array<{
+        id: string;
+        applied_at: string;
+      }>;
 
-      expect(result[0].values.length).toBeGreaterThan(0);
+      expect(result.length).toBeGreaterThan(0);
 
-      result[0].values.forEach((row) => {
-        const appliedAt = row[1] as string;
-        expect(appliedAt).toBeDefined();
+      result.forEach((row) => {
+        expect(row.applied_at).toBeDefined();
         // SQLite datetime('now') format is slightly different, just verify it exists
-        expect(typeof appliedAt).toBe('string');
-        expect(appliedAt.length).toBeGreaterThan(0);
+        expect(typeof row.applied_at).toBe('string');
+        expect(row.applied_at.length).toBeGreaterThan(0);
       });
     });
 
@@ -85,30 +86,34 @@ describe('migrations.ts - Database Schema Migrations', () => {
 
       // Insert a test record to verify it persists
       const now = new Date().toISOString();
-      db.run('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)', [
+      db.prepare('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run(
         'test-id',
         'Test Journal',
         now,
-        now,
-      ]);
+        now
+      );
 
       // Run migrations again
       runMigrations(db);
 
       // Test record should still exist
-      const result = db.exec('SELECT * FROM journals WHERE id = ?', ['test-id']);
-      expect(result[0].values.length).toBe(1);
+      const result = db.prepare('SELECT * FROM journals WHERE id = ?').all('test-id');
+      expect(result.length).toBe(1);
 
       // Migrations should still only be recorded once
-      const migrations = db.exec('SELECT COUNT(*) as count FROM schema_migrations');
-      expect(migrations[0].values[0][0]).toBe(2); // Two migrations total
+      const migrations = db.prepare('SELECT COUNT(*) as count FROM schema_migrations').get() as {
+        count: number;
+      };
+      expect(migrations.count).toBe(2); // Two migrations total
     });
 
     it('should apply migrations in order', () => {
       runMigrations(db);
 
-      const result = db.exec('SELECT id FROM schema_migrations ORDER BY rowid');
-      const migrationIds = result[0].values.map((row) => row[0]);
+      const result = db.prepare('SELECT id FROM schema_migrations ORDER BY rowid').all() as Array<{
+        id: string;
+      }>;
+      const migrationIds = result.map((row) => row.id);
 
       // First migration should be schema, second should be indexes
       expect(migrationIds[0]).toBe('001_initial_schema');
@@ -132,12 +137,19 @@ describe('migrations.ts - Database Schema Migrations', () => {
     it('should create journals table with correct schema', () => {
       runMigrations(db);
 
-      const result = db.exec(`PRAGMA table_info(journals)`);
-      const columns = result[0].values.map((row) => ({
-        name: row[1],
-        type: row[2],
-        notnull: row[3],
-        pk: row[5],
+      const result = db.pragma('table_info(journals)') as Array<{
+        cid: number;
+        name: string;
+        type: string;
+        notnull: number;
+        dflt_value: unknown;
+        pk: number;
+      }>;
+      const columns = result.map((row) => ({
+        name: row.name,
+        type: row.type,
+        notnull: row.notnull,
+        pk: row.pk,
       }));
 
       expect(columns).toContainEqual(expect.objectContaining({ name: 'id', type: 'TEXT', pk: 1 }));
@@ -159,12 +171,19 @@ describe('migrations.ts - Database Schema Migrations', () => {
     it('should create entries table with correct schema', () => {
       runMigrations(db);
 
-      const result = db.exec(`PRAGMA table_info(entries)`);
-      const columns = result[0].values.map((row) => ({
-        name: row[1],
-        type: row[2],
-        notnull: row[3],
-        pk: row[5],
+      const result = db.pragma('table_info(entries)') as Array<{
+        cid: number;
+        name: string;
+        type: string;
+        notnull: number;
+        dflt_value: unknown;
+        pk: number;
+      }>;
+      const columns = result.map((row) => ({
+        name: row.name,
+        type: row.type,
+        notnull: row.notnull,
+        pk: row.pk,
       }));
 
       expect(columns).toContainEqual(expect.objectContaining({ name: 'id', type: 'TEXT', pk: 1 }));
@@ -187,14 +206,23 @@ describe('migrations.ts - Database Schema Migrations', () => {
     it('should create entries table with foreign key constraint', () => {
       runMigrations(db);
 
-      const result = db.exec(`PRAGMA foreign_key_list(entries)`);
+      const result = db.pragma('foreign_key_list(entries)') as Array<{
+        id: number;
+        seq: number;
+        table: string;
+        from: string;
+        to: string;
+        on_update: string;
+        on_delete: string;
+        match: string;
+      }>;
 
       expect(result.length).toBeGreaterThan(0);
-      const foreignKey = result[0].values[0];
+      const foreignKey = result[0];
 
-      expect(foreignKey[2]).toBe('journals'); // Referenced table
-      expect(foreignKey[3]).toBe('journal_id'); // From column
-      expect(foreignKey[4]).toBe('id'); // To column
+      expect(foreignKey.table).toBe('journals'); // Referenced table
+      expect(foreignKey.from).toBe('journal_id'); // From column
+      expect(foreignKey.to).toBe('id'); // To column
     });
 
     it('should enforce CASCADE delete on foreign key', () => {
@@ -202,38 +230,44 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const now = new Date().toISOString();
 
       // Insert journal and entry
-      db.run('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)', [
+      db.prepare('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run(
         'journal-1',
         'Test',
         now,
-        now,
-      ]);
-      db.run(
-        'INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-        ['entry-1', 'journal-1', 'Test content', now, now]
+        now
       );
+      db.prepare(
+        'INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      ).run('entry-1', 'journal-1', 'Test content', now, now);
 
       // Verify entry exists
-      let entries = db.exec('SELECT * FROM entries WHERE id = ?', ['entry-1']);
-      expect(entries[0].values.length).toBe(1);
+      let entries = db.prepare('SELECT * FROM entries WHERE id = ?').all('entry-1') as unknown[];
+      expect(entries.length).toBe(1);
 
       // Delete journal
-      db.run('DELETE FROM journals WHERE id = ?', ['journal-1']);
+      db.prepare('DELETE FROM journals WHERE id = ?').run('journal-1');
 
       // Entry should be cascade deleted
-      entries = db.exec('SELECT * FROM entries WHERE id = ?', ['entry-1']);
-      expect(entries.length === 0 || entries[0].values.length === 0).toBe(true);
+      entries = db.prepare('SELECT * FROM entries WHERE id = ?').all('entry-1') as unknown[];
+      expect(entries.length).toBe(0);
     });
 
     it('should create settings table with correct schema', () => {
       runMigrations(db);
 
-      const result = db.exec(`PRAGMA table_info(settings)`);
-      const columns = result[0].values.map((row) => ({
-        name: row[1],
-        type: row[2],
-        notnull: row[3],
-        pk: row[5],
+      const result = db.pragma('table_info(settings)') as Array<{
+        cid: number;
+        name: string;
+        type: string;
+        notnull: number;
+        dflt_value: unknown;
+        pk: number;
+      }>;
+      const columns = result.map((row) => ({
+        name: row.name,
+        type: row.type,
+        notnull: row.notnull,
+        pk: row.pk,
       }));
 
       expect(columns).toContainEqual(expect.objectContaining({ name: 'key', type: 'TEXT', pk: 1 }));
@@ -250,21 +284,21 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const badDb = db;
 
       // Manually apply first migration
-      badDb.run(`CREATE TABLE IF NOT EXISTS schema_migrations (
+      badDb.prepare(`CREATE TABLE IF NOT EXISTS schema_migrations (
         id TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL
-      )`);
+      )`).run();
 
       // Apply first migration successfully
       const schemaPath = path.join(__dirname, 'schema.sql');
       const schema = fs.readFileSync(schemaPath, 'utf-8');
       runSqlScript(badDb, schema);
-      badDb.run(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, datetime('now'))`, [
-        '001_initial_schema',
-      ]);
+      badDb.prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, datetime('now'))`).run(
+        '001_initial_schema'
+      );
 
       // Create a conflicting index to make second migration fail
-      badDb.run('CREATE INDEX idx_entries_updated_at ON entries(updated_at)');
+      badDb.prepare('CREATE INDEX idx_entries_updated_at ON entries(updated_at)').run();
 
       // Now try to run migrations - second migration should fail and rollback
       // But since it's in a transaction, it should not record the failed migration
@@ -290,10 +324,10 @@ describe('migrations.ts - Database Schema Migrations', () => {
 
     it('should handle database with partial schema', () => {
       // Manually create migrations table only
-      db.run(`CREATE TABLE schema_migrations (
+      db.prepare(`CREATE TABLE schema_migrations (
         id TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL
-      )`);
+      )`).run();
 
       runMigrations(db);
 
@@ -308,8 +342,10 @@ describe('migrations.ts - Database Schema Migrations', () => {
       runMigrations(db);
       runMigrations(db);
 
-      const count = db.exec('SELECT COUNT(*) FROM schema_migrations')[0].values[0][0];
-      expect(count).toBe(2); // Only 2 migrations should be recorded
+      const result = db.prepare('SELECT COUNT(*) as count FROM schema_migrations').get() as {
+        count: number;
+      };
+      expect(result.count).toBe(2); // Only 2 migrations should be recorded
     });
   });
 
@@ -319,18 +355,16 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const now = new Date().toISOString();
 
       // Insert test data
+      const insertJournal = db.prepare(
+        'INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)'
+      );
       for (let i = 0; i < 100; i++) {
-        db.run('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)', [
-          `journal-${i}`,
-          `Journal ${i}`,
-          now,
-          now,
-        ]);
+        insertJournal.run(`journal-${i}`, `Journal ${i}`, now, now);
       }
 
       // Query should use index (we can't directly test performance, but verify query works)
-      const result = db.exec('SELECT * FROM journals ORDER BY updated_at DESC LIMIT 10');
-      expect(result[0].values.length).toBe(10);
+      const result = db.prepare('SELECT * FROM journals ORDER BY updated_at DESC LIMIT 10').all();
+      expect(result.length).toBe(10);
     });
 
     it('should create composite index for entries', () => {
@@ -341,26 +375,25 @@ describe('migrations.ts - Database Schema Migrations', () => {
 
       // Insert test data to verify index works
       const now = new Date().toISOString();
-      db.run('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)', [
+      db.prepare('INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run(
         'journal-1',
         'Test',
         now,
-        now,
-      ]);
+        now
+      );
 
+      const insertEntry = db.prepare(
+        'INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      );
       for (let i = 0; i < 50; i++) {
-        db.run(
-          'INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-          [`entry-${i}`, 'journal-1', `Content ${i}`, now, now]
-        );
+        insertEntry.run(`entry-${i}`, 'journal-1', `Content ${i}`, now, now);
       }
 
       // Query using composite index
-      const result = db.exec(
-        'SELECT * FROM entries WHERE journal_id = ? ORDER BY updated_at DESC LIMIT 10',
-        ['journal-1']
-      );
-      expect(result[0].values.length).toBe(10);
+      const result = db
+        .prepare('SELECT * FROM entries WHERE journal_id = ? ORDER BY updated_at DESC LIMIT 10')
+        .all('journal-1');
+      expect(result.length).toBe(10);
     });
   });
 });

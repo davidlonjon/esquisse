@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import type { Database } from 'sql.js';
+import type Database from 'better-sqlite3';
 
 import { runSqlScript } from './utils';
 
 interface Migration {
   id: string;
-  up: (db: Database) => void;
+  up: (db: Database.Database) => void;
 }
 
 const MIGRATIONS: Migration[] = [
@@ -22,48 +22,42 @@ const MIGRATIONS: Migration[] = [
   {
     id: '002_indexes',
     up: (db) => {
-      db.run('CREATE INDEX IF NOT EXISTS idx_entries_updated_at ON entries(updated_at)');
-      db.run(
+      db.prepare('CREATE INDEX IF NOT EXISTS idx_entries_updated_at ON entries(updated_at)').run();
+      db.prepare(
         'CREATE INDEX IF NOT EXISTS idx_entries_journal_updated ON entries(journal_id, updated_at)'
-      );
-      db.run('CREATE INDEX IF NOT EXISTS idx_journals_updated_at ON journals(updated_at)');
+      ).run();
+      db.prepare('CREATE INDEX IF NOT EXISTS idx_journals_updated_at ON journals(updated_at)').run();
     },
   },
 ];
 
 const MIGRATIONS_TABLE = 'schema_migrations';
 
-export function runMigrations(db: Database): void {
-  db.run(
+export function runMigrations(db: Database.Database): void {
+  db.prepare(
     `CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE} (
       id TEXT PRIMARY KEY,
       applied_at TEXT NOT NULL
     )`
-  );
+  ).run();
 
-  const appliedResult = db.exec(`SELECT id FROM ${MIGRATIONS_TABLE}`);
-  const appliedIds = new Set<string>();
-  if (appliedResult.length > 0) {
-    const rows = appliedResult[0];
-    rows.values.forEach((row) => {
-      appliedIds.add(row[0] as string);
-    });
-  }
+  const appliedRows = db.prepare(`SELECT id FROM ${MIGRATIONS_TABLE}`).all() as Array<{ id: string }>;
+  const appliedIds = new Set<string>(appliedRows.map((row) => row.id));
 
   for (const migration of MIGRATIONS) {
     if (appliedIds.has(migration.id)) {
       continue;
     }
 
-    db.run('BEGIN TRANSACTION');
+    db.prepare('BEGIN TRANSACTION').run();
     try {
       migration.up(db);
-      db.run(`INSERT INTO ${MIGRATIONS_TABLE} (id, applied_at) VALUES (?, datetime('now'))`, [
-        migration.id,
-      ]);
-      db.run('COMMIT');
+      db.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (id, applied_at) VALUES (?, datetime('now'))`).run(
+        migration.id
+      );
+      db.prepare('COMMIT').run();
     } catch (error) {
-      db.run('ROLLBACK');
+      db.prepare('ROLLBACK').run();
       throw error;
     }
   }

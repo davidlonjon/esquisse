@@ -8,9 +8,9 @@
  * @module database/transactions
  */
 
-import type { Database } from 'sql.js';
+import type Database from 'better-sqlite3';
 
-import { getDatabase, saveDatabase } from './index';
+import { getDatabase } from './index';
 
 /**
  * Transaction isolation levels supported by SQLite
@@ -30,20 +30,14 @@ export interface TransactionOptions {
    * - EXCLUSIVE: Exclusive lock acquired immediately
    */
   mode?: TransactionMode;
-
-  /**
-   * Whether to save database to disk after successful commit
-   * @default true
-   */
-  autoSave?: boolean;
 }
 
 /**
  * Execute a synchronous operation within a database transaction.
  *
- * If the operation completes successfully, the transaction is committed
- * and the database is saved to disk (unless autoSave is false).
+ * If the operation completes successfully, the transaction is committed.
  * If an error occurs, the transaction is automatically rolled back.
+ * With better-sqlite3, all changes are automatically persisted via WAL mode.
  *
  * @template T The return type of the operation
  * @param fn Function to execute within the transaction
@@ -54,7 +48,7 @@ export interface TransactionOptions {
  * @example
  * ```typescript
  * const journal = withTransaction((db) => {
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(id, name);
  *   return { id, name };
  * });
  * ```
@@ -63,29 +57,26 @@ export interface TransactionOptions {
  * ```typescript
  * // Multi-step operation with automatic rollback on error
  * const result = withTransaction((db) => {
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [journalId, name]);
- *   db.run('INSERT INTO entries (id, journal_id, content) VALUES (?, ?, ?)', [entryId, journalId, content]);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(journalId, name);
+ *   db.prepare('INSERT INTO entries (id, journal_id, content) VALUES (?, ?, ?)').run(entryId, journalId, content);
  *   return { journalId, entryId };
  * }); // Both inserts committed together, or both rolled back on error
  * ```
  */
 export function withTransaction<T>(
-  fn: (database: Database) => T,
-  options: TransactionOptions & { database?: Database } = {}
+  fn: (database: Database.Database) => T,
+  options: TransactionOptions & { database?: Database.Database } = {}
 ): T {
-  const { mode = 'IMMEDIATE', autoSave = true, database: db } = options;
+  const { mode = 'IMMEDIATE', database: db } = options;
   const database = db || getDatabase();
 
-  database.run(`BEGIN ${mode} TRANSACTION`);
+  database.prepare(`BEGIN ${mode}`).run();
   try {
     const result = fn(database);
-    database.run('COMMIT');
-    if (autoSave) {
-      saveDatabase();
-    }
+    database.prepare('COMMIT').run();
     return result;
   } catch (error) {
-    database.run('ROLLBACK');
+    database.prepare('ROLLBACK').run();
     throw error;
   }
 }
@@ -94,7 +85,7 @@ export function withTransaction<T>(
  * Execute an asynchronous operation within a database transaction.
  *
  * Similar to {@link withTransaction} but supports async functions.
- * Note: sql.js operations are synchronous, but this allows wrapping
+ * Note: better-sqlite3 operations are synchronous, but this allows wrapping
  * operations that include async business logic.
  *
  * @template T The return type of the async operation
@@ -106,29 +97,26 @@ export function withTransaction<T>(
  * @example
  * ```typescript
  * const result = await withTransactionAsync(async (db) => {
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(id, name);
  *   await someAsyncValidation(id);
  *   return { id, name };
  * });
  * ```
  */
 export async function withTransactionAsync<T>(
-  fn: (database: Database) => Promise<T>,
-  options: TransactionOptions & { database?: Database } = {}
+  fn: (database: Database.Database) => Promise<T>,
+  options: TransactionOptions & { database?: Database.Database } = {}
 ): Promise<T> {
-  const { mode = 'IMMEDIATE', autoSave = true, database: db } = options;
+  const { mode = 'IMMEDIATE', database: db } = options;
   const database = db || getDatabase();
 
-  database.run(`BEGIN ${mode} TRANSACTION`);
+  database.prepare(`BEGIN ${mode}`).run();
   try {
     const result = await fn(database);
-    database.run('COMMIT');
-    if (autoSave) {
-      saveDatabase();
-    }
+    database.prepare('COMMIT').run();
     return result;
   } catch (error) {
-    database.run('ROLLBACK');
+    database.prepare('ROLLBACK').run();
     throw error;
   }
 }
@@ -142,11 +130,11 @@ export async function withTransactionAsync<T>(
  * @example
  * ```typescript
  * withTransaction((db) => {
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id1, 'Journal 1']);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(id1, 'Journal 1');
  *
  *   const sp = savepoint(db, 'entry_insert');
  *   try {
- *     db.run('INSERT INTO entries (id, journal_id) VALUES (?, ?)', [entryId, id1]);
+ *     db.prepare('INSERT INTO entries (id, journal_id) VALUES (?, ?)').run(entryId, id1);
  *     sp.release(); // Commit the savepoint
  *   } catch (error) {
  *     sp.rollback(); // Rollback only the entry insert
@@ -193,12 +181,12 @@ let savepointCounter = 0;
  * ```typescript
  * withTransaction((db) => {
  *   // Outer operation
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(id, name);
  *
  *   // Create savepoint for inner operation
  *   const sp = savepoint(db, 'inner_op');
  *   try {
- *     db.run('INSERT INTO entries (id, journal_id) VALUES (?, ?)', [entryId, id]);
+ *     db.prepare('INSERT INTO entries (id, journal_id) VALUES (?, ?)').run(entryId, id);
  *     sp.release(); // Success - commit savepoint
  *   } catch (error) {
  *     sp.rollback(); // Error - rollback only the entry insert
@@ -207,21 +195,21 @@ let savepointCounter = 0;
  * });
  * ```
  */
-export function savepoint(database: Database, name?: string): Savepoint {
+export function savepoint(database: Database.Database, name?: string): Savepoint {
   const savepointName = name || `sp_${++savepointCounter}`;
 
   // Create the savepoint
-  database.run(`SAVEPOINT ${savepointName}`);
+  database.prepare(`SAVEPOINT ${savepointName}`).run();
 
   return {
     name: savepointName,
 
     release() {
-      database.run(`RELEASE SAVEPOINT ${savepointName}`);
+      database.prepare(`RELEASE SAVEPOINT ${savepointName}`).run();
     },
 
     rollback() {
-      database.run(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+      database.prepare(`ROLLBACK TO SAVEPOINT ${savepointName}`).run();
     },
   };
 }
@@ -242,12 +230,12 @@ export function savepoint(database: Database, name?: string): Savepoint {
  * @example
  * ```typescript
  * withTransaction((db) => {
- *   db.run('INSERT INTO journals (id, name) VALUES (?, ?)', [id, name]);
+ *   db.prepare('INSERT INTO journals (id, name) VALUES (?, ?)').run(id, name);
  *
  *   // Nested operation with automatic savepoint management
  *   try {
  *     withSavepoint(db, (db) => {
- *       db.run('INSERT INTO entries (id, journal_id) VALUES (?, ?)', [entryId, id]);
+ *       db.prepare('INSERT INTO entries (id, journal_id) VALUES (?, ?)').run(entryId, id);
  *       if (someCondition) {
  *         throw new Error('Validation failed');
  *       }
@@ -260,8 +248,8 @@ export function savepoint(database: Database, name?: string): Savepoint {
  * ```
  */
 export function withSavepoint<T>(
-  database: Database,
-  fn: (database: Database) => T,
+  database: Database.Database,
+  fn: (database: Database.Database) => T,
   name?: string
 ): T {
   const sp = savepoint(database, name);
@@ -288,8 +276,8 @@ export function withSavepoint<T>(
  * @throws Re-throws any error after rolling back the savepoint
  */
 export async function withSavepointAsync<T>(
-  database: Database,
-  fn: (database: Database) => Promise<T>,
+  database: Database.Database,
+  fn: (database: Database.Database) => Promise<T>,
   name?: string
 ): Promise<T> {
   const sp = savepoint(database, name);

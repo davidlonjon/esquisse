@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { IPC_CHANNELS } from '@shared/ipc';
 import type { BackupInfo } from '@shared/types';
 
-import { getDatabasePath, forceFlushDatabase } from '../../database';
+import { getDatabasePath } from '../../database';
 import { createBackup, listBackups, restoreBackup } from '../../database/backup';
 import { registerSafeHandler } from '../../ipc/safe-handler';
 
@@ -23,7 +23,6 @@ const formatBackupInfo = (info: ReturnType<typeof listBackups>[number]): BackupI
 
 export function registerBackupHandlers(): void {
   registerSafeHandler(IPC_CHANNELS.BACKUP_CREATE, emptyArgsSchema, async () => {
-    forceFlushDatabase();
     const path = getDatabasePath();
     return createBackup(path);
   });
@@ -33,7 +32,6 @@ export function registerBackupHandlers(): void {
   });
 
   registerSafeHandler(IPC_CHANNELS.BACKUP_RESTORE, restoreSchema, async (_event, [{ path }]) => {
-    forceFlushDatabase();
     const targetPath = getDatabasePath();
     return restoreBackup(path, targetPath);
   });

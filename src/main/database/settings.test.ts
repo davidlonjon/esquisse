@@ -12,7 +12,6 @@ vi.mock('./index', async () => {
   return {
     ...actual,
     getDatabase: vi.fn(),
-    saveDatabase: vi.fn(),
     withTransaction: vi.fn(),
   };
 });
@@ -24,11 +23,8 @@ describe('settings.ts - Database Settings Operations', () => {
     const db = getTestDatabase();
     vi.mocked(indexModule.getDatabase).mockReturnValue(db);
     // Mock withTransaction to execute the callback with the test database
-    // and call saveDatabase (as the real implementation does)
     vi.mocked(indexModule.withTransaction).mockImplementation((fn) => {
-      const result = fn(db);
-      indexModule.saveDatabase();
-      return result;
+      return fn(db);
     });
   });
 
@@ -50,11 +46,11 @@ describe('settings.ts - Database Settings Operations', () => {
       const db = getTestDatabase();
 
       // Insert a single setting
-      db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+      db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
         'theme',
         JSON.stringify('dark'),
-        new Date().toISOString(),
-      ]);
+        new Date().toISOString()
+      );
 
       const settings = getSettings();
 
@@ -72,16 +68,16 @@ describe('settings.ts - Database Settings Operations', () => {
       const db = getTestDatabase();
       const now = new Date().toISOString();
 
-      db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+      db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
         'fontSize',
         JSON.stringify(20),
-        now,
-      ]);
-      db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+        now
+      );
+      db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
         'autoSave',
         JSON.stringify(false),
-        now,
-      ]);
+        now
+      );
 
       const settings = getSettings();
 
@@ -104,11 +100,11 @@ describe('settings.ts - Database Settings Operations', () => {
       };
 
       Object.entries(customSettings).forEach(([key, value]) => {
-        db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+        db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
           key,
           JSON.stringify(value),
-          now,
-        ]);
+          now
+        );
       });
 
       const settings = getSettings();
@@ -121,11 +117,11 @@ describe('settings.ts - Database Settings Operations', () => {
       const now = new Date().toISOString();
 
       // Insert non-JSON value (should fall back to raw value)
-      db.run(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+      db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
         'theme',
         'dark',
-        now,
-      ]);
+        now
+      );
 
       const settings = getSettings();
 
@@ -188,9 +184,10 @@ describe('settings.ts - Database Settings Operations', () => {
       expect(JSON.parse(row?.value as string)).toBe('light');
 
       // Should only have one row for theme
-      const result = db.exec(`SELECT COUNT(*) as count FROM settings WHERE key = ?`, ['theme']);
-      const count = result[0].values[0][0] as number;
-      expect(count).toBe(1);
+      const result = db.prepare(`SELECT COUNT(*) as count FROM settings WHERE key = ?`).get('theme') as {
+        count: number;
+      };
+      expect(result.count).toBe(1);
     });
 
     it('should store values as JSON strings', () => {
@@ -218,12 +215,6 @@ describe('settings.ts - Database Settings Operations', () => {
       const timestamp = row?.updated_at as string;
       expect(timestamp >= beforeSet).toBe(true);
       expect(timestamp <= afterSet).toBe(true);
-    });
-
-    it('should call saveDatabase', () => {
-      setSettings({ theme: 'dark' });
-
-      expect(indexModule.saveDatabase).toHaveBeenCalled();
     });
 
     it('should handle boolean values', () => {

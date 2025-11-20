@@ -1,6 +1,6 @@
 /**
  * SQLite Entry Repository Implementation
- * Handles entry data access using SQLite via sql.js
+ * Handles entry data access using SQLite via better-sqlite3
  */
 
 import { randomUUID } from 'crypto';
@@ -37,11 +37,10 @@ export class EntryRepository implements IEntryRepository {
       const now = new Date().toISOString();
       const tagsJson = entry.tags ? JSON.stringify(entry.tags) : null;
 
-      db.run(
+      db.prepare(
         `INSERT INTO entries (id, journal_id, title, content, tags, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [id, entry.journalId, entry.title ?? null, entry.content, tagsJson, now, now]
-      );
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).run(id, entry.journalId, entry.title ?? null, entry.content, tagsJson, now, now);
 
       return {
         id,
@@ -107,7 +106,7 @@ export class EntryRepository implements IEntryRepository {
       fields.push('updated_at = ?');
       values.push(now, id);
 
-      db.run(`UPDATE entries SET ${fields.join(', ')} WHERE id = ?`, values);
+      db.prepare(`UPDATE entries SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 
       const updated = this.findById(id);
       if (!updated) {
@@ -119,7 +118,7 @@ export class EntryRepository implements IEntryRepository {
 
   delete(id: string): boolean {
     return withTransaction((db) => {
-      db.run('DELETE FROM entries WHERE id = ?', [id]);
+      db.prepare('DELETE FROM entries WHERE id = ?').run(id);
       return true;
     });
   }

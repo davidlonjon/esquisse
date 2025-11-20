@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import type { Database, QueryExecResult } from 'sql.js';
+import type Database from 'better-sqlite3';
 
 export type SqlValue = string | number | Uint8Array | null;
 
@@ -31,44 +31,34 @@ export const createPaginationClause = (options?: PaginationOptions) => {
   return { clause, params };
 };
 
-const mapRows = (result: QueryExecResult[]): SelectRow[] => {
-  if (result.length === 0) return [];
-  const [rows] = result;
-  const { columns, values } = rows;
-
-  return values.map((row) => {
-    const mapped: SelectRow = {};
-    columns.forEach((column, index) => {
-      mapped[column] = row[index];
-    });
-    return mapped;
-  });
+export const selectRows = (
+  db: Database.Database,
+  query: string,
+  params: SqlValue[] = []
+): SelectRow[] => {
+  return db.prepare(query).all(...params) as SelectRow[];
 };
 
-export const selectRows = (db: Database, query: string, params: SqlValue[] = []): SelectRow[] =>
-  mapRows(db.exec(query, params));
-
 export const selectOneRow = (
-  db: Database,
+  db: Database.Database,
   query: string,
   params: SqlValue[] = []
 ): SelectRow | null => {
-  const rows = selectRows(db, query, params);
-  return rows[0] ?? null;
+  return (db.prepare(query).get(...params) as SelectRow) || null;
 };
 
-export const runSqlScript = (db: Database, sql: string): void => {
+export const runSqlScript = (db: Database.Database, sql: string): void => {
   const statements = sql
     .split(';')
     .map((statement) => statement.trim())
     .filter(Boolean);
 
   for (const statement of statements) {
-    db.run(statement);
+    db.prepare(statement).run();
   }
 };
 
-export const runSqlFile = (db: Database, filePath: string): void => {
+export const runSqlFile = (db: Database.Database, filePath: string): void => {
   const script = fs.readFileSync(path.resolve(filePath), 'utf-8');
   runSqlScript(db, script);
 };

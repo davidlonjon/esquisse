@@ -33,7 +33,9 @@
     "migrate:create": "node scripts/migration-cli.js create",
     "migrate:status": "node scripts/migration-cli.js status",
     "migrate:snapshot": "node scripts/migration-cli.js snapshot",
-    "prepare": "husky"
+    "prepare": "husky",
+    "rebuild:native": "electron-rebuild -f -w better-sqlite3",
+    "postinstall": "npm run rebuild:native"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -78,10 +80,10 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@types/sql.js": "^1.4.9",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@vitejs/plugin-react": "^5.1.0",
@@ -125,6 +127,7 @@
     "@tiptap/extension-typography": "^3.10.2",
     "@tiptap/react": "^3.10.2",
     "@tiptap/starter-kit": "^3.10.2",
+    "better-sqlite3": "github:neoxpert/better-sqlite3#896573e3f5c65b88c6c5e01cd040c353e4bfb80c",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
@@ -138,7 +141,6 @@
     "react-hotkeys-hook": "^5.2.1",
     "react-i18next": "^16.2.4",
     "react-router-dom": "^7.9.5",
-    "sql.js": "^1.13.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12",
     "zustand": "^5.0.8"

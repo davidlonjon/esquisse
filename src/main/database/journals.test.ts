@@ -296,11 +296,10 @@ describe('journals.ts - Database CRUD Operations', () => {
       const journal = createJournal(mockJournalInput);
 
       // Insert an entry
-      db.run(
+      db.prepare(
         `INSERT INTO entries (id, journal_id, content, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?)`,
-        ['entry-1', journal.id, 'Test content', new Date().toISOString(), new Date().toISOString()]
-      );
+         VALUES (?, ?, ?, ?, ?)`
+      ).run('entry-1', journal.id, 'Test content', new Date().toISOString(), new Date().toISOString());
 
       expect(countRows(db, 'entries')).toBe(1);
       deleteJournal(journal.id);

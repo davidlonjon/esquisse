@@ -1,6 +1,6 @@
 /**
  * SQLite Settings Repository Implementation
- * Handles settings data access using SQLite via sql.js
+ * Handles settings data access using SQLite via better-sqlite3
  */
 
 import type { Settings } from '@shared/types';
@@ -21,25 +21,19 @@ const DEFAULT_SETTINGS: Settings = {
 export class SettingsRepository implements ISettingsRepository {
   getAll(): Settings {
     const db = getDatabase();
-    // Note: db.exec is sql.js Database method, not child_process.exec
-    const result = db.exec('SELECT key, value FROM settings');
+    const rows = db.prepare('SELECT key, value FROM settings').all() as Array<{
+      key: string;
+      value: string;
+    }>;
 
     const settings: Partial<Settings> = {};
 
-    if (result.length > 0 && result[0].values.length > 0) {
-      const columns = result[0].columns;
-      const values = result[0].values;
-
-      for (const row of values) {
-        const key = row[columns.indexOf('key')] as string;
-        const value = row[columns.indexOf('value')] as string;
-
-        try {
-          settings[key as keyof Settings] = JSON.parse(value);
-        } catch {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          settings[key as keyof Settings] = value as any;
-        }
+    for (const row of rows) {
+      try {
+        settings[row.key as keyof Settings] = JSON.parse(row.value);
+      } catch {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        settings[row.key as keyof Settings] = row.value as any;
       }
     }
 
@@ -56,11 +50,11 @@ export class SettingsRepository implements ISettingsRepository {
       const now = new Date().toISOString();
 
       for (const [key, value] of Object.entries(updates)) {
-        db.run(`INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`, [
+        db.prepare(`INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
           key,
           JSON.stringify(value),
-          now,
-        ]);
+          now
+        );
       }
 
       return this.getAll();

@@ -1,24 +1,14 @@
 import { app } from 'electron';
-import fs from 'fs';
 import path from 'path';
 
-import initSqlJs, { Database } from 'sql.js';
+import Database from 'better-sqlite3';
 
 import { createBackup } from './backup';
 import { runMigrations } from './migrations';
 
-let db: Database | null = null;
+let db: Database.Database | null = null;
 let dbPath: string | null = null;
-let saveInFlight: Promise<void> | null = null;
-let pendingSave = false;
-let saveTimer: NodeJS.Timeout | null = null;
 let backupTimer: NodeJS.Timeout | null = null;
-
-/**
- * Debounce delay for database saves (milliseconds)
- * Saves are delayed by this amount to batch rapid successive changes
- */
-const SAVE_DEBOUNCE_MS = 1000;
 
 /**
  * Interval for automatic database backups (milliseconds)
@@ -26,76 +16,11 @@ const SAVE_DEBOUNCE_MS = 1000;
  */
 const BACKUP_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
 
-const writeDatabaseFile = (): Buffer => {
-  if (!db) {
-    throw new Error('Database not initialized');
-  }
-  const data = db.export();
-  return Buffer.from(data);
-};
-
-const scheduleSave = () => {
-  if (!db || !dbPath) {
-    return;
-  }
-
-  if (saveInFlight) {
-    pendingSave = true;
-    return;
-  }
-
-  pendingSave = false;
-  const buffer = writeDatabaseFile();
-
-  saveInFlight = fs.promises
-    .writeFile(dbPath, buffer)
-    .catch((error) => {
-      console.error('Failed to write database file:', error);
-    })
-    .finally(() => {
-      saveInFlight = null;
-      if (pendingSave) {
-        scheduleSave();
-      }
-    });
-};
-
-function flushDatabaseSync() {
-  if (!db || !dbPath) {
-    return;
-  }
-  const buffer = writeDatabaseFile();
-  fs.writeFileSync(dbPath, buffer);
-  pendingSave = false;
-}
-
-export function forceFlushDatabase(): void {
-  flushDatabaseSync();
-}
-
 export function getDatabasePath(): string {
   if (!dbPath) {
     throw new Error('Database path not initialized');
   }
   return dbPath;
-}
-
-/**
- * Save database to file with debouncing
- * Debounces saves to reduce disk I/O during rapid successive changes.
- * Waits SAVE_DEBOUNCE_MS after the last change before actually saving.
- */
-function saveDatabase(): void {
-  // Clear any existing timer
-  if (saveTimer) {
-    clearTimeout(saveTimer);
-  }
-
-  // Schedule save after debounce delay
-  saveTimer = setTimeout(() => {
-    saveTimer = null;
-    scheduleSave();
-  }, SAVE_DEBOUNCE_MS);
 }
 
 /**
@@ -140,55 +65,31 @@ function stopAutoBackup(): void {
 /**
  * Initialize the database connection and create tables if they don't exist
  */
-export async function initializeDatabase(): Promise<Database> {
+export async function initializeDatabase(): Promise<Database.Database> {
   if (db) {
     return db;
   }
 
   try {
-    console.log('Initializing sql.js...');
-
-    // Initialize sql.js
-    const SQL = await initSqlJs({
-      locateFile: (file) => {
-        // In development, use node_modules path
-        // In production, the file will be packaged with the app
-        const wasmPath =
-          process.env.NODE_ENV === 'development'
-            ? path.join(process.cwd(), 'node_modules/sql.js/dist', file)
-            : path.join(process.resourcesPath, 'sql.js', file);
-
-        console.log('Loading sql.js wasm from:', wasmPath);
-        return wasmPath;
-      },
-    });
-
-    console.log('sql.js initialized successfully');
+    console.log('Initializing better-sqlite3...');
 
     // Get the user data path (platform-specific)
     const userDataPath = app.getPath('userData');
     dbPath = path.join(userDataPath, 'esquisse.db');
 
-    // Ensure the directory exists
-    if (!fs.existsSync(userDataPath)) {
-      fs.mkdirSync(userDataPath, { recursive: true });
-    }
-
     console.log('Database path:', dbPath);
 
-    // Load existing database or create new one
-    if (fs.existsSync(dbPath)) {
-      const buffer = fs.readFileSync(dbPath);
-      db = new SQL.Database(buffer);
-    } else {
-      db = new SQL.Database();
-    }
+    // Open or create database
+    db = new Database(dbPath);
+
+    // Enable WAL mode for better concurrency and crash recovery
+    db.pragma('journal_mode = WAL');
 
     // Enable foreign keys
-    db.run('PRAGMA foreign_keys = ON');
+    db.pragma('foreign_keys = ON');
 
+    // Run migrations
     runMigrations(db);
-    flushDatabaseSync();
 
     // Start periodic automatic backups
     startAutoBackup();
@@ -205,7 +106,7 @@ export async function initializeDatabase(): Promise<Database> {
 /**
  * Get the database instance
  */
-export function getDatabase(): Database {
+export function getDatabase(): Database.Database {
   if (!db) {
     throw new Error('Database not initialized. Call initializeDatabase() first.');
   }
@@ -214,29 +115,10 @@ export function getDatabase(): Database {
 
 /**
  * Close the database connection
- * Ensures any pending debounced saves are flushed before closing
  * Creates final backup on shutdown
  */
 export async function closeDatabase(): Promise<void> {
   if (db) {
-    // Clear debounce timer and flush immediately
-    if (saveTimer) {
-      clearTimeout(saveTimer);
-      saveTimer = null;
-    }
-
-    // Wait for any in-flight save to complete
-    if (saveInFlight) {
-      try {
-        await saveInFlight;
-      } catch {
-        // already logged inside scheduleSave
-      }
-    }
-
-    // Final synchronous flush to ensure all data is saved
-    flushDatabaseSync();
-
     // Stop auto-backup and create final backup
     stopAutoBackup();
     if (dbPath) {
@@ -248,11 +130,6 @@ export async function closeDatabase(): Promise<void> {
     console.log('Database connection closed');
   }
 }
-
-/**
- * Export saveDatabase for use in other modules
- */
-export { saveDatabase };
 
 /**
  * Export comprehensive transaction helpers
