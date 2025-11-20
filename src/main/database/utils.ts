@@ -50,7 +50,14 @@ export const selectOneRow = (
 export const runSqlScript = (db: Database.Database, sql: string): void => {
   const statements = sql
     .split(';')
-    .map((statement) => statement.trim())
+    .map((statement) => {
+      // Remove SQL comments (lines starting with --)
+      return statement
+        .split('\n')
+        .filter((line) => !line.trim().startsWith('--'))
+        .join('\n')
+        .trim();
+    })
     .filter(Boolean);
 
   for (const statement of statements) {

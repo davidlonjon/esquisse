@@ -40,9 +40,11 @@ describe('Transaction Helpers', () => {
       // Execute operation in transaction
       const result = withTransaction(
         (txDb) => {
-          txDb.prepare(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j1', 'Test Journal', datetime('now'), datetime('now'))"
-          ).run();
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j1', 'Test Journal', datetime('now'), datetime('now'))"
+            )
+            .run();
           return { id: 'j1' };
         },
         { database: db }
@@ -63,9 +65,11 @@ describe('Transaction Helpers', () => {
       expect(() => {
         withTransaction(
           (txDb) => {
-            txDb.prepare(
-              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j2', 'Journal 2', datetime('now'), datetime('now'))"
-            ).run();
+            txDb
+              .prepare(
+                "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j2', 'Journal 2', datetime('now'), datetime('now'))"
+              )
+              .run();
             throw new Error('Intentional error');
           },
           { database: db }
@@ -73,7 +77,9 @@ describe('Transaction Helpers', () => {
       }).toThrow('Intentional error');
 
       // Verify data was rolled back
-      const result = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?').get('j2') as {
+      const result = db
+        .prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?')
+        .get('j2') as {
         count: number;
       };
       expect(result.count).toBe(0);
@@ -85,9 +91,11 @@ describe('Transaction Helpers', () => {
       // Test with EXCLUSIVE mode
       const result = withTransaction(
         (txDb) => {
-          txDb.prepare(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j3', 'Journal 3', datetime('now'), datetime('now'))"
-          ).run();
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j3', 'Journal 3', datetime('now'), datetime('now'))"
+            )
+            .run();
           return { success: true };
         },
         { mode: 'EXCLUSIVE', database: db }
@@ -106,28 +114,28 @@ describe('Transaction Helpers', () => {
       withTransaction(
         (txDb) => {
           // Insert journal
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j4', 'Journal 4', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j4', 'Journal 4', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Insert entry for that journal
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e1', 'j4', 'Entry content', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e1', 'j4', 'Entry content', datetime('now'), datetime('now'))"
+            )
+            .run();
         },
         { database: db }
       );
 
       // Verify both were committed
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j4']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j4');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      entryStmt.bind(['e1']);
-      expect(entryStmt.step()).toBe(true);
-      entryStmt.free();
+      const entryRow = db.prepare('SELECT id FROM entries WHERE id = ?').get('e1');
+      expect(entryRow).toBeDefined();
     });
 
     it('should rollback all operations on error in multi-step transaction', () => {
@@ -137,14 +145,18 @@ describe('Transaction Helpers', () => {
         withTransaction(
           (txDb) => {
             // Insert journal
-            txDb.run(
-              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j5', 'Journal 5', datetime('now'), datetime('now'))"
-            );
+            txDb
+              .prepare(
+                "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j5', 'Journal 5', datetime('now'), datetime('now'))"
+              )
+              .run();
 
             // Insert entry
-            txDb.run(
-              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e2', 'j5', 'Entry', datetime('now'), datetime('now'))"
-            );
+            txDb
+              .prepare(
+                "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e2', 'j5', 'Entry', datetime('now'), datetime('now'))"
+              )
+              .run();
 
             // Throw error
             throw new Error('Transaction failed');
@@ -154,17 +166,19 @@ describe('Transaction Helpers', () => {
       }).toThrow('Transaction failed');
 
       // Verify both were rolled back
-      const journalStmt = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?');
-      journalStmt.bind(['j5']);
-      journalStmt.step();
-      expect(journalStmt.getAsObject().count).toBe(0);
-      journalStmt.free();
+      const journalResult = db
+        .prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?')
+        .get('j5') as {
+        count: number;
+      };
+      expect(journalResult.count).toBe(0);
 
-      const entryStmt = db.prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?');
-      entryStmt.bind(['e2']);
-      entryStmt.step();
-      expect(entryStmt.getAsObject().count).toBe(0);
-      entryStmt.free();
+      const entryResult = db
+        .prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?')
+        .get('e2') as {
+        count: number;
+      };
+      expect(entryResult.count).toBe(0);
     });
   });
 
@@ -174,9 +188,11 @@ describe('Transaction Helpers', () => {
 
       const result = await withTransactionAsync(
         async (txDb) => {
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j6', 'Journal 6', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j6', 'Journal 6', datetime('now'), datetime('now'))"
+            )
+            .run();
           // Simulate async operation
           await new Promise((resolve) => setTimeout(resolve, 10));
           return { id: 'j6' };
@@ -197,9 +213,11 @@ describe('Transaction Helpers', () => {
       await expect(
         withTransactionAsync(
           async (txDb) => {
-            txDb.prepare(
-              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j7', 'Journal 7', datetime('now'), datetime('now'))"
-            ).run();
+            txDb
+              .prepare(
+                "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j7', 'Journal 7', datetime('now'), datetime('now'))"
+              )
+              .run();
             await new Promise((resolve) => setTimeout(resolve, 10));
             throw new Error('Async error');
           },
@@ -208,7 +226,9 @@ describe('Transaction Helpers', () => {
       ).rejects.toThrow('Async error');
 
       // Verify rollback
-      const result = db.prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?').get('j7') as {
+      const result = db
+        .prepare('SELECT COUNT(*) as count FROM journals WHERE id = ?')
+        .get('j7') as {
         count: number;
       };
       expect(result.count).toBe(0);
@@ -222,17 +242,21 @@ describe('Transaction Helpers', () => {
       withTransaction(
         (txDb) => {
           // Outer operation
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j8', 'Journal 8', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j8', 'Journal 8', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Create savepoint
           const sp = savepoint(txDb, 'test_sp');
 
           // Inner operation
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e3', 'j8', 'Entry', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e3', 'j8', 'Entry', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Release savepoint (commit inner operation)
           sp.release();
@@ -241,15 +265,11 @@ describe('Transaction Helpers', () => {
       );
 
       // Verify both operations committed
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j8']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j8');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      entryStmt.bind(['e3']);
-      expect(entryStmt.step()).toBe(true);
-      entryStmt.free();
+      const entryRow = db.prepare('SELECT id FROM entries WHERE id = ?').get('e3');
+      expect(entryRow).toBeDefined();
     });
 
     it('should rollback to savepoint without affecting outer transaction', () => {
@@ -258,17 +278,21 @@ describe('Transaction Helpers', () => {
       withTransaction(
         (txDb) => {
           // Outer operation
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j9', 'Journal 9', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j9', 'Journal 9', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Create savepoint
           const sp = savepoint(txDb, 'rollback_sp');
 
           // Inner operation
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e4', 'j9', 'Entry', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e4', 'j9', 'Entry', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Rollback savepoint (undo inner operation)
           sp.rollback();
@@ -279,16 +303,15 @@ describe('Transaction Helpers', () => {
       );
 
       // Verify outer operation committed, inner operation rolled back
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j9']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j9');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?');
-      entryStmt.bind(['e4']);
-      entryStmt.step();
-      expect(entryStmt.getAsObject().count).toBe(0);
-      entryStmt.free();
+      const entryResult = db
+        .prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?')
+        .get('e4') as {
+        count: number;
+      };
+      expect(entryResult.count).toBe(0);
     });
 
     it('should support nested savepoints', () => {
@@ -297,55 +320,58 @@ describe('Transaction Helpers', () => {
       withTransaction(
         (txDb) => {
           // Level 0: Insert journal
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j10', 'Journal 10', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j10', 'Journal 10', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           // Level 1: Savepoint for first entry
           const sp1 = savepoint(txDb, 'sp1');
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e5', 'j10', 'Entry 5', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e5', 'j10', 'Entry 5', datetime('now'), datetime('now'))"
+            )
+            .run();
           sp1.release();
 
           // Level 1: Savepoint for second entry (will be rolled back)
           const sp2 = savepoint(txDb, 'sp2');
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e6', 'j10', 'Entry 6', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e6', 'j10', 'Entry 6', datetime('now'), datetime('now'))"
+            )
+            .run();
           sp2.rollback();
 
           // Level 1: Savepoint for third entry
           const sp3 = savepoint(txDb, 'sp3');
-          txDb.run(
-            "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e7', 'j10', 'Entry 7', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e7', 'j10', 'Entry 7', datetime('now'), datetime('now'))"
+            )
+            .run();
           sp3.release();
         },
         { database: db }
       );
 
       // Verify: journal committed, e5 and e7 committed, e6 rolled back
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j10']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j10');
+      expect(journalRow).toBeDefined();
 
-      const e5Stmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      e5Stmt.bind(['e5']);
-      expect(e5Stmt.step()).toBe(true);
-      e5Stmt.free();
+      const e5Row = db.prepare('SELECT id FROM entries WHERE id = ?').get('e5');
+      expect(e5Row).toBeDefined();
 
-      const e6Stmt = db.prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?');
-      e6Stmt.bind(['e6']);
-      e6Stmt.step();
-      expect(e6Stmt.getAsObject().count).toBe(0);
-      e6Stmt.free();
+      const e6Result = db
+        .prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?')
+        .get('e6') as {
+        count: number;
+      };
+      expect(e6Result.count).toBe(0);
 
-      const e7Stmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      e7Stmt.bind(['e7']);
-      expect(e7Stmt.step()).toBe(true);
-      e7Stmt.free();
+      const e7Row = db.prepare('SELECT id FROM entries WHERE id = ?').get('e7');
+      expect(e7Row).toBeDefined();
     });
   });
 
@@ -355,29 +381,27 @@ describe('Transaction Helpers', () => {
 
       withTransaction(
         (txDb) => {
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j11', 'Journal 11', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j11', 'Journal 11', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           withSavepoint(txDb, (db) => {
-            db.run(
+            db.prepare(
               "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e8', 'j11', 'Entry', datetime('now'), datetime('now'))"
-            );
+            ).run();
           });
         },
         { database: db }
       );
 
       // Verify both committed
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j11']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j11');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      entryStmt.bind(['e8']);
-      expect(entryStmt.step()).toBe(true);
-      entryStmt.free();
+      const entryRow = db.prepare('SELECT id FROM entries WHERE id = ?').get('e8');
+      expect(entryRow).toBeDefined();
     });
 
     it('should automatically rollback savepoint on error', () => {
@@ -385,15 +409,17 @@ describe('Transaction Helpers', () => {
 
       withTransaction(
         (txDb) => {
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j12', 'Journal 12', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j12', 'Journal 12', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           try {
             withSavepoint(txDb, (db) => {
-              db.run(
+              db.prepare(
                 "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e9', 'j12', 'Entry', datetime('now'), datetime('now'))"
-              );
+              ).run();
               throw new Error('Savepoint error');
             });
           } catch {
@@ -404,16 +430,15 @@ describe('Transaction Helpers', () => {
       );
 
       // Verify journal committed, entry rolled back
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j12']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j12');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?');
-      entryStmt.bind(['e9']);
-      entryStmt.step();
-      expect(entryStmt.getAsObject().count).toBe(0);
-      entryStmt.free();
+      const entryResult = db
+        .prepare('SELECT COUNT(*) as count FROM entries WHERE id = ?')
+        .get('e9') as {
+        count: number;
+      };
+      expect(entryResult.count).toBe(0);
     });
   });
 
@@ -423,30 +448,28 @@ describe('Transaction Helpers', () => {
 
       await withTransactionAsync(
         async (txDb) => {
-          txDb.run(
-            "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j13', 'Journal 13', datetime('now'), datetime('now'))"
-          );
+          txDb
+            .prepare(
+              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j13', 'Journal 13', datetime('now'), datetime('now'))"
+            )
+            .run();
 
           await withSavepointAsync(txDb, async (db) => {
             await new Promise((resolve) => setTimeout(resolve, 10));
-            db.run(
+            db.prepare(
               "INSERT INTO entries (id, journal_id, content, created_at, updated_at) VALUES ('e10', 'j13', 'Entry', datetime('now'), datetime('now'))"
-            );
+            ).run();
           });
         },
         { database: db }
       );
 
       // Verify both committed
-      const journalStmt = db.prepare('SELECT id FROM journals WHERE id = ?');
-      journalStmt.bind(['j13']);
-      expect(journalStmt.step()).toBe(true);
-      journalStmt.free();
+      const journalRow = db.prepare('SELECT id FROM journals WHERE id = ?').get('j13');
+      expect(journalRow).toBeDefined();
 
-      const entryStmt = db.prepare('SELECT id FROM entries WHERE id = ?');
-      entryStmt.bind(['e10']);
-      expect(entryStmt.step()).toBe(true);
-      entryStmt.free();
+      const entryRow = db.prepare('SELECT id FROM entries WHERE id = ?').get('e10');
+      expect(entryRow).toBeDefined();
     });
   });
 
@@ -467,9 +490,11 @@ describe('Transaction Helpers', () => {
       expect(() => {
         withTransaction(
           (txDb) => {
-            txDb.run(
-              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j14', 'Journal 14', datetime('now'), datetime('now'))"
-            );
+            txDb
+              .prepare(
+                "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j14', 'Journal 14', datetime('now'), datetime('now'))"
+              )
+              .run();
             throw new CustomError('Custom error', 'CUSTOM_CODE');
           },
           { database: db }
@@ -484,9 +509,11 @@ describe('Transaction Helpers', () => {
       try {
         withTransaction(
           (txDb) => {
-            txDb.run(
-              "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j15', 'Journal 15', datetime('now'), datetime('now'))"
-            );
+            txDb
+              .prepare(
+                "INSERT INTO journals (id, name, created_at, updated_at) VALUES ('j15', 'Journal 15', datetime('now'), datetime('now'))"
+              )
+              .run();
             throw new Error('Stack test');
           },
           { database: db }

@@ -356,11 +356,11 @@ describe('utils.ts - Database Utility Functions', () => {
       runSqlScript(db, script);
 
       // Verify table was created
-      const result = db.exec(
-        `SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'`
-      );
+      const result = db
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'`)
+        .all() as Array<{ name: string }>;
       expect(result).toHaveLength(1);
-      expect(result[0].values[0][0]).toBe('test_table');
+      expect(result[0].name).toBe('test_table');
     });
 
     it('should handle SQL comments and whitespace', () => {
@@ -434,12 +434,9 @@ describe('utils.ts - Database Utility Functions', () => {
 
       // Insert test data
       for (let i = 1; i <= 10; i++) {
-        db.prepare(`INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`).run(
-          `id${i}`,
-          `Journal ${i}`,
-          now,
-          now
-        );
+        db.prepare(
+          `INSERT INTO journals (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`
+        ).run(`id${i}`, `Journal ${i}`, now, now);
       }
 
       // Use pagination utilities
