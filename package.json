@@ -24,7 +24,7 @@
     "config:generate-ts-paths": "npx tsx scripts/generate-ts-paths.js",
     "validate:translations": "node scripts/validate-translations.js",
     "validate:config": "npm run config:generate-ts-paths",
-    "validate": "npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:md && npm run lint:strict && npm run type-check && npm run validate:translations && npm run validate:config",
+    "validate": "npm run validate:config && npm run format && npm run lint:fix && npm run lint:css:fix && npm run lint:md && npm run lint:strict && npm run type-check && npm run validate:translations",
     "pretest": "npm rebuild better-sqlite3",
     "test": "vitest",
     "test:ui": "vitest --ui",
