@@ -18,12 +18,15 @@ interface EntryProgressState {
   save: AsyncSlice;
   remove: AsyncSlice;
   search: AsyncSlice;
+  archive: AsyncSlice;
 }
 
 interface EntryState {
   entries: Entry[];
   entryLookup: EntryLookup;
   currentEntryId: string | null;
+  showArchived: boolean;
+  archivedEntries: Entry[];
   search: EntrySearchState;
   progress: EntryProgressState;
   loadEntries: (journalId?: string) => Promise<Entry[]>;
@@ -34,6 +37,10 @@ interface EntryState {
   clearSearch: () => void;
   setCurrentEntry: (entry: Entry | null) => void;
   setCurrentEntryId: (entryId: string | null) => void;
+  archiveEntry: (id: string) => Promise<Entry>;
+  unarchiveEntry: (id: string) => Promise<Entry>;
+  fetchArchivedEntries: (journalId?: string) => Promise<void>;
+  toggleShowArchived: () => void;
 }
 
 const createLookup = (entries: Entry[]): EntryLookup =>
@@ -48,6 +55,8 @@ const createInitialState = (): EntryState => ({
   entries: initialEntries,
   entryLookup: createLookup(initialEntries),
   currentEntryId: null,
+  showArchived: false,
+  archivedEntries: [],
   search: {
     query: '',
     results: [],
@@ -58,6 +67,7 @@ const createInitialState = (): EntryState => ({
     save: createAsyncSlice(),
     remove: createAsyncSlice(),
     search: createAsyncSlice(),
+    archive: createAsyncSlice(),
   },
   loadEntries: async () => [],
   createEntry: async () => {
@@ -73,6 +83,14 @@ const createInitialState = (): EntryState => ({
   clearSearch: () => undefined,
   setCurrentEntry: () => undefined,
   setCurrentEntryId: () => undefined,
+  archiveEntry: async () => {
+    throw new Error('Store not initialized');
+  },
+  unarchiveEntry: async () => {
+    throw new Error('Store not initialized');
+  },
+  fetchArchivedEntries: async () => undefined,
+  toggleShowArchived: () => undefined,
 });
 
 export const useEntryStore = create(
@@ -197,6 +215,64 @@ export const useEntryStore = create(
     setCurrentEntryId: (entryId) =>
       set((state) => {
         state.currentEntryId = entryId && state.entryLookup[entryId] ? entryId : null;
+      }),
+
+    archiveEntry: async (id) => {
+      return withAsyncHandler(set, 'archive', async () => {
+        const entry = await entryService.archive(id);
+
+        set((state) => {
+          const entryIndex = state.entries.findIndex((e) => e.id === id);
+          if (entryIndex !== -1) {
+            state.entries.splice(entryIndex, 1);
+          }
+
+          if (state.currentEntryId === id) {
+            state.currentEntryId = null;
+          }
+
+          state.entryLookup[id] = entry;
+          state.archivedEntries.push(entry);
+        });
+
+        return entry;
+      });
+    },
+
+    unarchiveEntry: async (id) => {
+      return withAsyncHandler(set, 'archive', async () => {
+        const entry = await entryService.unarchive(id);
+
+        set((state) => {
+          const archivedIndex = state.archivedEntries.findIndex((e) => e.id === id);
+          if (archivedIndex !== -1) {
+            state.archivedEntries.splice(archivedIndex, 1);
+          }
+
+          state.entries.unshift(entry);
+          state.entries.sort(
+            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
+          state.entryLookup[id] = entry;
+        });
+
+        return entry;
+      });
+    },
+
+    fetchArchivedEntries: async (journalId) => {
+      return withAsyncHandler(set, 'load', async () => {
+        const entries = await entryService.getByStatus(journalId, 'archived');
+
+        set((state) => {
+          state.archivedEntries = entries;
+        });
+      });
+    },
+
+    toggleShowArchived: () =>
+      set((state) => {
+        state.showArchived = !state.showArchived;
       }),
   }))
 );

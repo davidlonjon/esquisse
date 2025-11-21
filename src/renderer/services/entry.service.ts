@@ -1,6 +1,7 @@
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
+import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
 import {
   CreateEntryInputSchema,
+  EntryStatusSchema,
   IdSchema,
   SearchQuerySchema,
   UpdateEntryInputSchema,
@@ -38,5 +39,31 @@ export const entryService = {
     const validatedQuery = SearchQuerySchema.parse(query);
     const api = getWindowAPI();
     return resolveResult(await api.searchEntries(validatedQuery));
+  },
+
+  async archive(id: string): Promise<Entry> {
+    const validatedId = IdSchema.parse(id);
+    const api = getWindowAPI();
+    return resolveResult(await api.archiveEntry(validatedId));
+  },
+
+  async unarchive(id: string): Promise<Entry> {
+    const validatedId = IdSchema.parse(id);
+    const api = getWindowAPI();
+    return resolveResult(await api.unarchiveEntry(validatedId));
+  },
+
+  async updateStatus(id: string, status: EntryStatus): Promise<Entry> {
+    const validatedId = IdSchema.parse(id);
+    const validatedStatus = EntryStatusSchema.parse(status);
+    const api = getWindowAPI();
+    return resolveResult(await api.updateEntryStatus(validatedId, validatedStatus));
+  },
+
+  async getByStatus(journalId: string | undefined, status: EntryStatus): Promise<Entry[]> {
+    const validatedJournalId = journalId ? IdSchema.parse(journalId) : undefined;
+    const validatedStatus = EntryStatusSchema.parse(status);
+    const api = getWindowAPI();
+    return resolveResult(await api.getEntriesByStatus(validatedJournalId, validatedStatus));
   },
 };

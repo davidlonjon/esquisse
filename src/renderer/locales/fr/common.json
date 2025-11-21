@@ -55,8 +55,31 @@
         "closeModal": {
           "label": "Fermer la fenêtre",
           "description": "Fermer la boîte de dialogue active"
+        },
+        "deleteEntry": {
+          "label": "Supprimer/Archiver l'entrée",
+          "description": "Supprimer ou archiver l'entrée actuelle"
         }
       }
+    }
+  },
+  "entry": {
+    "delete": {
+      "title": "Supprimer cette entrée ?",
+      "message": "Choisissez comment gérer cette entrée :",
+      "archive": "Archiver",
+      "archiveDescription": "Masquer mais garder accessible. Vous pourrez la désarchiver plus tard.",
+      "deletePermanent": "Supprimer définitivement",
+      "deletePermanentDescription": "Action irréversible. L'entrée sera perdue pour toujours.",
+      "cancel": "Annuler"
+    },
+    "archived": {
+      "title": "Entrées archivées",
+      "empty": "Aucune entrée archivée",
+      "badge": "Archivée",
+      "unarchive": "Désarchiver",
+      "showArchived": "Afficher les archives",
+      "hideArchived": "Masquer les archives"
     }
   },
   "settings": {

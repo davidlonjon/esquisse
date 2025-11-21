@@ -23,7 +23,7 @@ export function createEntry(entry: CreateEntryInput): Entry {
  * @deprecated Use EntryService.getAllEntries() instead
  */
 export function getAllEntries(journalId?: string, options?: PaginationOptions): Entry[] {
-  return getContainer().entryRepository.findAll(journalId, options);
+  return getContainer().entryRepository.findAll({ journalId, ...options });
 }
 
 /**

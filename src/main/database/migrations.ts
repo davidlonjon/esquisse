@@ -31,6 +31,16 @@ const MIGRATIONS: Migration[] = [
       ).run();
     },
   },
+  {
+    id: '003_add_entry_status_field',
+    up: (db) => {
+      db.prepare("ALTER TABLE entries ADD COLUMN status TEXT DEFAULT 'active'").run();
+      db.prepare('CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status)').run();
+      db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_entries_journal_status ON entries(journal_id, status)'
+      ).run();
+    },
+  },
 ];
 
 const MIGRATIONS_TABLE = 'schema_migrations';

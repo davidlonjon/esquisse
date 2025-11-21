@@ -20,7 +20,8 @@ export type ShortcutId =
   | 'toggleShortcutsPanel'
   | 'searchEntries'
   | 'commandPalette'
-  | 'closeModal';
+  | 'closeModal'
+  | 'deleteEntry';
 
 export interface ShortcutDisplayMetadata {
   labelKey: TranslationKey;
@@ -183,9 +184,25 @@ export const SHORTCUTS: Shortcut[] = [
     },
   },
 
-  // Editor shortcuts (from Tiptap/Editor component)
-  // Note: These are handled by the Editor component itself, not through useGlobalHotkeys
-  // Listed here for documentation purposes
+  // Editor shortcuts
+  {
+    id: 'deleteEntry',
+    keys: 'mod+d',
+    description: 'Delete or archive current entry',
+    category: 'editor',
+    location: 'hooks/useEntryDeletion.ts',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.deleteEntry.label',
+      descriptionKey: 'hud.keyboard.shortcut.deleteEntry.description',
+      combos: {
+        mac: '⌘D',
+        windows: 'Ctrl D',
+      },
+    },
+  },
+
+  // Note: Tiptap editor shortcuts are handled by the Editor component itself, not through useGlobalHotkeys
 ];
 
 /**

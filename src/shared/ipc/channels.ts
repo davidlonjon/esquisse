@@ -17,6 +17,10 @@ export const IPC_CHANNELS = {
   ENTRY_UPDATE: 'entry:update',
   ENTRY_DELETE: 'entry:delete',
   ENTRY_SEARCH: 'entry:search',
+  ENTRY_ARCHIVE: 'entry:archive',
+  ENTRY_UNARCHIVE: 'entry:unarchive',
+  ENTRY_UPDATE_STATUS: 'entry:updateStatus',
+  ENTRY_GET_BY_STATUS: 'entry:getByStatus',
 
   // Settings
   SETTINGS_GET: 'settings:get',

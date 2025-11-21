@@ -54,6 +54,7 @@ export const createMockEntry = (overrides: Partial<Entry> = {}): Entry => {
     title: 'Test Entry',
     content: '<p>Test content</p>',
     tags: ['test'],
+    status: 'active',
     createdAt: now,
     updatedAt: now,
     ...overrides,

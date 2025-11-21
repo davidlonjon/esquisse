@@ -55,8 +55,31 @@
         "closeModal": {
           "label": "Close modal",
           "description": "Dismiss the active dialog"
+        },
+        "deleteEntry": {
+          "label": "Delete/Archive Entry",
+          "description": "Delete or archive the current entry"
         }
       }
+    }
+  },
+  "entry": {
+    "delete": {
+      "title": "Delete this entry?",
+      "message": "Choose how to handle this entry:",
+      "archive": "Archive",
+      "archiveDescription": "Hide but keep accessible. You can unarchive it later.",
+      "deletePermanent": "Delete Permanently",
+      "deletePermanentDescription": "Cannot be undone. Entry will be lost forever.",
+      "cancel": "Cancel"
+    },
+    "archived": {
+      "title": "Archived Entries",
+      "empty": "No archived entries",
+      "badge": "Archived",
+      "unarchive": "Unarchive",
+      "showArchived": "Show Archived",
+      "hideArchived": "Hide Archived"
     }
   },
   "settings": {

@@ -3,12 +3,12 @@
  * Business logic layer for entry operations
  */
 
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
+import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
 
 import type { PaginationOptions } from '../../database/utils';
 import type { IJournalRepository } from '../journals/journal.repository.interface';
 
-import type { IEntryRepository } from './entry.repository.interface';
+import type { FindAllOptions, IEntryRepository } from './entry.repository.interface';
 
 export class EntryService {
   constructor(
@@ -36,15 +36,15 @@ export class EntryService {
   }
 
   /**
-   * Get all entries, optionally filtered by journal ID
+   * Get all entries with optional filtering
    */
-  getAllEntries(journalId?: string, options?: PaginationOptions): Entry[] {
+  getAllEntries(options?: FindAllOptions): Entry[] {
     // If filtering by journal, validate it exists
-    if (journalId && !this.journalRepository.exists(journalId)) {
-      throw new Error(`Journal with id ${journalId} not found`);
+    if (options?.journalId && !this.journalRepository.exists(options.journalId)) {
+      throw new Error(`Journal with id ${options.journalId} not found`);
     }
 
-    return this.entryRepository.findAll(journalId, options);
+    return this.entryRepository.findAll(options);
   }
 
   /**
@@ -95,5 +95,58 @@ export class EntryService {
    */
   entryExists(id: string): boolean {
     return this.entryRepository.exists(id);
+  }
+
+  /**
+   * Archive an entry
+   */
+  archiveEntry(id: string): Entry {
+    if (!this.entryRepository.exists(id)) {
+      throw new Error(`Entry with id ${id} not found`);
+    }
+    return this.entryRepository.archive(id);
+  }
+
+  /**
+   * Unarchive an entry
+   */
+  unarchiveEntry(id: string): Entry {
+    if (!this.entryRepository.exists(id)) {
+      throw new Error(`Entry with id ${id} not found`);
+    }
+    return this.entryRepository.unarchive(id);
+  }
+
+  /**
+   * Update entry status
+   */
+  updateEntryStatus(id: string, status: EntryStatus): Entry {
+    if (!this.entryRepository.exists(id)) {
+      throw new Error(`Entry with id ${id} not found`);
+    }
+
+    const validStatuses: EntryStatus[] = ['active', 'archived', 'draft'];
+    if (!validStatuses.includes(status)) {
+      throw new Error(`Invalid status: ${status}`);
+    }
+
+    return this.entryRepository.updateStatus(id, status);
+  }
+
+  /**
+   * Get entries by status
+   */
+  getEntriesByStatus(journalId: string | undefined, status: EntryStatus): Entry[] {
+    if (journalId && !this.journalRepository.exists(journalId)) {
+      throw new Error(`Journal with id ${journalId} not found`);
+    }
+    return this.entryRepository.findAll({ journalId, status });
+  }
+
+  /**
+   * Get archived entries
+   */
+  getArchivedEntries(journalId?: string): Entry[] {
+    return this.getEntriesByStatus(journalId, 'archived');
   }
 }

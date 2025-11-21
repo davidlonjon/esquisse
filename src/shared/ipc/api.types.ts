@@ -9,6 +9,7 @@ import type {
   Entry,
   CreateEntryInput,
   UpdateEntryInput,
+  EntryStatus,
   Settings,
   UpdateSettingsInput,
   Result,
@@ -30,6 +31,13 @@ export interface ElectronAPI {
   updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Result<Entry>>;
   deleteEntry: (id: string) => Promise<Result<boolean>>;
   searchEntries: (query: string) => Promise<Result<Entry[]>>;
+  archiveEntry: (id: string) => Promise<Result<Entry>>;
+  unarchiveEntry: (id: string) => Promise<Result<Entry>>;
+  updateEntryStatus: (id: string, status: EntryStatus) => Promise<Result<Entry>>;
+  getEntriesByStatus: (
+    journalId: string | undefined,
+    status: EntryStatus
+  ) => Promise<Result<Entry[]>>;
 
   // Settings
   getSettings: () => Promise<Result<Settings>>;

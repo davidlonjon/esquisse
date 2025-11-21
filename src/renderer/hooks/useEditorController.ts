@@ -9,6 +9,7 @@ import {
 } from '@features/editor';
 import { selectCurrentEntry, selectEntries, useEntryStore } from '@features/entries';
 import { useAutoSave } from '@hooks/useAutoSave';
+import { useEntryDeletion } from '@hooks/useEntryDeletion';
 import { useEntryDraft } from '@hooks/useEntryDraft';
 import { useEntryNavigation } from '@hooks/useEntryNavigation';
 import { useHud } from '@hooks/useHud';
@@ -38,6 +39,12 @@ export interface EditorController {
   handleContentChange: (content: string) => void;
   handleManualSave: (content: string) => Promise<void>;
   hud: HudViewModel;
+  deletion: {
+    isDialogOpen: boolean;
+    handleArchive: () => Promise<void>;
+    handleDelete: () => Promise<void>;
+    handleCloseDialog: () => void;
+  };
 }
 
 export function useEditorController(): EditorController {
@@ -132,6 +139,11 @@ export function useEditorController(): EditorController {
     onNavigate: showHudTemporarily,
   });
 
+  const entryDeletion = useEntryDeletion({
+    currentEntry,
+    entries,
+  });
+
   // Effect to update local content state when currentEntry changes
   useEffect(() => {
     const nextContent = currentEntry?.content ?? '';
@@ -200,5 +212,6 @@ export function useEditorController(): EditorController {
     handleContentChange,
     handleManualSave,
     hud: hudViewModel,
+    deletion: entryDeletion,
   };
 }

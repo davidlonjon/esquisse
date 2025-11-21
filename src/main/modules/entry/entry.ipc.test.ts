@@ -64,6 +64,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         title: 'Test Entry',
         content: '<p>Test content</p>',
         tags: ['test', 'unit'],
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -94,6 +95,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         id: 'entry-1',
         journalId: 'journal-1',
         content: '<p>Content only</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -120,6 +122,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         id: 'entry-1',
         journalId: 'journal-1',
         content: '<p>Simple entry</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -140,6 +143,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           id: 'entry-1',
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
+          status: 'active',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -147,6 +151,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           id: 'entry-2',
           journalId: 'journal-2',
           content: '<p>Entry 2</p>',
+          status: 'active',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -167,6 +172,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           id: 'entry-1',
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
+          status: 'active',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -197,6 +203,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         id: 'entry-1',
         journalId: 'journal-1',
         content: '<p>Test content</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -227,6 +234,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         title: 'Updated Title',
         content: '<p>Content</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -247,6 +255,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         id: 'entry-1',
         journalId: 'journal-1',
         content: '<p>Updated content</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -268,6 +277,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Content</p>',
         tags: ['updated', 'tags'],
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -290,6 +300,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         title: 'New Title',
         content: '<p>New content</p>',
         tags: ['new'],
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -319,6 +330,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         id: 'entry-1',
         journalId: 'journal-1',
         content: '<p>Content</p>',
+        status: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -364,6 +376,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           journalId: 'journal-1',
           title: 'Meeting notes',
           content: '<p>Important meeting</p>',
+          status: 'active',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },

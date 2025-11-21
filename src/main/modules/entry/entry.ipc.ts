@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { IPC_CHANNELS } from '@shared/ipc';
 import {
   CreateEntryInputSchema,
+  EntryStatusSchema,
   IdSchema,
   SearchQuerySchema,
   UpdateEntryInputSchema,
@@ -22,6 +23,8 @@ const listEntriesSchema = z.tuple([IdSchema.optional()]);
 const entryIdSchema = z.tuple([IdSchema]);
 const updateEntrySchema = z.tuple([IdSchema, UpdateEntryInputSchema]);
 const searchSchema = z.tuple([SearchQuerySchema]);
+const updateStatusSchema = z.tuple([IdSchema, EntryStatusSchema]);
+const getByStatusSchema = z.tuple([IdSchema.optional(), EntryStatusSchema]);
 
 /**
  * Register all entry-related IPC handlers
@@ -34,7 +37,7 @@ export function registerEntryHandlers(): void {
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_GET_ALL, listEntriesSchema, async (_event, [journalId]) =>
-    entryService.getAllEntries(journalId)
+    entryService.getAllEntries({ journalId })
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_GET_BY_ID, entryIdSchema, async (_event, [id]) =>
@@ -51,5 +54,25 @@ export function registerEntryHandlers(): void {
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_SEARCH, searchSchema, async (_event, [query]) =>
     entryService.searchEntries(query)
+  );
+
+  registerSafeHandler(IPC_CHANNELS.ENTRY_ARCHIVE, entryIdSchema, async (_event, [id]) =>
+    entryService.archiveEntry(id)
+  );
+
+  registerSafeHandler(IPC_CHANNELS.ENTRY_UNARCHIVE, entryIdSchema, async (_event, [id]) =>
+    entryService.unarchiveEntry(id)
+  );
+
+  registerSafeHandler(
+    IPC_CHANNELS.ENTRY_UPDATE_STATUS,
+    updateStatusSchema,
+    async (_event, [id, status]) => entryService.updateEntryStatus(id, status)
+  );
+
+  registerSafeHandler(
+    IPC_CHANNELS.ENTRY_GET_BY_STATUS,
+    getByStatusSchema,
+    async (_event, [journalId, status]) => entryService.getEntriesByStatus(journalId, status)
   );
 }

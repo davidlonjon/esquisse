@@ -5,7 +5,7 @@
 
 import { randomUUID } from 'crypto';
 
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
+import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
 
 import { getDatabase, withTransaction } from '../../database/index';
 import {
@@ -15,10 +15,10 @@ import {
   type PaginationOptions,
 } from '../../database/utils';
 
-import type { IEntryRepository } from './entry.repository.interface';
+import type { FindAllOptions, IEntryRepository } from './entry.repository.interface';
 
 const ENTRY_COLUMNS =
-  'id, journal_id as journalId, title, content, tags, created_at as createdAt, updated_at as updatedAt';
+  'id, journal_id as journalId, title, content, tags, status, created_at as createdAt, updated_at as updatedAt';
 
 const mapEntryRow = (row: Record<string, unknown>): Entry => ({
   id: String(row.id),
@@ -26,6 +26,7 @@ const mapEntryRow = (row: Record<string, unknown>): Entry => ({
   title: row.title == null ? undefined : String(row.title),
   content: String(row.content ?? ''),
   tags: row.tags ? JSON.parse(String(row.tags)) : undefined,
+  status: String(row.status ?? 'active') as EntryStatus,
   createdAt: String(row.createdAt),
   updatedAt: String(row.updatedAt),
 });
@@ -36,11 +37,12 @@ export class EntryRepository implements IEntryRepository {
       const id = randomUUID();
       const now = new Date().toISOString();
       const tagsJson = entry.tags ? JSON.stringify(entry.tags) : null;
+      const status = entry.status ?? 'active';
 
       db.prepare(
-        `INSERT INTO entries (id, journal_id, title, content, tags, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
-      ).run(id, entry.journalId, entry.title ?? null, entry.content, tagsJson, now, now);
+        `INSERT INTO entries (id, journal_id, title, content, tags, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run(id, entry.journalId, entry.title ?? null, entry.content, tagsJson, status, now, now);
 
       return {
         id,
@@ -48,21 +50,38 @@ export class EntryRepository implements IEntryRepository {
         title: entry.title,
         content: entry.content,
         tags: entry.tags,
+        status,
         createdAt: now,
         updatedAt: now,
       };
     });
   }
 
-  findAll(journalId?: string, options?: PaginationOptions): Entry[] {
+  findAll(options: FindAllOptions = {}): Entry[] {
     const db = getDatabase();
-    const { clause, params } = createPaginationClause(options);
-    let query = `SELECT ${ENTRY_COLUMNS} FROM entries`;
+    const { journalId, status, includeAllStatuses = false, limit, offset } = options;
+    const { clause, params } = createPaginationClause({ limit, offset });
+    let query = `SELECT ${ENTRY_COLUMNS} FROM entries WHERE 1=1`;
     const queryParams: (string | number | null)[] = [];
 
     if (journalId) {
-      query += ' WHERE journal_id = ?';
+      query += ' AND journal_id = ?';
       queryParams.push(journalId);
+    }
+
+    if (!includeAllStatuses) {
+      if (status) {
+        if (Array.isArray(status)) {
+          query += ` AND status IN (${status.map(() => '?').join(',')})`;
+          queryParams.push(...status);
+        } else {
+          query += ' AND status = ?';
+          queryParams.push(status);
+        }
+      } else {
+        query += ' AND status = ?';
+        queryParams.push('active');
+      }
     }
 
     query += ` ORDER BY updated_at DESC${clause}`;
@@ -94,6 +113,10 @@ export class EntryRepository implements IEntryRepository {
         fields.push('tags = ?');
         values.push(updates.tags ? JSON.stringify(updates.tags) : null);
       }
+      if (updates.status !== undefined) {
+        fields.push('status = ?');
+        values.push(updates.status);
+      }
 
       if (fields.length === 0) {
         const entry = this.findById(id);
@@ -114,6 +137,27 @@ export class EntryRepository implements IEntryRepository {
       }
       return updated;
     });
+  }
+
+  updateStatus(id: string, status: EntryStatus): Entry {
+    return withTransaction((db) => {
+      const now = new Date().toISOString();
+      db.prepare('UPDATE entries SET status = ?, updated_at = ? WHERE id = ?').run(status, now, id);
+
+      const updated = this.findById(id);
+      if (!updated) {
+        throw new Error(`Entry ${id} not found after status update`);
+      }
+      return updated;
+    });
+  }
+
+  archive(id: string): Entry {
+    return this.updateStatus(id, 'archived');
+  }
+
+  unarchive(id: string): Entry {
+    return this.updateStatus(id, 'active');
   }
 
   delete(id: string): boolean {

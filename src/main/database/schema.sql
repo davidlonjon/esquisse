@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS entries (
   title TEXT,
   content TEXT NOT NULL,
   tags TEXT,
+  status TEXT DEFAULT 'active',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY (journal_id) REFERENCES journals(id) ON DELETE CASCADE

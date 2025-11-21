@@ -30,6 +30,7 @@ const HUD_SHORTCUT_IDS: ShortcutId[] = [
   'nextEntry',
   'searchEntries',
   'commandPalette',
+  'deleteEntry',
 ];
 
 export function OverlayHUD({

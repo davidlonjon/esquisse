@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { DeleteEntryDialog } from '@components/dialogs';
 import { IpcErrorBoundary, IpcErrorFallback } from '@components/layout';
 import { Editor } from '@features/editor';
 import { EditorErrorToast, EditorHud, EditorStatus } from '@features/editor/components';
@@ -60,6 +61,13 @@ export function EditorPage() {
         {controller.apiError && (
           <EditorErrorToast message={controller.apiError} onDismiss={controller.clearApiError} />
         )}
+
+        <DeleteEntryDialog
+          isOpen={controller.deletion.isDialogOpen}
+          onClose={controller.deletion.handleCloseDialog}
+          onArchive={controller.deletion.handleArchive}
+          onDelete={controller.deletion.handleDelete}
+        />
       </div>
     </IpcErrorBoundary>
   );

@@ -6,7 +6,7 @@
 import { ipcRenderer } from 'electron';
 
 import { IPC_CHANNELS } from '@shared/ipc';
-import type { Entry, CreateEntryInput, UpdateEntryInput, Result } from '@shared/types';
+import type { Entry, CreateEntryInput, UpdateEntryInput, EntryStatus, Result } from '@shared/types';
 
 export const entryAPI = {
   createEntry: (entry: CreateEntryInput): Promise<Result<Entry>> =>
@@ -26,4 +26,19 @@ export const entryAPI = {
 
   searchEntries: (query: string): Promise<Result<Entry[]>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_SEARCH, query),
+
+  archiveEntry: (id: string): Promise<Result<Entry>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_ARCHIVE, id),
+
+  unarchiveEntry: (id: string): Promise<Result<Entry>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_UNARCHIVE, id),
+
+  updateEntryStatus: (id: string, status: EntryStatus): Promise<Result<Entry>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_UPDATE_STATUS, id, status),
+
+  getEntriesByStatus: (
+    journalId: string | undefined,
+    status: EntryStatus
+  ): Promise<Result<Entry[]>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_GET_BY_STATUS, journalId, status),
 };
