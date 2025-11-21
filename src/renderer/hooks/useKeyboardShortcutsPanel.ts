@@ -31,7 +31,8 @@ export function useKeyboardShortcutsPanel() {
       event.preventDefault();
       togglePanel();
     },
-    { preventDefault: true }
+    { preventDefault: true, enableOnFormTags: true },
+    false // Don't respect global enabled state, allow toggling even when panel is open
   );
 
   return {

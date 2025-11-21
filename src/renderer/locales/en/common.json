@@ -22,7 +22,14 @@
       "button": "Keyboard shortcuts",
       "title": "Keyboard Shortcuts",
       "subtitle": "Keep the flow without leaving the keyboard.",
+      "searchPlaceholder": "Search shortcuts",
       "close": "Close",
+      "categories": {
+        "navigation": "Navigation",
+        "ui": "Interface",
+        "editor": "Editor",
+        "modal": "Dialogs"
+      },
       "shortcut": {
         "search": {
           "label": "Search",

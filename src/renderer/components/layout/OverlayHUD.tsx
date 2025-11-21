@@ -2,10 +2,9 @@ import clsx from 'clsx';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { ShortcutId } from '@config/shortcuts';
 import { useKeyboardShortcutsPanel } from '@hooks/useKeyboardShortcutsPanel';
-import { KeyboardShortcutsPanel, type ShortcutItem } from '@layout/KeyboardShortcutsPanel';
-import { getShortcutCombo, getShortcutDisplayList } from '@lib/shortcuts';
+import { KeyboardShortcutsPanel } from '@layout/KeyboardShortcutsPanel';
+import { getShortcutCombo } from '@lib/shortcuts';
 
 interface OverlayHUDProps {
   showTop: boolean;
@@ -23,16 +22,6 @@ const HUDPill = ({ label }: { label: string }) => (
   </div>
 );
 
-const HUD_SHORTCUT_IDS: ShortcutId[] = [
-  'openSettings',
-  'toggleHudPin',
-  'previousEntry',
-  'nextEntry',
-  'searchEntries',
-  'commandPalette',
-  'deleteEntry',
-];
-
 export function OverlayHUD({
   showTop,
   showBottom,
@@ -44,15 +33,7 @@ export function OverlayHUD({
 }: OverlayHUDProps) {
   const { t } = useTranslation();
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
-  const translatedShortcuts = useMemo(
-    () =>
-      getShortcutDisplayList(HUD_SHORTCUT_IDS, t).map<ShortcutItem>((shortcut) => ({
-        combo: shortcut.combo,
-        label: shortcut.label,
-        description: shortcut.description,
-      })),
-    [t]
-  );
+
   const shortcutsButtonCombo = useMemo(() => getShortcutCombo('toggleShortcutsPanel') ?? '⌘/', []);
   const hudSuppressed = disabled || isShortcutsOpen;
 
@@ -107,15 +88,7 @@ export function OverlayHUD({
         <HUDPill label={snapshotLabel} />
       </div>
 
-      {isShortcutsOpen && (
-        <KeyboardShortcutsPanel
-          shortcuts={translatedShortcuts}
-          onClose={closeShortcuts}
-          title={t('hud.keyboard.title')}
-          description={t('hud.keyboard.subtitle')}
-          closeLabel={t('hud.keyboard.close')}
-        />
-      )}
+      {isShortcutsOpen && <KeyboardShortcutsPanel onClose={closeShortcuts} />}
     </>
   );
 }

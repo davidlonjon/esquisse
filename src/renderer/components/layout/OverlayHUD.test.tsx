@@ -35,11 +35,6 @@ vi.mock('@layout/KeyboardShortcutsPanel', () => ({
 
 vi.mock('@lib/shortcuts', () => ({
   getShortcutCombo: () => '⌘/',
-  getShortcutDisplayList: () => [],
-}));
-
-vi.mock('@config/shortcuts', () => ({
-  ShortcutId: {},
 }));
 
 describe('OverlayHUD', () => {

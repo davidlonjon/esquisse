@@ -51,16 +51,6 @@ export function getShortcutDisplayInfo(
   };
 }
 
-export function getShortcutDisplayList(
-  ids: ShortcutId[],
-  t: TFunction,
-  platform: Platform = detectPlatform()
-): ShortcutDisplayInfo[] {
-  return ids
-    .map((id) => getShortcutDisplayInfo(id, t, platform))
-    .filter((value): value is ShortcutDisplayInfo => value !== null);
-}
-
 export function getShortcutMetadata(id: ShortcutId): ShortcutDisplayMetadata | undefined {
   return getShortcutDisplayMetadata(id);
 }

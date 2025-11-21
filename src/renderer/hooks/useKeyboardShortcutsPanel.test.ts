@@ -131,9 +131,12 @@ describe('useKeyboardShortcutsPanel', () => {
 
     renderHook(() => useKeyboardShortcutsPanel());
 
-    expect(useGlobalHotkeys).toHaveBeenCalledWith(expect.any(Array), expect.any(Function), {
-      preventDefault: true,
-    });
+    expect(useGlobalHotkeys).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(Function),
+      { preventDefault: true, enableOnFormTags: true },
+      false
+    );
   });
 
   it('should return stable callback references', () => {

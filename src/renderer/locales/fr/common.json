@@ -22,7 +22,14 @@
       "button": "Raccourcis clavier",
       "title": "Raccourcis clavier",
       "subtitle": "Restez dans le flux sans quitter le clavier.",
+      "searchPlaceholder": "Rechercher des raccourcis",
       "close": "Fermer",
+      "categories": {
+        "navigation": "Navigation",
+        "ui": "Interface",
+        "editor": "Éditeur",
+        "modal": "Dialogues"
+      },
       "shortcut": {
         "search": {
           "label": "Recherche",
