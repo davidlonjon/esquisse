@@ -184,7 +184,9 @@ describe('settings.ts - Database Settings Operations', () => {
       expect(JSON.parse(row?.value as string)).toBe('light');
 
       // Should only have one row for theme
-      const result = db.prepare(`SELECT COUNT(*) as count FROM settings WHERE key = ?`).get('theme') as {
+      const result = db
+        .prepare(`SELECT COUNT(*) as count FROM settings WHERE key = ?`)
+        .get('theme') as {
         count: number;
       };
       expect(result.count).toBe(1);

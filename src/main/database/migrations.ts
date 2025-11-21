@@ -26,7 +26,9 @@ const MIGRATIONS: Migration[] = [
       db.prepare(
         'CREATE INDEX IF NOT EXISTS idx_entries_journal_updated ON entries(journal_id, updated_at)'
       ).run();
-      db.prepare('CREATE INDEX IF NOT EXISTS idx_journals_updated_at ON journals(updated_at)').run();
+      db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_journals_updated_at ON journals(updated_at)'
+      ).run();
     },
   },
 ];
@@ -41,7 +43,9 @@ export function runMigrations(db: Database.Database): void {
     )`
   ).run();
 
-  const appliedRows = db.prepare(`SELECT id FROM ${MIGRATIONS_TABLE}`).all() as Array<{ id: string }>;
+  const appliedRows = db.prepare(`SELECT id FROM ${MIGRATIONS_TABLE}`).all() as Array<{
+    id: string;
+  }>;
   const appliedIds = new Set<string>(appliedRows.map((row) => row.id));
 
   for (const migration of MIGRATIONS) {
@@ -52,9 +56,9 @@ export function runMigrations(db: Database.Database): void {
     db.prepare('BEGIN TRANSACTION').run();
     try {
       migration.up(db);
-      db.prepare(`INSERT INTO ${MIGRATIONS_TABLE} (id, applied_at) VALUES (?, datetime('now'))`).run(
-        migration.id
-      );
+      db.prepare(
+        `INSERT INTO ${MIGRATIONS_TABLE} (id, applied_at) VALUES (?, datetime('now'))`
+      ).run(migration.id);
       db.prepare('COMMIT').run();
     } catch (error) {
       db.prepare('ROLLBACK').run();

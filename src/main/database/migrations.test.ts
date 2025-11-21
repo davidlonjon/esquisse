@@ -65,7 +65,9 @@ describe('migrations.ts - Database Schema Migrations', () => {
       runMigrations(db);
       // const afterMigration = new Date().toISOString();
 
-      const result = db.prepare('SELECT id, applied_at FROM schema_migrations ORDER BY id').all() as Array<{
+      const result = db
+        .prepare('SELECT id, applied_at FROM schema_migrations ORDER BY id')
+        .all() as Array<{
         id: string;
         applied_at: string;
       }>;
@@ -284,18 +286,22 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const badDb = db;
 
       // Manually apply first migration
-      badDb.prepare(`CREATE TABLE IF NOT EXISTS schema_migrations (
+      badDb
+        .prepare(
+          `CREATE TABLE IF NOT EXISTS schema_migrations (
         id TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL
-      )`).run();
+      )`
+        )
+        .run();
 
       // Apply first migration successfully
       const schemaPath = path.join(__dirname, 'schema.sql');
       const schema = fs.readFileSync(schemaPath, 'utf-8');
       runSqlScript(badDb, schema);
-      badDb.prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, datetime('now'))`).run(
-        '001_initial_schema'
-      );
+      badDb
+        .prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, datetime('now'))`)
+        .run('001_initial_schema');
 
       // Create a conflicting index to make second migration fail
       badDb.prepare('CREATE INDEX idx_entries_updated_at ON entries(updated_at)').run();
@@ -324,10 +330,12 @@ describe('migrations.ts - Database Schema Migrations', () => {
 
     it('should handle database with partial schema', () => {
       // Manually create migrations table only
-      db.prepare(`CREATE TABLE schema_migrations (
+      db.prepare(
+        `CREATE TABLE schema_migrations (
         id TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL
-      )`).run();
+      )`
+      ).run();
 
       runMigrations(db);
 
