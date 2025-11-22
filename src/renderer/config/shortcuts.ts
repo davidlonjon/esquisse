@@ -119,7 +119,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: 'toggleShortcutsPanel',
-    keys: ['mod+slash', 'shift+mod+slash'],
+    keys: 'mod+slash',
     description: 'Toggle keyboard shortcuts panel (Cmd+/ or Ctrl+/)',
     category: 'ui',
     location: 'hooks/useKeyboardShortcutsPanel.ts',
@@ -128,8 +128,8 @@ export const SHORTCUTS: Shortcut[] = [
       labelKey: 'hud.keyboard.shortcut.shortcutsPanel.label',
       descriptionKey: 'hud.keyboard.shortcut.shortcutsPanel.description',
       combos: {
-        mac: '⌘/ or ⇧⌘/',
-        windows: 'Ctrl / or Shift+Ctrl /',
+        mac: '⌘/',
+        windows: 'Ctrl /',
       },
     },
   },
