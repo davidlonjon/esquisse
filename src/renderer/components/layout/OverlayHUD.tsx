@@ -69,6 +69,7 @@ export function OverlayHUD({
             <span className="text-base-content/60">{t('hud.keyboard.button')}</span>
           </button>
         </div>
+        <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-base-100 to-transparent" />
       </div>
 
       <div
@@ -77,6 +78,7 @@ export function OverlayHUD({
           showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-full opacity-0'
         )}
       >
+        <div className="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-gradient-to-t from-base-100 to-transparent" />
         <div className="flex items-center gap-2 text-xs font-medium text-base-content/60">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           <span>

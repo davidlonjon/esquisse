@@ -255,4 +255,20 @@ describe('OverlayHUD', () => {
       expect(dateLabel).toHaveClass('rounded-full');
     });
   });
+
+  describe('Gradient styling', () => {
+    it('should render gradient overlays', () => {
+      const { container } = render(<OverlayHUD {...defaultProps} />);
+
+      // Check for top gradient
+      const topGradient = container.querySelector('.bg-gradient-to-b');
+      expect(topGradient).toBeInTheDocument();
+      expect(topGradient).toHaveClass('from-base-100', 'to-transparent', 'pointer-events-none');
+
+      // Check for bottom gradient
+      const bottomGradient = container.querySelector('.bg-gradient-to-t');
+      expect(bottomGradient).toBeInTheDocument();
+      expect(bottomGradient).toHaveClass('from-base-100', 'to-transparent', 'pointer-events-none');
+    });
+  });
 });
