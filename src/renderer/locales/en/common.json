@@ -55,6 +55,10 @@
           "label": "Settings",
           "description": "Open the preferences panel"
         },
+        "showTimeline": {
+          "label": "Timeline",
+          "description": "Open the timeline view"
+        },
         "shortcutsPanel": {
           "label": "Shortcuts panel",
           "description": "Show or hide the shortcut reference"
@@ -118,6 +122,33 @@
         "en": "English",
         "fr": "French"
       }
+    }
+  },
+  "timeline": {
+    "collections": {
+      "title": "Collections",
+      "all": "All Entries",
+      "today": "Today",
+      "morning": "Morning Pages",
+      "work": "#work (last 30d)",
+      "favorites": "Favorites",
+      "new": "+ New collection from filter"
+    },
+    "title": "Timeline",
+    "navigation": "↑ ↓ Navigate · Enter open",
+    "feed": {
+      "empty": "No entries found. Start writing!",
+      "favorite": "Favorite",
+      "words": "{{count}} words"
+    },
+    "onThisDay": {
+      "title": "On This Day"
+    },
+    "session": {
+      "title": "Session",
+      "today": "Today",
+      "stats": "Words: {{words}} · Entries: {{entries}} · Focus: {{focus}}m",
+      "feedback": "Minimal feedback to avoid pressure."
     }
   },
   "journals": {

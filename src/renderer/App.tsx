@@ -40,5 +40,15 @@ export default function App() {
     { preventDefault: true }
   );
 
+  // Register timeline shortcut (Cmd/Ctrl+T)
+  useGlobalHotkeys(
+    'mod+t',
+    (event) => {
+      event.preventDefault();
+      router.navigate({ to: '/timeline' });
+    },
+    { preventDefault: true }
+  );
+
   return <AppRouterProvider />;
 }

@@ -37,7 +37,18 @@ const settingsRoute = createRoute({
   ),
 });
 
-const routeTree = RootRoute.addChildren([editorRoute, settingsRoute]);
+/**
+ * Timeline route - lazy loaded for code splitting
+ */
+const timelineRoute = createRoute({
+  getParentRoute: () => RootRoute,
+  path: '/timeline',
+  component: lazyRouteComponent(() =>
+    import('@pages/TimelinePage').then((m) => ({ default: m.TimelinePage }))
+  ),
+});
+
+const routeTree = RootRoute.addChildren([editorRoute, settingsRoute, timelineRoute]);
 
 export const router = createRouter({
   routeTree,

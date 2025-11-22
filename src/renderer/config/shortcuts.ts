@@ -21,7 +21,8 @@ export type ShortcutId =
   | 'searchEntries'
   | 'commandPalette'
   | 'closeModal'
-  | 'deleteEntry';
+  | 'deleteEntry'
+  | 'showTimeline';
 
 export interface ShortcutDisplayMetadata {
   labelKey: TranslationKey;
@@ -96,6 +97,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⌘,',
         windows: 'Ctrl ,',
+      },
+    },
+  },
+  {
+    id: 'showTimeline',
+    keys: 'mod+t',
+    description: 'Open timeline (Cmd+T or Ctrl+T)',
+    category: 'navigation',
+    location: 'App.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.showTimeline.label',
+      descriptionKey: 'hud.keyboard.shortcut.showTimeline.description',
+      combos: {
+        mac: '⌘T',
+        windows: 'Ctrl T',
       },
     },
   },

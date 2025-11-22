@@ -55,6 +55,10 @@
           "label": "Paramètres",
           "description": "Ouvrir le panneau de préférences"
         },
+        "showTimeline": {
+          "label": "Chronologie",
+          "description": "Ouvrir la vue chronologique"
+        },
         "shortcutsPanel": {
           "label": "Panneau des raccourcis",
           "description": "Afficher ou masquer la référence des raccourcis"
@@ -118,6 +122,33 @@
         "en": "Anglais",
         "fr": "Français"
       }
+    }
+  },
+  "timeline": {
+    "collections": {
+      "title": "Collections",
+      "all": "Toutes les entrées",
+      "today": "Aujourd'hui",
+      "morning": "Pages du matin",
+      "work": "#travail (30 derniers jours)",
+      "favorites": "Favoris",
+      "new": "+ Nouvelle collection depuis filtre"
+    },
+    "title": "Chronologie",
+    "navigation": "↑ ↓ Naviguer · Entrée ouvrir",
+    "feed": {
+      "empty": "Aucune entrée trouvée. Commencez à écrire !",
+      "favorite": "Favori",
+      "words": "{{count}} mots"
+    },
+    "onThisDay": {
+      "title": "Ce jour-là"
+    },
+    "session": {
+      "title": "Session",
+      "today": "Aujourd'hui",
+      "stats": "Mots : {{words}} · Entrées : {{entries}} · Focus : {{focus}}m",
+      "feedback": "Retour minimal pour éviter la pression."
     }
   },
   "journals": {
