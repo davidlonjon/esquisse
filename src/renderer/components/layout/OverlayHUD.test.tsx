@@ -86,22 +86,22 @@ describe('OverlayHUD', () => {
     it('should hide top HUD when showTop is false', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showTop={false} />);
 
-      const topHud = container.querySelector('.top-6');
+      const topHud = container.querySelector('.top-0');
       expect(topHud).toHaveClass('opacity-0');
     });
 
     it('should hide bottom HUD when showBottom is false', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showBottom={false} />);
 
-      const bottomHud = container.querySelector('.bottom-6');
+      const bottomHud = container.querySelector('.bottom-0');
       expect(bottomHud).toHaveClass('opacity-0');
     });
 
     it('should show both HUDs when both flags are true', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const topHud = container.querySelector('.top-6');
-      const bottomHud = container.querySelector('.bottom-6');
+      const topHud = container.querySelector('.top-0');
+      const bottomHud = container.querySelector('.bottom-0');
 
       expect(topHud).toHaveClass('opacity-100');
       expect(bottomHud).toHaveClass('opacity-100');
@@ -221,22 +221,22 @@ describe('OverlayHUD', () => {
     it('should apply transition classes to top HUD', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const topHud = container.querySelector('.top-6');
+      const topHud = container.querySelector('.top-0');
       expect(topHud).toHaveClass('transition-all', 'duration-300', 'ease-out');
     });
 
     it('should apply transition classes to bottom HUD', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const bottomHud = container.querySelector('.bottom-6');
+      const bottomHud = container.querySelector('.bottom-0');
       expect(bottomHud).toHaveClass('transition-all', 'duration-300', 'ease-out');
     });
 
     it('should apply translate-y transform when hidden', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showTop={false} />);
 
-      const topHud = container.querySelector('.top-6');
-      expect(topHud).toHaveClass('-translate-y-4');
+      const topHud = container.querySelector('.top-0');
+      expect(topHud).toHaveClass('-translate-y-full');
     });
   });
 

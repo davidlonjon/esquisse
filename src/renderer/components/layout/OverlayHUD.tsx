@@ -42,8 +42,8 @@ export function OverlayHUD({
     <>
       <div
         className={clsx(
-          'pointer-events-none fixed left-0 right-0 top-6 z-20 flex items-center justify-between px-10 transition-all duration-300 ease-out',
-          showTop && !hudSuppressed ? 'opacity-100 translate-y-0' : '-translate-y-4 opacity-0'
+          'pointer-events-none fixed left-0 right-0 top-0 z-20 flex h-16 items-center justify-between bg-base-100 px-10 transition-all duration-300 ease-out',
+          showTop && !hudSuppressed ? 'opacity-100 translate-y-0' : '-translate-y-full opacity-0'
         )}
       >
         <div className="flex flex-wrap gap-2">
@@ -61,8 +61,8 @@ export function OverlayHUD({
             }}
             disabled={disabled}
             className={clsx(
-              'flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-base-content/60 backdrop-blur-sm transition',
-              disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-background/80'
+              'flex items-center gap-2 rounded-full bg-base-200/50 px-3 py-1 text-xs font-medium text-base-content/60 transition',
+              disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200'
             )}
           >
             <ShortcutKeys combo={shortcutsButtonCombo} />
@@ -73,8 +73,8 @@ export function OverlayHUD({
 
       <div
         className={clsx(
-          'pointer-events-none fixed bottom-6 left-0 right-0 z-20 flex items-center justify-between px-10 transition-all duration-300 ease-out',
-          showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-4 opacity-0'
+          'pointer-events-none fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-between bg-base-100 px-10 transition-all duration-300 ease-out',
+          showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-full opacity-0'
         )}
       >
         <div className="flex items-center gap-2 text-xs font-medium text-base-content/60">
