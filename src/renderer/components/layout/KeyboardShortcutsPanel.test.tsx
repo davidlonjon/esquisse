@@ -70,6 +70,7 @@ vi.mock('@ui', () => ({
       data-testid="search-input"
     />
   ),
+  ShortcutKeys: ({ combo }: { combo: string }) => <span data-testid="shortcut-keys">{combo}</span>,
 }));
 
 vi.mock('lucide-react', () => ({

@@ -70,7 +70,8 @@ describe('OverlayHUD', () => {
       render(<OverlayHUD {...defaultProps} />);
 
       expect(screen.getByText('Shortcuts')).toBeInTheDocument();
-      expect(screen.getByText('⌘/')).toBeInTheDocument();
+      expect(screen.getByText('⌘')).toBeInTheDocument();
+      expect(screen.getByText('/')).toBeInTheDocument();
     });
 
     it('should render session indicator with green dot', () => {

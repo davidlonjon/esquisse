@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useKeyboardShortcutsPanel } from '@hooks/useKeyboardShortcutsPanel';
 import { KeyboardShortcutsPanel } from '@layout/KeyboardShortcutsPanel';
 import { getShortcutCombo } from '@lib/shortcuts';
+import { ShortcutKeys } from '@ui';
 
 interface OverlayHUDProps {
   showTop: boolean;
@@ -64,9 +65,7 @@ export function OverlayHUD({
               disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-background/80'
             )}
           >
-            <span className="rounded bg-muted/30 px-2 py-0.5 text-xs font-semibold text-base-content/50">
-              {shortcutsButtonCombo}
-            </span>
+            <ShortcutKeys combo={shortcutsButtonCombo} />
             <span className="text-base-content/60">{t('hud.keyboard.button')}</span>
           </button>
         </div>

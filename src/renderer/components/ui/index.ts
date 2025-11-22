@@ -6,3 +6,4 @@ export { Select } from './Select';
 export { Slider } from './Slider';
 export { Toggle } from './Toggle';
 export { Drawer } from './Drawer';
+export { ShortcutKeys } from './ShortcutKeys';

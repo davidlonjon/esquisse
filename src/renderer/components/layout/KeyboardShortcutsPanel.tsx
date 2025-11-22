@@ -4,20 +4,11 @@ import { useTranslation } from 'react-i18next';
 
 import { SHORTCUTS, type ShortcutCategory } from '@config/shortcuts';
 import { getShortcutDisplayInfo } from '@lib/shortcuts';
-import { Badge, Drawer, Input } from '@ui';
+import { Drawer, Input, ShortcutKeys } from '@ui';
 
 interface KeyboardShortcutsPanelProps {
   onClose: () => void;
 }
-
-const ShortcutBadge = ({ combo }: { combo: string }) => (
-  <Badge
-    variant="outline"
-    className="border-base-300 bg-base-100 font-mono text-xs text-base-content dark:border-base-300/70 dark:bg-base-300/20"
-  >
-    {combo}
-  </Badge>
-);
 
 export function KeyboardShortcutsPanel({ onClose }: KeyboardShortcutsPanelProps) {
   const { t } = useTranslation();
@@ -92,7 +83,7 @@ export function KeyboardShortcutsPanel({ onClose }: KeyboardShortcutsPanelProps)
                   {shortcuts.map((shortcut) => (
                     <div key={shortcut.id} className="flex items-center justify-between py-2">
                       <span className="text-sm text-base-content">{shortcut.displayLabel}</span>
-                      <ShortcutBadge combo={shortcut.combo} />
+                      <ShortcutKeys combo={shortcut.combo} />
                     </div>
                   ))}
                 </div>
