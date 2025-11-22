@@ -61,15 +61,7 @@ describe('AppearanceSettings', () => {
   });
 
   describe('Rendering', () => {
-    it('should render section header with icon and title', () => {
-      render(<AppearanceSettings />);
-
-      const appearanceTexts = screen.getAllByText('settings.sections.appearance');
-      expect(appearanceTexts.length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('settings.description')).toBeInTheDocument();
-    });
-
-    it('should render theme field label and description', () => {
+    it('should render theme field label', () => {
       render(<AppearanceSettings />);
 
       expect(screen.getByText('settings.fields.theme')).toBeInTheDocument();

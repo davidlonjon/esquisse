@@ -62,14 +62,6 @@ describe('AutosaveSettings', () => {
   });
 
   describe('Rendering', () => {
-    it('should render section header with icon and title', () => {
-      render(<AutosaveSettings />);
-
-      const autosaveTexts = screen.getAllByText('settings.sections.autosave');
-      expect(autosaveTexts.length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('settings.description')).toBeInTheDocument();
-    });
-
     it('should render autosave field label', () => {
       render(<AutosaveSettings />);
 

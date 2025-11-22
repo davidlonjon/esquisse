@@ -1,4 +1,4 @@
-import { Check, Languages, Palette } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
@@ -32,22 +32,13 @@ export function AppearanceSettings() {
   };
 
   return (
-    <section className="space-y-8">
-      <header className="flex items-center gap-3">
-        <Palette className="h-5 w-5 text-base-content/70" />
-        <div>
-          <p className="text-base font-semibold text-base-content">
-            {t('settings.sections.appearance')}
-          </p>
-          <p className="text-sm text-base-content/70">{t('settings.description')}</p>
-        </div>
-      </header>
-
-      <div className="space-y-6">
-        <div>
-          <p className="text-sm font-medium text-base-content">{t('settings.fields.theme')}</p>
-          <p className="text-xs text-base-content/60">{t('settings.sections.appearance')}</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+    <section className="space-y-10">
+      <div className="grid gap-6">
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-base-content">
+            {t('settings.fields.theme')}
+          </label>
+          <div className="grid gap-3 sm:grid-cols-3">
             {THEME_OPTIONS.map((option) => {
               const isActive = theme === option.value;
               return (
@@ -56,7 +47,7 @@ export function AppearanceSettings() {
                   variant={isActive ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => void handleThemeChange(option.value)}
-                  className="justify-between shadow-sm"
+                  className="justify-between font-normal"
                 >
                   {t(option.labelKey)}
                   {isActive && <Check className="h-4 w-4" />}
@@ -66,19 +57,15 @@ export function AppearanceSettings() {
           </div>
         </div>
 
-        <div>
-          <label
-            className="flex items-center gap-3 text-sm font-medium text-base-content"
-            htmlFor="language-select"
-          >
-            <Languages className="h-4 w-4 text-base-content/70" />
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-base-content" htmlFor="language-select">
             {t('settings.fields.language')}
           </label>
           <Select
             id="language-select"
             value={language}
             onChange={(event) => void handleLanguageChange(event.target.value as 'en' | 'fr')}
-            className="mt-3 w-full"
+            className="w-full sm:max-w-xs"
           >
             {LANGUAGE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>

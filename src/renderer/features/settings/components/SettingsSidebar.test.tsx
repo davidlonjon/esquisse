@@ -33,11 +33,12 @@ describe('SettingsSidebar', () => {
   });
 
   describe('Rendering', () => {
-    it('should render sidebar with title and description', () => {
+    it('should render sidebar with title', () => {
       render(<SettingsSidebar {...defaultProps} />);
 
       expect(screen.getByText('settings.title')).toBeInTheDocument();
-      expect(screen.getByText('settings.description')).toBeInTheDocument();
+      // Description was removed from sidebar
+      expect(screen.queryByText('settings.description')).not.toBeInTheDocument();
     });
 
     it('should render back button', () => {
@@ -59,15 +60,15 @@ describe('SettingsSidebar', () => {
       render(<SettingsSidebar {...defaultProps} activeSection="editor" />);
 
       const editorButton = screen.getByRole('button', { name: /Editor/i });
-      expect(editorButton).toHaveClass('bg-base-100', 'text-base-content', 'shadow-sm');
+      expect(editorButton).toHaveClass('bg-primary/10', 'text-primary');
     });
 
     it('should not highlight inactive sections', () => {
       render(<SettingsSidebar {...defaultProps} activeSection="editor" />);
 
       const appearanceButton = screen.getByRole('button', { name: /Appearance/i });
-      expect(appearanceButton).toHaveClass('text-base-content/70', 'hover:bg-base-100');
-      expect(appearanceButton).not.toHaveClass('bg-base-100', 'shadow-sm');
+      expect(appearanceButton).toHaveClass('text-base-content/70', 'hover:bg-base-200');
+      expect(appearanceButton).not.toHaveClass('bg-primary/10', 'text-primary');
     });
   });
 

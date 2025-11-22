@@ -62,14 +62,6 @@ describe('EditorSettings', () => {
   });
 
   describe('Rendering', () => {
-    it('should render section header with icon and title', () => {
-      render(<EditorSettings />);
-
-      const editorTexts = screen.getAllByText('settings.sections.editor');
-      expect(editorTexts.length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('settings.description')).toBeInTheDocument();
-    });
-
     it('should render font size field with current value', () => {
       render(<EditorSettings />);
 

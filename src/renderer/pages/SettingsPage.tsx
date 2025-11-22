@@ -75,6 +75,8 @@ export function SettingsPage() {
     }
   };
 
+  const currentSection = sections.find((s) => s.id === activeSection);
+
   return (
     <div className="flex min-h-screen w-screen overflow-hidden bg-base-200 text-base-content">
       <SettingsSidebar
@@ -91,8 +93,14 @@ export function SettingsPage() {
           <IpcErrorFallback error={error} retry={retry} variant="inline" />
         )}
       >
-        <div className="flex-1 bg-base-100 px-6 py-10 sm:px-10">
-          <div className="mx-auto max-w-3xl space-y-8">{renderActiveSection()}</div>
+        <div className="flex-1 overflow-y-auto bg-base-100 px-8 py-12 sm:px-12">
+          <div className="mx-auto max-w-2xl space-y-8">
+            <div className="border-b border-base-200 pb-6">
+              <h2 className="text-2xl font-bold">{currentSection?.label}</h2>
+              <p className="mt-1 text-sm text-base-content/60">{t('settings.description')}</p>
+            </div>
+            {renderActiveSection()}
+          </div>
         </div>
       </IpcErrorBoundary>
     </div>
