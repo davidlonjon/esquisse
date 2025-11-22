@@ -86,22 +86,23 @@ describe('OverlayHUD', () => {
     it('should hide top HUD when showTop is false', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showTop={false} />);
 
-      const topHud = container.querySelector('.top-0');
+      // The HUD container is the one with top-0 and z-20, NOT the gradient
+      const topHud = container.querySelector('.fixed.top-0.z-20');
       expect(topHud).toHaveClass('opacity-0');
     });
 
     it('should hide bottom HUD when showBottom is false', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showBottom={false} />);
 
-      const bottomHud = container.querySelector('.bottom-0');
+      const bottomHud = container.querySelector('.fixed.bottom-0.z-20');
       expect(bottomHud).toHaveClass('opacity-0');
     });
 
     it('should show both HUDs when both flags are true', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const topHud = container.querySelector('.top-0');
-      const bottomHud = container.querySelector('.bottom-0');
+      const topHud = container.querySelector('.fixed.top-0.z-20');
+      const bottomHud = container.querySelector('.fixed.bottom-0.z-20');
 
       expect(topHud).toHaveClass('opacity-100');
       expect(bottomHud).toHaveClass('opacity-100');
@@ -221,21 +222,21 @@ describe('OverlayHUD', () => {
     it('should apply transition classes to top HUD', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const topHud = container.querySelector('.top-0');
+      const topHud = container.querySelector('.fixed.top-0.z-20');
       expect(topHud).toHaveClass('transition-all', 'duration-300', 'ease-out');
     });
 
     it('should apply transition classes to bottom HUD', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      const bottomHud = container.querySelector('.bottom-0');
+      const bottomHud = container.querySelector('.fixed.bottom-0.z-20');
       expect(bottomHud).toHaveClass('transition-all', 'duration-300', 'ease-out');
     });
 
     it('should apply translate-y transform when hidden', () => {
       const { container } = render(<OverlayHUD {...defaultProps} showTop={false} />);
 
-      const topHud = container.querySelector('.top-0');
+      const topHud = container.querySelector('.fixed.top-0.z-20');
       expect(topHud).toHaveClass('-translate-y-full');
     });
   });
@@ -260,15 +261,21 @@ describe('OverlayHUD', () => {
     it('should render gradient overlays', () => {
       const { container } = render(<OverlayHUD {...defaultProps} />);
 
-      // Check for top gradient
-      const topGradient = container.querySelector('.bg-gradient-to-b');
-      expect(topGradient).toBeInTheDocument();
-      expect(topGradient).toHaveClass('from-base-100', 'to-transparent', 'pointer-events-none');
+      // Check for persistent edge gradients (h-12)
+      const topEdgeGradient = container.querySelector('.fixed.top-0.h-12.bg-gradient-to-b');
+      expect(topEdgeGradient).toBeInTheDocument();
+      expect(topEdgeGradient).toHaveClass('z-10', 'from-base-100', 'to-transparent');
 
-      // Check for bottom gradient
-      const bottomGradient = container.querySelector('.bg-gradient-to-t');
-      expect(bottomGradient).toBeInTheDocument();
-      expect(bottomGradient).toHaveClass('from-base-100', 'to-transparent', 'pointer-events-none');
+      const bottomEdgeGradient = container.querySelector('.fixed.bottom-0.h-12.bg-gradient-to-t');
+      expect(bottomEdgeGradient).toBeInTheDocument();
+      expect(bottomEdgeGradient).toHaveClass('z-10', 'from-base-100', 'to-transparent');
+
+      // Check for HUD-attached gradients (h-8)
+      const topHudGradient = container.querySelector('.-bottom-8.h-8.bg-gradient-to-b');
+      expect(topHudGradient).toBeInTheDocument();
+
+      const bottomHudGradient = container.querySelector('.-top-8.h-8.bg-gradient-to-t');
+      expect(bottomHudGradient).toBeInTheDocument();
     });
   });
 });

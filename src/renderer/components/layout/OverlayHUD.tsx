@@ -40,6 +40,10 @@ export function OverlayHUD({
 
   return (
     <>
+      {/* Persistent screen edge fade effects */}
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-10 h-12 bg-gradient-to-b from-base-100 to-transparent" />
+      <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-10 h-12 bg-gradient-to-t from-base-100 to-transparent" />
+
       <div
         className={clsx(
           'pointer-events-none fixed left-0 right-0 top-0 z-20 flex h-16 items-center justify-between bg-base-100 px-10 transition-all duration-300 ease-out',
