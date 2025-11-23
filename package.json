@@ -36,7 +36,9 @@
     "migrate:snapshot": "node scripts/migration-cli.js snapshot",
     "db:reset": "npm run pretest && node scripts/db-reset-seed.js reset",
     "db:seed": "npm run pretest && node scripts/db-reset-seed.js seed",
+    "db:seed:large": "npm run pretest && node scripts/db-reset-seed.js seed --large",
     "db:reset-seed": "npm run pretest && node scripts/db-reset-seed.js reset-seed",
+    "db:reset-seed:large": "npm run pretest && node scripts/db-reset-seed.js reset-seed --large",
     "prepare": "husky",
     "rebuild:native": "electron-rebuild -f -w better-sqlite3",
     "postinstall": "npm run rebuild:native"
@@ -80,6 +82,7 @@
     "@electron-forge/plugin-vite": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@electron/rebuild": "^4.0.1",
+    "@faker-js/faker": "^10.1.0",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
