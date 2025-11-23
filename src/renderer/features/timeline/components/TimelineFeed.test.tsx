@@ -8,13 +8,30 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string, fallback?: string) => fallback || key }),
 }));
 
+// Mock useGlobalHotkeys
+vi.mock('@hooks/useGlobalHotkeys', () => ({
+  useGlobalHotkeys: vi.fn(),
+}));
+
+// Mock router
+vi.mock('@/router', () => ({
+  router: {
+    navigate: vi.fn(),
+  },
+}));
+
 // Mock the store with default values
 const mockLoadEntries = vi.fn();
+const mockToggleFavorite = vi.fn();
+const mockSetCurrentEntryId = vi.fn();
+
 vi.mock('@features/entries/entries.store', () => ({
   useEntryStore: (selector: (state: unknown) => unknown) => {
     const state = {
       entries: [],
       loadEntries: mockLoadEntries,
+      toggleFavorite: mockToggleFavorite,
+      setCurrentEntryId: mockSetCurrentEntryId,
     };
     return selector(state);
   },

@@ -12,7 +12,7 @@ export function Timeline() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-base-200 text-base-content">
       <TimelineSidebar currentFilter={filter} onFilterChange={setFilter} />
-      <TimelineFeed filter={filter} />
+      <TimelineFeed key={filter} filter={filter} />
       <TimelineRightSidebar />
     </div>
   );
