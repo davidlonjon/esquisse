@@ -48,6 +48,8 @@ export function EditorPage() {
           sessionLabel={controller.hud.sessionLabel}
           snapshotLabel={controller.hud.snapshotLabel}
           disabled={false}
+          isFavorite={controller.hud.isFavorite}
+          onToggleFavorite={controller.hud.onToggleFavorite}
         />
         <Editor
           content={controller.content}

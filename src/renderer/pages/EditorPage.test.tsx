@@ -20,6 +20,8 @@ let mockController = {
     wordCountLabel: '150 words',
     sessionLabel: '5min',
     snapshotLabel: 'Saved',
+    isFavorite: false,
+    onToggleFavorite: vi.fn(),
   },
   content: '<p>Test content</p>',
   handleContentChange: vi.fn(),
@@ -27,6 +29,12 @@ let mockController = {
   placeholder: 'Start writing...',
   apiError: null as string | null,
   clearApiError: vi.fn(),
+  deletion: {
+    isDialogOpen: false,
+    handleArchive: vi.fn(),
+    handleDelete: vi.fn(),
+    handleCloseDialog: vi.fn(),
+  },
 };
 
 vi.mock('@hooks/useEditorController', () => ({
@@ -66,6 +74,10 @@ vi.mock('@features/editor/components', () => ({
   ),
 }));
 
+vi.mock('@components/dialogs', () => ({
+  DeleteEntryDialog: () => <div data-testid="delete-entry-dialog">Delete Entry Dialog</div>,
+}));
+
 describe('EditorPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -80,6 +92,8 @@ describe('EditorPage', () => {
         wordCountLabel: '150 words',
         sessionLabel: '5min',
         snapshotLabel: 'Saved',
+        isFavorite: false,
+        onToggleFavorite: vi.fn(),
       },
       content: '<p>Test content</p>',
       handleContentChange: vi.fn(),
@@ -87,6 +101,12 @@ describe('EditorPage', () => {
       placeholder: 'Start writing...',
       apiError: null,
       clearApiError: vi.fn(),
+      deletion: {
+        isDialogOpen: false,
+        handleArchive: vi.fn(),
+        handleDelete: vi.fn(),
+        handleCloseDialog: vi.fn(),
+      },
     };
     // Reset window.api
     Object.defineProperty(window, 'api', {

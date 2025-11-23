@@ -39,6 +39,7 @@ describe('entry.service.ts - Entry Service', () => {
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -47,6 +48,7 @@ describe('entry.service.ts - Entry Service', () => {
           journalId: 'journal-2',
           content: '<p>Entry 2</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -72,6 +74,7 @@ describe('entry.service.ts - Entry Service', () => {
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -134,6 +137,7 @@ describe('entry.service.ts - Entry Service', () => {
         content: '<p>Test content</p>',
         tags: ['test', 'unit'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -162,6 +166,7 @@ describe('entry.service.ts - Entry Service', () => {
         journalId: 'journal-1',
         content: '<p>Minimal content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -210,6 +215,7 @@ describe('entry.service.ts - Entry Service', () => {
         title: 'Updated Title',
         content: '<p>Content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -237,6 +243,7 @@ describe('entry.service.ts - Entry Service', () => {
         journalId: 'journal-1',
         content: '<p>Updated content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -264,6 +271,7 @@ describe('entry.service.ts - Entry Service', () => {
         content: '<p>Content</p>',
         tags: ['updated', 'tags'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -294,6 +302,7 @@ describe('entry.service.ts - Entry Service', () => {
         content: '<p>New content</p>',
         tags: ['new'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -321,6 +330,7 @@ describe('entry.service.ts - Entry Service', () => {
         journalId: 'journal-1',
         content: '<p>Content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -406,6 +416,7 @@ describe('entry.service.ts - Entry Service', () => {
           title: 'Meeting notes',
           content: '<p>Important meeting</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -480,6 +491,7 @@ describe('entry.service.ts - Entry Service', () => {
         title: 'Integration Test Entry',
         content: '<p>Test content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

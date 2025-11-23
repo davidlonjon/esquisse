@@ -11,6 +11,7 @@ export interface Entry {
   content: string;
   tags?: string[];
   status: EntryStatus;
+  isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +22,7 @@ export interface CreateEntryInput {
   content: string;
   tags?: string[];
   status?: EntryStatus;
+  isFavorite?: boolean;
 }
 
 export interface UpdateEntryInput {
@@ -28,6 +30,7 @@ export interface UpdateEntryInput {
   content?: string;
   tags?: string[] | null;
   status?: EntryStatus;
+  isFavorite?: boolean;
 }
 
 export const isActiveEntry = (entry: Entry): boolean => entry.status === 'active';

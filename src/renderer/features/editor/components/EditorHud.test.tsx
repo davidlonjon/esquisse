@@ -42,6 +42,8 @@ describe('EditorHud', () => {
     sessionLabel: '5min',
     snapshotLabel: 'Saved',
     disabled: false,
+    isFavorite: false,
+    onToggleFavorite: vi.fn(),
   };
 
   describe('Rendering', () => {

@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { Heart } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +16,8 @@ interface OverlayHUDProps {
   sessionLabel: string;
   snapshotLabel: string;
   disabled?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 const HUDPill = ({ label }: { label: string }) => (
@@ -31,6 +34,8 @@ export function OverlayHUD({
   sessionLabel,
   snapshotLabel,
   disabled = false,
+  isFavorite = false,
+  onToggleFavorite,
 }: OverlayHUDProps) {
   const { t } = useTranslation();
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
@@ -56,6 +61,24 @@ export function OverlayHUD({
         </div>
 
         <div className="pointer-events-auto flex flex-wrap gap-2">
+          {onToggleFavorite && (
+            <button
+              type="button"
+              onClick={onToggleFavorite}
+              disabled={disabled}
+              className={clsx(
+                'flex items-center justify-center rounded-full px-2 py-1 transition',
+                disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200',
+                isFavorite
+                  ? 'text-error bg-error/10 hover:bg-error/20'
+                  : 'text-base-content/40 hover:text-error'
+              )}
+              title={t('timeline.feed.favorite', 'Favorite')}
+            >
+              <Heart className={clsx('h-4 w-4', isFavorite && 'fill-current')} />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => {

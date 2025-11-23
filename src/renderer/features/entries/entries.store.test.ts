@@ -310,6 +310,57 @@ describe('useEntryStore', () => {
     });
   });
 
+  describe('toggleFavorite', () => {
+    it('toggles isFavorite status and updates entry', async () => {
+      const entry = createMockEntry({ id: 'entry-1', isFavorite: false });
+      const updated = { ...entry, isFavorite: true };
+
+      useEntryStore.setState({
+        entries: [entry],
+        entryLookup: { 'entry-1': entry },
+      });
+
+      mockedEntryService.update.mockResolvedValue(updated);
+
+      await useEntryStore.getState().toggleFavorite('entry-1');
+
+      const state = useEntryStore.getState();
+      expect(state.entries[0].isFavorite).toBe(true);
+      expect(state.entryLookup['entry-1'].isFavorite).toBe(true);
+      expect(mockedEntryService.update).toHaveBeenCalledWith('entry-1', {
+        isFavorite: true,
+      });
+    });
+
+    it('updates favorite status in search results if present', async () => {
+      const entry = createMockEntry({ id: 'entry-1', isFavorite: false });
+      const updated = { ...entry, isFavorite: true };
+
+      useEntryStore.setState({
+        entries: [entry],
+        entryLookup: { 'entry-1': entry },
+        search: {
+          query: 'test',
+          results: [entry],
+          status: { status: 'success', error: null },
+        },
+      });
+
+      mockedEntryService.update.mockResolvedValue(updated);
+
+      await useEntryStore.getState().toggleFavorite('entry-1');
+
+      const state = useEntryStore.getState();
+      expect(state.search.results[0].isFavorite).toBe(true);
+    });
+
+    it('throws error if entry not found', async () => {
+      await expect(useEntryStore.getState().toggleFavorite('non-existent')).rejects.toThrow(
+        'Entry non-existent not found'
+      );
+    });
+  });
+
   describe('searchEntries', () => {
     it('searches entries and updates search state', async () => {
       const entry = createMockEntry({ id: 'entry-1', title: 'Test Entry' });

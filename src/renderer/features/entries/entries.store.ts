@@ -39,6 +39,7 @@ interface EntryState {
   setCurrentEntryId: (entryId: string | null) => void;
   archiveEntry: (id: string) => Promise<Entry>;
   unarchiveEntry: (id: string) => Promise<Entry>;
+  toggleFavorite: (id: string) => Promise<Entry>;
   fetchArchivedEntries: (journalId?: string) => Promise<void>;
   toggleShowArchived: () => void;
 }
@@ -89,12 +90,15 @@ const createInitialState = (): EntryState => ({
   unarchiveEntry: async () => {
     throw new Error('Store not initialized');
   },
+  toggleFavorite: async () => {
+    throw new Error('Store not initialized');
+  },
   fetchArchivedEntries: async () => undefined,
   toggleShowArchived: () => undefined,
 });
 
 export const useEntryStore = create(
-  immer<EntryState>((set) => ({
+  immer<EntryState>((set, get) => ({
     ...createInitialState(),
 
     loadEntries: async (journalId) => {
@@ -257,6 +261,38 @@ export const useEntryStore = create(
         });
 
         return entry;
+      });
+    },
+
+    toggleFavorite: async (id) => {
+      return withAsyncHandler(set, 'save', async () => {
+        const currentEntry = get().entryLookup[id];
+        if (!currentEntry) {
+          throw new Error(`Entry ${id} not found`);
+        }
+
+        const updated = await entryService.update(id, {
+          isFavorite: !currentEntry.isFavorite,
+        });
+
+        set((state) => {
+          if (!state.entryLookup[id]) {
+            return;
+          }
+
+          const entryIndex = state.entries.findIndex((e) => e.id === id);
+          if (entryIndex !== -1) {
+            state.entries[entryIndex] = updated;
+          }
+          state.entryLookup[id] = updated;
+
+          const searchResultIndex = state.search.results.findIndex((e) => e.id === id);
+          if (searchResultIndex !== -1) {
+            state.search.results[searchResultIndex] = updated;
+          }
+        });
+
+        return updated;
       });
     },
 

@@ -46,13 +46,17 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
 
   describe('registerEntryHandlers', () => {
     it('should register all entry IPC handlers', () => {
-      expect(mockHandlers.size).toBe(6);
+      expect(mockHandlers.size).toBe(10);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_CREATE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_GET_ALL)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_GET_BY_ID)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UPDATE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_DELETE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_SEARCH)).toBe(true);
+      expect(mockHandlers.has(IPC_CHANNELS.ENTRY_ARCHIVE)).toBe(true);
+      expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UNARCHIVE)).toBe(true);
+      expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UPDATE_STATUS)).toBe(true);
+      expect(mockHandlers.has(IPC_CHANNELS.ENTRY_GET_BY_STATUS)).toBe(true);
     });
   });
 
@@ -65,6 +69,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         content: '<p>Test content</p>',
         tags: ['test', 'unit'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -96,6 +101,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Content only</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -123,6 +129,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Simple entry</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -144,6 +151,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -152,6 +160,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           journalId: 'journal-2',
           content: '<p>Entry 2</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -162,7 +171,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_ALL)!;
       const result = await handler(mockEvent, [undefined]);
 
-      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith(undefined);
+      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith({ journalId: undefined });
       expect(result).toEqual(mockEntries);
     });
 
@@ -173,6 +182,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           journalId: 'journal-1',
           content: '<p>Entry 1</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -183,7 +193,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
       const handler = mockHandlers.get(IPC_CHANNELS.ENTRY_GET_ALL)!;
       const result = await handler(mockEvent, ['journal-1']);
 
-      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith('journal-1');
+      expect(mockEntryService.getAllEntries).toHaveBeenCalledWith({ journalId: 'journal-1' });
       expect(result).toEqual(mockEntries);
     });
 
@@ -204,6 +214,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Test content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -235,6 +246,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         title: 'Updated Title',
         content: '<p>Content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -256,6 +268,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Updated content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -278,6 +291,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         content: '<p>Content</p>',
         tags: ['updated', 'tags'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -301,6 +315,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         content: '<p>New content</p>',
         tags: ['new'],
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -331,6 +346,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
         journalId: 'journal-1',
         content: '<p>Content</p>',
         status: 'active',
+        isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -377,6 +393,7 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
           title: 'Meeting notes',
           content: '<p>Important meeting</p>',
           status: 'active',
+          isFavorite: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },

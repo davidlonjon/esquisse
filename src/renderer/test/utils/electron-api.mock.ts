@@ -22,6 +22,7 @@ export const createMockEntry = (overrides: Partial<Entry> = {}): Entry => ({
   content: '<p>Mock</p>',
   tags: undefined,
   status: 'active',
+  isFavorite: false,
   createdAt: iso(),
   updatedAt: iso(),
   ...overrides,

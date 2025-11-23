@@ -22,6 +22,7 @@ export type ShortcutId =
   | 'commandPalette'
   | 'closeModal'
   | 'deleteEntry'
+  | 'toggleFavorite'
   | 'showTimeline';
 
 export interface ShortcutDisplayMetadata {
@@ -215,6 +216,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⌘D',
         windows: 'Ctrl D',
+      },
+    },
+  },
+  {
+    id: 'toggleFavorite',
+    keys: 'mod+shift+f',
+    description: 'Toggle favorite status for current entry',
+    category: 'editor',
+    location: 'App.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.toggleFavorite.label',
+      descriptionKey: 'hud.keyboard.shortcut.toggleFavorite.description',
+      combos: {
+        mac: '⇧⌘F',
+        windows: 'Shift+Ctrl+F',
       },
     },
   },

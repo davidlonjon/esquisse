@@ -37,6 +37,7 @@ export const CreateEntryInputSchema = z.object({
   content: z.string(),
   tags: z.array(z.string().max(50, 'Tag is too long')).max(20, 'Too many tags').optional(),
   status: EntryStatusSchema.optional(),
+  isFavorite: z.boolean().optional(),
 });
 
 export const UpdateEntryInputSchema = z.object({
@@ -48,6 +49,7 @@ export const UpdateEntryInputSchema = z.object({
     .nullable()
     .optional(),
   status: EntryStatusSchema.optional(),
+  isFavorite: z.boolean().optional(),
 });
 
 // Settings validation schemas
@@ -100,6 +102,7 @@ export const EntrySchema = z.object({
   content: z.string(),
   tags: z.array(z.string()).optional(),
   status: EntryStatusSchema,
+  isFavorite: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

@@ -34,10 +34,31 @@ const MIGRATIONS: Migration[] = [
   {
     id: '003_add_entry_status_field',
     up: (db) => {
-      db.prepare("ALTER TABLE entries ADD COLUMN status TEXT DEFAULT 'active'").run();
+      // Check if column exists before adding
+      const columns = db.pragma('table_info(entries)') as Array<{ name: string }>;
+      const hasStatus = columns.some((col) => col.name === 'status');
+
+      if (!hasStatus) {
+        db.prepare("ALTER TABLE entries ADD COLUMN status TEXT DEFAULT 'active'").run();
+      }
       db.prepare('CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status)').run();
       db.prepare(
         'CREATE INDEX IF NOT EXISTS idx_entries_journal_status ON entries(journal_id, status)'
+      ).run();
+    },
+  },
+  {
+    id: '004_add_is_favorite_field',
+    up: (db) => {
+      // Check if column exists before adding
+      const columns = db.pragma('table_info(entries)') as Array<{ name: string }>;
+      const hasFavorite = columns.some((col) => col.name === 'is_favorite');
+
+      if (!hasFavorite) {
+        db.prepare('ALTER TABLE entries ADD COLUMN is_favorite INTEGER DEFAULT 0').run();
+      }
+      db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_entries_is_favorite ON entries(is_favorite)'
       ).run();
     },
   },

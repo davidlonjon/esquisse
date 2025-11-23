@@ -34,6 +34,9 @@
     "migrate:create": "node scripts/migration-cli.js create",
     "migrate:status": "node scripts/migration-cli.js status",
     "migrate:snapshot": "node scripts/migration-cli.js snapshot",
+    "db:reset": "npm run pretest && node scripts/db-reset-seed.js reset",
+    "db:seed": "npm run pretest && node scripts/db-reset-seed.js seed",
+    "db:reset-seed": "npm run pretest && node scripts/db-reset-seed.js reset-seed",
     "prepare": "husky",
     "rebuild:native": "electron-rebuild -f -w better-sqlite3",
     "postinstall": "npm run rebuild:native"

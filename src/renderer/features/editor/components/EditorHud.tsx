@@ -7,6 +7,8 @@ interface EditorHUDProps {
   sessionLabel: string;
   snapshotLabel: string;
   disabled: boolean;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
 export function EditorHud({
@@ -16,6 +18,8 @@ export function EditorHud({
   sessionLabel,
   snapshotLabel,
   disabled,
+  isFavorite,
+  onToggleFavorite,
 }: EditorHUDProps) {
   return (
     <OverlayHUD
@@ -26,6 +30,8 @@ export function EditorHud({
       sessionLabel={sessionLabel}
       snapshotLabel={snapshotLabel}
       disabled={disabled}
+      isFavorite={isFavorite}
+      onToggleFavorite={onToggleFavorite}
     />
   );
 }

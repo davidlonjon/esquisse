@@ -1,17 +1,44 @@
+import clsx from 'clsx';
 import { Heart } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useEntryStore } from '@features/entries/entries.store';
 
-export function TimelineFeed() {
+import type { TimelineFilter } from '../Timeline';
+
+interface TimelineFeedProps {
+  filter: TimelineFilter;
+}
+
+export function TimelineFeed({ filter }: TimelineFeedProps) {
   const { t } = useTranslation();
   const entries = useEntryStore((state) => state.entries);
   const loadEntries = useEntryStore((state) => state.loadEntries);
+  const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
 
   useEffect(() => {
     loadEntries();
   }, [loadEntries]);
+
+  const filteredEntries = useMemo(() => {
+    switch (filter) {
+      case 'favorites':
+        return entries.filter((entry) => entry.isFavorite);
+      case 'today':
+        return entries.filter((entry) => {
+          const entryDate = new Date(entry.createdAt);
+          const today = new Date();
+          return (
+            entryDate.getDate() === today.getDate() &&
+            entryDate.getMonth() === today.getMonth() &&
+            entryDate.getFullYear() === today.getFullYear()
+          );
+        });
+      default:
+        return entries;
+    }
+  }, [entries, filter]);
 
   return (
     <main className="flex-1 overflow-y-auto bg-base-100 px-8 pt-8 pb-8">
@@ -35,12 +62,12 @@ export function TimelineFeed() {
             )}
           </div>
 
-          {entries.length === 0 ? (
+          {filteredEntries.length === 0 ? (
             <div className="py-12 text-center text-base-content/50">
               {t('timeline.feed.empty', 'No entries found. Start writing!')}
             </div>
           ) : (
-            entries.map((entry) => (
+            filteredEntries.map((entry) => (
               <div
                 key={entry.id}
                 className="group relative rounded-xl border border-base-200 bg-base-50 p-6 transition-shadow hover:shadow-sm"
@@ -57,10 +84,19 @@ export function TimelineFeed() {
                     }).format(new Date(entry.createdAt))}
                   </div>
                   <button
-                    className="opacity-0 transition-all group-hover:opacity-100 p-2 rounded-full hover:bg-base-200 hover:text-error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleFavorite(entry.id);
+                    }}
+                    className={clsx(
+                      'transition-all p-2 rounded-full z-10 relative',
+                      entry.isFavorite
+                        ? 'opacity-100 text-error bg-error/10 hover:bg-error/20'
+                        : 'opacity-0 group-hover:opacity-100 hover:bg-base-200 hover:text-error'
+                    )}
                     title={t('timeline.feed.favorite', 'Favorite')}
                   >
-                    <Heart className="h-4 w-4" />
+                    <Heart className={clsx('h-4 w-4', entry.isFavorite && 'fill-current')} />
                   </button>
                 </div>
 

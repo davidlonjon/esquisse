@@ -24,6 +24,8 @@ interface HudViewModel {
   wordCountLabel: string;
   sessionLabel: string;
   snapshotLabel: string;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
 export interface EditorController {
@@ -60,6 +62,7 @@ export function useEditorController(): EditorController {
   const entries = useEntryStore(selectEntries);
   const currentEntry = useEntryStore(selectCurrentEntry);
   const updateEntry = useEntryStore((state) => state.updateEntry);
+  const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
 
   const currentEntryRef = useRef(currentEntry);
   useEffect(() => {
@@ -191,12 +194,20 @@ export function useEditorController(): EditorController {
       ? t('app.errors.initialize', { message: initialization.error })
       : null;
 
+  const handleToggleFavorite = useCallback(() => {
+    if (currentEntry) {
+      void toggleFavorite(currentEntry.id);
+    }
+  }, [currentEntry, toggleFavorite]);
+
   const hudViewModel: HudViewModel = {
     isVisible: isHudVisible && initialization.status === 'success',
     dateLabel,
     wordCountLabel,
     sessionLabel,
     snapshotLabel,
+    isFavorite: currentEntry?.isFavorite ?? false,
+    onToggleFavorite: handleToggleFavorite,
   };
 
   return {

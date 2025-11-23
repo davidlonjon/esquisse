@@ -22,7 +22,7 @@ vi.mock('@features/entries/entries.store', () => ({
 
 describe('TimelineFeed', () => {
   it('renders empty state when no entries', () => {
-    render(<TimelineFeed />);
+    render(<TimelineFeed filter="all" />);
 
     expect(screen.getByText('Timeline')).toBeInTheDocument();
     expect(screen.getByText('No entries found. Start writing!')).toBeInTheDocument();

@@ -70,6 +70,10 @@
         "deleteEntry": {
           "label": "Delete/Archive Entry",
           "description": "Delete or archive the current entry"
+        },
+        "toggleFavorite": {
+          "label": "Toggle Favorite",
+          "description": "Mark or unmark current entry as favorite"
         }
       }
     }

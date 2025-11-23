@@ -57,7 +57,9 @@ describe('migrations.ts - Database Schema Migrations', () => {
 
       expect(migrationIds).toContain('001_initial_schema');
       expect(migrationIds).toContain('002_indexes');
-      expect(migrationIds).toHaveLength(2);
+      expect(migrationIds).toContain('003_add_entry_status_field');
+      expect(migrationIds).toContain('004_add_is_favorite_field');
+      expect(migrationIds).toHaveLength(4);
     });
 
     it('should record applied_at timestamp for each migration', () => {
@@ -106,7 +108,7 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const migrations = db.prepare('SELECT COUNT(*) as count FROM schema_migrations').get() as {
         count: number;
       };
-      expect(migrations.count).toBe(2); // Two migrations total
+      expect(migrations.count).toBe(4); // Four migrations total
     });
 
     it('should apply migrations in order', () => {
@@ -117,9 +119,11 @@ describe('migrations.ts - Database Schema Migrations', () => {
       }>;
       const migrationIds = result.map((row) => row.id);
 
-      // First migration should be schema, second should be indexes
+      // Migrations should be applied in order
       expect(migrationIds[0]).toBe('001_initial_schema');
       expect(migrationIds[1]).toBe('002_indexes');
+      expect(migrationIds[2]).toBe('003_add_entry_status_field');
+      expect(migrationIds[3]).toBe('004_add_is_favorite_field');
     });
 
     it('should handle idempotent migrations (IF NOT EXISTS)', () => {
@@ -197,6 +201,10 @@ describe('migrations.ts - Database Schema Migrations', () => {
         expect.objectContaining({ name: 'content', type: 'TEXT', notnull: 1 })
       );
       expect(columns).toContainEqual(expect.objectContaining({ name: 'tags', type: 'TEXT' }));
+      expect(columns).toContainEqual(expect.objectContaining({ name: 'status', type: 'TEXT' }));
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'is_favorite', type: 'INTEGER' })
+      );
       expect(columns).toContainEqual(
         expect.objectContaining({ name: 'created_at', type: 'TEXT', notnull: 1 })
       );
@@ -353,7 +361,7 @@ describe('migrations.ts - Database Schema Migrations', () => {
       const result = db.prepare('SELECT COUNT(*) as count FROM schema_migrations').get() as {
         count: number;
       };
-      expect(result.count).toBe(2); // Only 2 migrations should be recorded
+      expect(result.count).toBe(4); // Only 4 migrations should be recorded
     });
   });
 

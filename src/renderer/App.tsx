@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { useEntryStore } from '@features/entries/entries.store';
 import { useSettingsStore } from '@features/settings';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import i18n from '@lib/i18n';
@@ -12,6 +13,8 @@ export default function App() {
   const theme = useSettingsStore((state) => state.theme);
   const language = useSettingsStore((state) => state.language);
   const { setTheme } = useTheme();
+  const currentEntryId = useEntryStore((state) => state.currentEntryId);
+  const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
 
   useEffect(() => {
     loadSettings();
@@ -46,6 +49,18 @@ export default function App() {
     (event) => {
       event.preventDefault();
       router.navigate({ to: '/timeline' });
+    },
+    { preventDefault: true }
+  );
+
+  // Register toggle favorite shortcut (Cmd+Shift+F)
+  useGlobalHotkeys(
+    'mod+shift+f',
+    (event) => {
+      event.preventDefault();
+      if (currentEntryId) {
+        void toggleFavorite(currentEntryId);
+      }
     },
     { preventDefault: true }
   );

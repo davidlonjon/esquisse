@@ -70,6 +70,10 @@
         "deleteEntry": {
           "label": "Supprimer/Archiver l'entrée",
           "description": "Supprimer ou archiver l'entrée actuelle"
+        },
+        "toggleFavorite": {
+          "label": "Basculer favori",
+          "description": "Marquer ou démarquer l'entrée actuelle comme favori"
         }
       }
     }

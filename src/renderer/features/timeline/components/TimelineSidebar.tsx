@@ -3,16 +3,23 @@ import clsx from 'clsx';
 import { ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function TimelineSidebar() {
+import type { TimelineFilter } from '../Timeline';
+
+interface TimelineSidebarProps {
+  currentFilter: TimelineFilter;
+  onFilterChange: (filter: TimelineFilter) => void;
+}
+
+export function TimelineSidebar({ currentFilter, onFilterChange }: TimelineSidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const collections = [
-    { id: 'all', label: t('timeline.collections.all', 'All Entries'), active: true },
-    { id: 'today', label: t('timeline.collections.today', 'Today'), active: false },
-    { id: 'morning', label: t('timeline.collections.morning', 'Morning Pages'), active: false },
-    { id: 'work', label: t('timeline.collections.work', '#work (last 30d)'), active: false },
-    { id: 'favorites', label: t('timeline.collections.favorites', 'Favorites'), active: false },
+  const collections: { id: TimelineFilter; label: string }[] = [
+    { id: 'all', label: t('timeline.collections.all', 'All Entries') },
+    { id: 'today', label: t('timeline.collections.today', 'Today') },
+    { id: 'morning', label: t('timeline.collections.morning', 'Morning Pages') },
+    { id: 'work', label: t('timeline.collections.work', '#work (last 30d)') },
+    { id: 'favorites', label: t('timeline.collections.favorites', 'Favorites') },
   ];
 
   return (
@@ -33,9 +40,10 @@ export function TimelineSidebar() {
         {collections.map((item) => (
           <button
             key={item.id}
+            onClick={() => onFilterChange(item.id)}
             className={clsx(
               'flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              item.active
+              currentFilter === item.id
                 ? 'bg-primary/10 text-primary'
                 : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
             )}
