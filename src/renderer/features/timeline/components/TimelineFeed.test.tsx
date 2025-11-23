@@ -20,20 +20,27 @@ vi.mock('@/router', () => ({
   },
 }));
 
+// Mock components
+vi.mock('@components/dialogs', () => ({
+  DeleteEntryDialog: () => <div data-testid="delete-dialog" />,
+}));
+
 // Mock the store with default values
 const mockLoadEntries = vi.fn();
 const mockToggleFavorite = vi.fn();
 const mockSetCurrentEntryId = vi.fn();
 
 vi.mock('@features/entries/entries.store', () => ({
-  useEntryStore: (selector: (state: unknown) => unknown) => {
+  useEntryStore: (selector?: (state: unknown) => unknown) => {
     const state = {
       entries: [],
       loadEntries: mockLoadEntries,
       toggleFavorite: mockToggleFavorite,
       setCurrentEntryId: mockSetCurrentEntryId,
+      deleteEntry: vi.fn(),
+      archiveEntry: vi.fn(),
     };
-    return selector(state);
+    return selector ? selector(state) : state;
   },
 }));
 

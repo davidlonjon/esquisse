@@ -7,6 +7,8 @@ import {
 } from '@tanstack/react-router';
 
 import { RootLayout } from '@/layouts';
+import { EditorPage } from '@pages/EditorPage';
+import { TimelinePage } from '@pages/TimelinePage';
 
 /**
  * Root route with error boundary and suspense
@@ -16,14 +18,12 @@ const RootRoute = createRootRoute({
 });
 
 /**
- * Editor route - lazy loaded for code splitting
+ * Editor route - Eagerly loaded as it's the main view
  */
 const editorRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/',
-  component: lazyRouteComponent(() =>
-    import('@pages/EditorPage').then((m) => ({ default: m.EditorPage }))
-  ),
+  component: EditorPage,
 });
 
 /**
@@ -38,14 +38,12 @@ const settingsRoute = createRoute({
 });
 
 /**
- * Timeline route - lazy loaded for code splitting
+ * Timeline route - Eagerly loaded for instant switching
  */
 const timelineRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/timeline',
-  component: lazyRouteComponent(() =>
-    import('@pages/TimelinePage').then((m) => ({ default: m.TimelinePage }))
-  ),
+  component: TimelinePage,
 });
 
 const routeTree = RootRoute.addChildren([editorRoute, settingsRoute, timelineRoute]);

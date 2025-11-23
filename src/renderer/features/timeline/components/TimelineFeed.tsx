@@ -1,10 +1,12 @@
 import clsx from 'clsx';
-import { Heart } from 'lucide-react';
+import { Heart, Trash2 } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { router } from '@/router';
+import { DeleteEntryDialog } from '@components/dialogs';
 import { useEntryStore } from '@features/entries/entries.store';
+import { useTimelineDeletion } from '@features/timeline/hooks/useTimelineDeletion';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import type { Entry } from '@shared/types';
 
@@ -31,12 +33,14 @@ const TimelineEntry = memo(
     isSelected,
     onSelect,
     onToggleFavorite,
+    onDelete,
   }: {
     entry: Entry;
     index: number;
     isSelected: boolean;
     onSelect: (index: number, entryId: string) => void;
     onToggleFavorite: (id: string) => void;
+    onDelete: (entry: Entry) => void;
   }) => {
     const { t } = useTranslation();
 
@@ -63,22 +67,37 @@ const TimelineEntry = memo(
           <div className="font-semibold text-base-content">
             {entryDateFormatter.format(new Date(entry.createdAt))}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite(entry.id);
-            }}
-            className={clsx(
-              'transition-all p-2 rounded-full z-10 relative',
-              entry.isFavorite
-                ? 'opacity-100 text-error bg-error/10 hover:bg-error/20'
-                : 'opacity-0 group-hover:opacity-100 hover:bg-base-200 hover:text-error',
-              isSelected && !entry.isFavorite && 'opacity-50' // Show empty heart hint when selected
-            )}
-            title={t('timeline.feed.favorite', 'Favorite')}
-          >
-            <Heart className={clsx('h-4 w-4', entry.isFavorite && 'fill-current')} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(entry.id);
+              }}
+              className={clsx(
+                'transition-all p-2 rounded-full z-10 relative',
+                entry.isFavorite
+                  ? 'opacity-100 text-error bg-error/10 hover:bg-error/20'
+                  : 'opacity-0 group-hover:opacity-100 hover:bg-base-200 hover:text-error',
+                isSelected && !entry.isFavorite && 'opacity-50' // Show empty heart hint when selected
+              )}
+              title={t('timeline.feed.favorite', 'Favorite')}
+            >
+              <Heart className={clsx('h-4 w-4', entry.isFavorite && 'fill-current')} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(entry);
+              }}
+              className={clsx(
+                'transition-all p-2 rounded-full z-10 relative opacity-0 group-hover:opacity-100 hover:bg-base-200 hover:text-error',
+                isSelected && 'opacity-50'
+              )}
+              title={t('entry.delete.title', 'Delete')}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="mb-4 text-base-content/80 line-clamp-3">{plainText}</div>
@@ -105,6 +124,14 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
   const loadEntries = useEntryStore((state) => state.loadEntries);
   const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
   const setCurrentEntryId = useEntryStore((state) => state.setCurrentEntryId);
+  const {
+    isDialogOpen,
+    entryToDelete,
+    requestDelete,
+    confirmArchive,
+    confirmDelete,
+    cancelDelete,
+  } = useTimelineDeletion();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -130,6 +157,14 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
         return entries;
     }
   }, [entries, filter]);
+
+  // Reset selection when filter changes
+  useEffect(() => {
+    setSelectedIndex(0);
+    // Scroll to top when filter changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   // Scroll selected entry into view
   const scrollToEntry = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
@@ -186,6 +221,21 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
     { enabled: filteredEntries.length > 0 }
   );
 
+  // Delete shortcut for selected entry
+  useGlobalHotkeys(
+    'mod+d',
+    useCallback(
+      (e) => {
+        if (filteredEntries[selectedIndex]) {
+          e.preventDefault();
+          requestDelete(filteredEntries[selectedIndex]);
+        }
+      },
+      [filteredEntries, selectedIndex, requestDelete]
+    ),
+    { enabled: filteredEntries.length > 0 }
+  );
+
   const handleSelect = useCallback(
     (index: number, entryId: string) => {
       setSelectedIndex(index);
@@ -237,10 +287,19 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
                 isSelected={index === selectedIndex}
                 onSelect={handleSelect}
                 onToggleFavorite={handleToggleFavorite}
+                onDelete={requestDelete}
               />
             ))
           )}
         </div>
+
+        <DeleteEntryDialog
+          isOpen={isDialogOpen}
+          onClose={cancelDelete}
+          onArchive={confirmArchive}
+          onDelete={confirmDelete}
+          entryTitle={entryToDelete?.content.replace(/<[^>]*>?/gm, '').slice(0, 50) + '...'}
+        />
       </div>
     </main>
   );
