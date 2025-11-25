@@ -23,7 +23,8 @@ export type ShortcutId =
   | 'closeModal'
   | 'deleteEntry'
   | 'toggleFavorite'
-  | 'showTimeline';
+  | 'showTimeline'
+  | 'toggleEditMode';
 
 export interface ShortcutDisplayMetadata {
   labelKey: TranslationKey;
@@ -232,6 +233,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⇧⌘F',
         windows: 'Shift+Ctrl+F',
+      },
+    },
+  },
+  {
+    id: 'toggleEditMode',
+    keys: 'mod+shift+e',
+    description: 'Toggle between read-only and edit mode',
+    category: 'editor',
+    location: 'hooks/useEditorController.ts',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.toggleEditMode.label',
+      descriptionKey: 'hud.keyboard.shortcut.toggleEditMode.description',
+      combos: {
+        mac: '⇧⌘E',
+        windows: 'Shift+Ctrl+E',
       },
     },
   },

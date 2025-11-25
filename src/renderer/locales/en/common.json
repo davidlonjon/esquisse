@@ -19,6 +19,7 @@
     "settings": "Settings",
     "snapshotSaved": "Snapshot saved · {{time}}",
     "snapshotPending": "Snapshot pending",
+    "lastUpdated": "Last updated · {{date}}",
     "keyboard": {
       "button": "Keyboard shortcuts",
       "title": "Keyboard Shortcuts",
@@ -75,6 +76,10 @@
         "toggleFavorite": {
           "label": "Toggle Favorite",
           "description": "Mark or unmark current entry as favorite"
+        },
+        "toggleEditMode": {
+          "label": "Toggle Edit Mode",
+          "description": "Switch between read-only and edit mode"
         }
       }
     }

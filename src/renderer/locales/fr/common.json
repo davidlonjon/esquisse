@@ -19,6 +19,7 @@
     "settings": "Paramètres",
     "snapshotSaved": "Instantané enregistré · {{time}}",
     "snapshotPending": "Instantané en attente",
+    "lastUpdated": "Mis à jour · {{date}}",
     "keyboard": {
       "button": "Raccourcis clavier",
       "title": "Raccourcis clavier",
@@ -75,6 +76,10 @@
         "toggleFavorite": {
           "label": "Basculer favori",
           "description": "Marquer ou démarquer l'entrée actuelle comme favori"
+        },
+        "toggleEditMode": {
+          "label": "Basculer mode édition",
+          "description": "Alterner entre lecture seule et mode édition"
         }
       }
     }

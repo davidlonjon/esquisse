@@ -12,6 +12,7 @@ import { useAutoSave } from '@hooks/useAutoSave';
 import { useEntryDeletion } from '@hooks/useEntryDeletion';
 import { useEntryDraft } from '@hooks/useEntryDraft';
 import { useEntryNavigation } from '@hooks/useEntryNavigation';
+import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useHud } from '@hooks/useHud';
 import { useInitialization } from '@hooks/useInitialization';
 import { useSessionTimer } from '@hooks/useSessionTimer';
@@ -20,10 +21,12 @@ import { formatDuration } from '@lib/time';
 
 interface HudViewModel {
   isVisible: boolean;
+  isReadOnly: boolean;
   dateLabel: string;
   wordCountLabel: string;
   sessionLabel: string;
   snapshotLabel: string;
+  lastUpdatedLabel: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
 }
@@ -64,12 +67,39 @@ export function useEditorController(): EditorController {
   const updateEntry = useEntryStore((state) => state.updateEntry);
   const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
 
+  // Read-only mode state
+  const [isEditModeOverride, setIsEditModeOverride] = useState<boolean | null>(null);
+
+  // Determine if current entry is the newest
+  const isNewestEntry = useMemo(() => {
+    if (currentEntry === null) return true; // New draft
+    if (entries.length === 0) return true;
+    return currentEntry.id === entries[0]?.id;
+  }, [currentEntry, entries]);
+
+  // Calculate read-only state: by default, past entries are read-only
+  const isReadOnly = useMemo(() => {
+    if (isEditModeOverride !== null) {
+      return !isEditModeOverride;
+    }
+    return !isNewestEntry;
+  }, [isEditModeOverride, isNewestEntry]);
+
+  // Reset override when entry changes
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsEditModeOverride(null);
+  }, [currentEntry?.id]);
+
   const currentEntryRef = useRef(currentEntry);
   useEffect(() => {
     currentEntryRef.current = currentEntry;
   }, [currentEntry]);
 
-  const { seconds: sessionSeconds, reset: resetSessionTimer } = useSessionTimer();
+  const sessionTimer = useSessionTimer();
+  const { seconds: sessionSeconds, reset: resetSessionTimer } = isReadOnly
+    ? { seconds: 0, reset: () => {} }
+    : sessionTimer;
   const hud = useHud();
   const { isHudVisible, showHudTemporarily } = hud;
 
@@ -96,7 +126,7 @@ export function useEditorController(): EditorController {
         setApiError(t('app.errors.save', { message }));
       }
     },
-    enabled: initialization.status === 'success',
+    enabled: !isReadOnly && initialization.status === 'success',
   });
 
   const { lastSaved: autoSavedAt, trigger: triggerAutoSave } = autoSave;
@@ -141,6 +171,17 @@ export function useEditorController(): EditorController {
     currentEntry,
     onNavigate: showHudTemporarily,
   });
+
+  // Register keyboard shortcut for toggling edit mode
+  useGlobalHotkeys(
+    'mod+shift+e',
+    (event) => {
+      event.preventDefault();
+      setIsEditModeOverride((prev) => (prev === null ? !isNewestEntry : !prev));
+      showHudTemporarily();
+    },
+    { preventDefault: true }
+  );
 
   const entryDeletion = useEntryDeletion({
     currentEntry,
@@ -200,6 +241,16 @@ export function useEditorController(): EditorController {
     [lastSaved, t, timeFormatter]
   );
 
+  const lastUpdatedLabel = useMemo(() => {
+    if (!currentEntry) return '';
+    const updatedDate = new Date(currentEntry.updatedAt);
+    const currentYear = new Date().getFullYear();
+    const updatedYear = updatedDate.getFullYear();
+    const formatter =
+      updatedYear === currentYear ? dateFormatterWithoutYear : dateFormatterWithYear;
+    return t('hud.lastUpdated', { date: formatter.format(updatedDate) });
+  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, t]);
+
   const wordCountLabel = useMemo(() => t('hud.words', { count: wordCount }), [t, wordCount]);
   const sessionLabel = useMemo(() => formatDuration(sessionSeconds), [sessionSeconds]);
 
@@ -218,10 +269,12 @@ export function useEditorController(): EditorController {
 
   const hudViewModel: HudViewModel = {
     isVisible: isHudVisible && initialization.status === 'success',
+    isReadOnly,
     dateLabel,
     wordCountLabel,
     sessionLabel,
     snapshotLabel,
+    lastUpdatedLabel,
     isFavorite: currentEntry?.isFavorite ?? false,
     onToggleFavorite: handleToggleFavorite,
   };

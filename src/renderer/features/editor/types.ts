@@ -23,6 +23,9 @@ export interface EditorProps {
 
   /** Enable typewriter mode (keeps cursor centered) */
   typewriterMode?: boolean;
+
+  /** Whether the editor should be editable (defaults to true) */
+  editable?: boolean;
 }
 
 /**

@@ -37,10 +37,12 @@ vi.mock('@layout/OverlayHUD', () => ({
 describe('EditorHud', () => {
   const defaultProps = {
     isVisible: true,
+    isReadOnly: false,
     dateLabel: 'Monday, Jan 1',
     wordCountLabel: '150 words',
     sessionLabel: '5min',
     snapshotLabel: 'Saved',
+    lastUpdatedLabel: 'Last updated Jan 1',
     disabled: false,
     isFavorite: false,
     onToggleFavorite: vi.fn(),

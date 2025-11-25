@@ -43,10 +43,12 @@ export function EditorPage() {
       <div className="relative h-screen w-screen">
         <EditorHud
           isVisible={controller.hud.isVisible}
+          isReadOnly={controller.hud.isReadOnly}
           dateLabel={controller.hud.dateLabel}
           wordCountLabel={controller.hud.wordCountLabel}
           sessionLabel={controller.hud.sessionLabel}
           snapshotLabel={controller.hud.snapshotLabel}
+          lastUpdatedLabel={controller.hud.lastUpdatedLabel}
           disabled={false}
           isFavorite={controller.hud.isFavorite}
           onToggleFavorite={controller.hud.onToggleFavorite}
@@ -58,6 +60,7 @@ export function EditorPage() {
           focusMode={true}
           typewriterMode={true}
           placeholder={controller.placeholder}
+          editable={!controller.hud.isReadOnly}
         />
 
         {controller.apiError && (

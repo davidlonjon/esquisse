@@ -30,6 +30,7 @@ export function Editor({
   onSave,
   focusMode = true,
   typewriterMode = true,
+  editable = true,
 }: EditorProps) {
   const editorClassNames = ['editor-content'];
 
@@ -110,16 +111,21 @@ export function Editor({
     }
   }, [content, editor]);
 
-  // Ensure editor is focused and editable
+  // Control editor editability
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
-      // Make sure editor is editable and focused
-      editor.setEditable(true);
+      editor.setEditable(editable);
+    }
+  }, [editor, editable]);
+
+  // Ensure editor is focused when editable
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && editable) {
       setTimeout(() => {
         editor.commands.focus('start');
       }, 100);
     }
-  }, [editor]);
+  }, [editor, editable]);
 
   // Show loading state while editor initializes
   if (!editor) {
