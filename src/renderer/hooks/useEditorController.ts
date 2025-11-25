@@ -96,18 +96,17 @@ export function useEditorController(): EditorController {
   }, [currentEntry]);
 
   const sessionTimer = useSessionTimer();
-  const noop = useCallback(() => {}, []);
-  const { seconds: sessionSeconds, reset: resetSessionTimer } = isReadOnly
-    ? { seconds: 0, reset: noop }
-    : sessionTimer;
   const hud = useHud();
   const { isHudVisible, showHudTemporarily } = hud;
+
+  // For display purposes, use 0 seconds when read-only
+  const sessionSeconds = isReadOnly ? 0 : sessionTimer.seconds;
 
   const defaultJournalName = t('journals.defaultName');
   const initialization = useInitialization({
     defaultJournalName,
     showHudTemporarily,
-    resetSessionTimer,
+    resetSessionTimer: sessionTimer.reset, // Use the stable reset function directly
   });
 
   const { ensureEntryExists } = useEntryDraft({

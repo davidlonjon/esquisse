@@ -121,18 +121,22 @@ export function Editor({
 
   // Ensure editor is focused when editable
   useEffect(() => {
-    if (editor && !editor.isDestroyed && editable) {
-      // Wait longer and check view.dom exists before focusing
-      setTimeout(() => {
-        if (editor.view?.dom && !editor.isDestroyed) {
-          try {
-            editor.commands.focus('start');
-          } catch {
-            // Silently ignore focus errors - they're not critical
-          }
-        }
-      }, 150);
-    }
+    if (!editor || editor.isDestroyed || !editable) return;
+
+    // Only focus if the editor view is fully initialized
+    const focusEditor = () => {
+      if (editor.isDestroyed) return;
+
+      // Check if view and its required methods exist
+      if (editor.view && editor.view.hasFocus !== undefined) {
+        editor.commands.focus('start');
+      }
+    };
+
+    // Use a longer timeout to ensure view is fully initialized
+    const timeoutId = setTimeout(focusEditor, 200);
+
+    return () => clearTimeout(timeoutId);
   }, [editor, editable]);
 
   // Show loading state while editor initializes
