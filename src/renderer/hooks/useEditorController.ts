@@ -97,8 +97,9 @@ export function useEditorController(): EditorController {
   }, [currentEntry]);
 
   const sessionTimer = useSessionTimer();
+  const noop = useCallback(() => {}, []);
   const { seconds: sessionSeconds, reset: resetSessionTimer } = isReadOnly
-    ? { seconds: 0, reset: () => {} }
+    ? { seconds: 0, reset: noop }
     : sessionTimer;
   const hud = useHud();
   const { isHudVisible, showHudTemporarily } = hud;

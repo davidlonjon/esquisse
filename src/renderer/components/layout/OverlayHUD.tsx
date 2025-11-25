@@ -61,6 +61,15 @@ export function OverlayHUD({
       >
         <div className="flex flex-wrap gap-2">
           <HUDPill label={dateLabel} />
+          {isReadOnly ? (
+            <div className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-600 backdrop-blur-sm dark:text-orange-400">
+              READ-ONLY
+            </div>
+          ) : (
+            <div className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-600 backdrop-blur-sm dark:text-emerald-400">
+              EDIT
+            </div>
+          )}
           <HUDPill label={wordCountLabel} />
         </div>
 

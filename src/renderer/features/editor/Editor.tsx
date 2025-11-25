@@ -71,6 +71,7 @@ export function Editor({
         }),
       ],
       content,
+      editable,
       editorProps: {
         attributes: {
           class: editorClassNames.join(' '),
