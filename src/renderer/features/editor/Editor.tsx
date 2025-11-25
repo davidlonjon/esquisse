@@ -121,9 +121,13 @@ export function Editor({
 
   // Ensure editor is focused when editable
   useEffect(() => {
-    if (editor && !editor.isDestroyed && editable) {
+    if (editor && !editor.isDestroyed && editor.view && editable) {
       setTimeout(() => {
-        editor.commands.focus('start');
+        try {
+          editor.commands.focus('start');
+        } catch (error) {
+          console.warn('[Editor] Failed to focus on editable change:', error);
+        }
       }, 100);
     }
   }, [editor, editable]);
