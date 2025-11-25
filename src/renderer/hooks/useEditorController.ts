@@ -153,7 +153,17 @@ export function useEditorController(): EditorController {
     resetEditorContent(nextContent);
   }, [currentEntry?.content, currentEntry?.id, resetEditorContent]);
 
-  const dateFormatter = useMemo(
+  const dateFormatterWithYear = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.language, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    [i18n.language]
+  );
+  const dateFormatterWithoutYear = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.language, {
         weekday: 'short',
@@ -171,10 +181,16 @@ export function useEditorController(): EditorController {
     [i18n.language]
   );
 
-  const dateLabel = useMemo(
-    () => t('hud.today', { date: dateFormatter.format(new Date()) }),
-    [dateFormatter, t]
-  );
+  const dateLabel = useMemo(() => {
+    if (!currentEntry) {
+      return t('hud.today', { date: dateFormatterWithoutYear.format(new Date()) });
+    }
+    const entryDate = new Date(currentEntry.createdAt);
+    const currentYear = new Date().getFullYear();
+    const entryYear = entryDate.getFullYear();
+    const formatter = entryYear === currentYear ? dateFormatterWithoutYear : dateFormatterWithYear;
+    return t('hud.entryDate', { date: formatter.format(entryDate) });
+  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, t]);
 
   const snapshotLabel = useMemo(
     () =>

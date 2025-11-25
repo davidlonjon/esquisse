@@ -13,6 +13,7 @@
   },
   "hud": {
     "today": "Aujourd'hui · {{date}}",
+    "entryDate": "{{date}}",
     "words": "Mots · {{count}}",
     "session": "Session",
     "settings": "Paramètres",
