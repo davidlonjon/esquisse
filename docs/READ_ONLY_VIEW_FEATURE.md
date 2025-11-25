@@ -2,17 +2,17 @@
 
 ## Overview
 
-Implement a read-only mode for entries with the ability to toggle edit mode via keyboard shortcut. By default, only the newest entry (by creation date) is editable. All other entries are read-only until toggled.
+Implement a read-only mode for entries with the ability to toggle edit mode via keyboard shortcut. By default, only new blank drafts are editable. All saved entries (including the newest) are read-only until toggled with Cmd+Shift+E.
 
 ## Behavior Specification
 
 ### Default States:
 
-1. **Newest Entry** (entries\[0] or new draft):
+1. **New Blank Draft** (currentEntry = null):
    - Read-only by default: NO (editable)
    - Can toggle with Cmd+Shift+E: YES
 
-2. **Past Entries** (entries\[1+]):
+2. **All Saved Entries** (including newest):
    - Read-only by default: YES
    - Can toggle with Cmd+Shift+E: YES
 

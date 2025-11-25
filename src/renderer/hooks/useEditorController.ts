@@ -70,20 +70,19 @@ export function useEditorController(): EditorController {
   // Read-only mode state
   const [isEditModeOverride, setIsEditModeOverride] = useState<boolean | null>(null);
 
-  // Determine if current entry is the newest
-  const isNewestEntry = useMemo(() => {
-    if (currentEntry === null) return true; // New draft
-    if (entries.length === 0) return true;
-    return currentEntry.id === entries[0]?.id;
-  }, [currentEntry, entries]);
+  // Determine if we're in a new blank draft (no current entry)
+  const isNewDraft = useMemo(() => {
+    return currentEntry === null;
+  }, [currentEntry]);
 
-  // Calculate read-only state: by default, past entries are read-only
+  // Calculate read-only state: only new blank drafts are editable by default
   const isReadOnly = useMemo(() => {
     if (isEditModeOverride !== null) {
       return !isEditModeOverride;
     }
-    return !isNewestEntry;
-  }, [isEditModeOverride, isNewestEntry]);
+    // New drafts are editable, all saved entries are read-only by default
+    return !isNewDraft;
+  }, [isEditModeOverride, isNewDraft]);
 
   // Reset override when entry changes
   useEffect(() => {
@@ -178,7 +177,9 @@ export function useEditorController(): EditorController {
     'mod+shift+e',
     (event) => {
       event.preventDefault();
-      setIsEditModeOverride((prev) => (prev === null ? !isNewestEntry : !prev));
+      // Toggle: if no override, set to opposite of current read-only state
+      // If override exists, flip it
+      setIsEditModeOverride((prev) => (prev === null ? !isReadOnly : !prev));
       showHudTemporarily();
     },
     { preventDefault: true }
