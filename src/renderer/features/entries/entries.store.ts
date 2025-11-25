@@ -255,7 +255,7 @@ export const useEntryStore = create(
 
           state.entries.unshift(entry);
           state.entries.sort(
-            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
           state.entryLookup[id] = entry;
         });

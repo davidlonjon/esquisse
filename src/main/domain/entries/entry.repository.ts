@@ -97,7 +97,7 @@ export class EntryRepository implements IEntryRepository {
       }
     }
 
-    query += ` ORDER BY updated_at DESC${clause}`;
+    query += ` ORDER BY created_at DESC${clause}`;
     const rows = selectRows(db, query, [...queryParams, ...params]);
     return rows.map(mapEntryRow);
   }
@@ -198,7 +198,7 @@ export class EntryRepository implements IEntryRepository {
       `SELECT ${ENTRY_COLUMNS}
        FROM entries
        WHERE title LIKE ? OR content LIKE ? OR tags LIKE ?
-       ORDER BY updated_at DESC${clause}`,
+       ORDER BY created_at DESC${clause}`,
       [searchPattern, searchPattern, searchPattern, ...params]
     );
 
