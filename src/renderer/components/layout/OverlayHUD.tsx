@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Eye, Heart, Pencil } from 'lucide-react';
+import { BookOpen, Heart, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -63,43 +63,31 @@ export function OverlayHUD({
       >
         <div className="flex flex-wrap gap-2">
           <HUDPill label={dateLabel} />
-          <div className="pointer-events-auto flex items-center gap-2">
-            {onToggleEditMode && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (!disabled) {
-                    onToggleEditMode();
-                  }
-                }}
-                disabled={disabled}
-                className={clsx(
-                  'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm transition',
-                  disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200',
-                  isReadOnly
-                    ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400'
-                    : 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400'
-                )}
-                title={isReadOnly ? 'Switch to edit mode (⇧⌘E)' : 'Switch to view mode (⇧⌘E)'}
-              >
-                {isReadOnly ? (
-                  <>
-                    <Pencil className="h-3.5 w-3.5" />
-                    <span>EDIT</span>
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>VIEW</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
           <HUDPill label={wordCountLabel} />
         </div>
 
         <div className="pointer-events-auto flex flex-wrap gap-2">
+          {onToggleEditMode && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!disabled) {
+                  onToggleEditMode();
+                }
+              }}
+              disabled={disabled}
+              className={clsx(
+                'flex items-center justify-center rounded-full px-2 py-1 transition',
+                disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200',
+                isReadOnly
+                  ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400'
+                  : 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400'
+              )}
+              title={isReadOnly ? 'Switch to edit mode (⇧⌘E)' : 'Switch to read mode (⇧⌘E)'}
+            >
+              {isReadOnly ? <Pencil className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+            </button>
+          )}
           {onToggleFavorite && (
             <button
               type="button"
