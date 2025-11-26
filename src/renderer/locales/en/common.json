@@ -65,6 +65,10 @@
           "label": "Shortcuts panel",
           "description": "Show or hide the shortcut reference"
         },
+        "helpMenu": {
+          "label": "Help menu",
+          "description": "Toggle the help menu"
+        },
         "closeModal": {
           "label": "Close modal",
           "description": "Dismiss the active dialog"

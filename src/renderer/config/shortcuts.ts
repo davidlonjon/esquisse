@@ -18,6 +18,7 @@ export type ShortcutId =
   | 'openSettings'
   | 'toggleHudPin'
   | 'toggleShortcutsPanel'
+  | 'toggleHelpMenu'
   | 'searchEntries'
   | 'commandPalette'
   | 'closeModal'
@@ -149,6 +150,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⌘/',
         windows: 'Ctrl /',
+      },
+    },
+  },
+  {
+    id: 'toggleHelpMenu',
+    keys: 'mod+shift+slash',
+    description: 'Toggle help menu (Shift+Cmd+? or Shift+Ctrl+?)',
+    category: 'ui',
+    location: 'components/layout/HUDHelpMenu.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.helpMenu.label',
+      descriptionKey: 'hud.keyboard.shortcut.helpMenu.description',
+      combos: {
+        mac: '⇧⌘?',
+        windows: 'Shift+Ctrl+?',
       },
     },
   },
