@@ -11,6 +11,7 @@ interface EditorHUDProps {
   disabled: boolean;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  onToggleEditMode?: () => void;
 }
 
 export function EditorHud({
@@ -24,6 +25,7 @@ export function EditorHud({
   disabled,
   isFavorite,
   onToggleFavorite,
+  onToggleEditMode,
 }: EditorHUDProps) {
   return (
     <OverlayHUD
@@ -38,6 +40,7 @@ export function EditorHud({
       disabled={disabled}
       isFavorite={isFavorite}
       onToggleFavorite={onToggleFavorite}
+      onToggleEditMode={onToggleEditMode}
     />
   );
 }

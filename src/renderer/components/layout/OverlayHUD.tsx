@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Heart } from 'lucide-react';
+import { Eye, Heart, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ interface OverlayHUDProps {
   disabled?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  onToggleEditMode?: () => void;
 }
 
 const HUDPill = ({ label }: { label: string }) => (
@@ -40,6 +41,7 @@ export function OverlayHUD({
   disabled = false,
   isFavorite = false,
   onToggleFavorite,
+  onToggleEditMode,
 }: OverlayHUDProps) {
   const { t } = useTranslation();
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
@@ -61,15 +63,39 @@ export function OverlayHUD({
       >
         <div className="flex flex-wrap gap-2">
           <HUDPill label={dateLabel} />
-          {isReadOnly ? (
-            <div className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-600 backdrop-blur-sm dark:text-orange-400">
-              READ-ONLY
-            </div>
-          ) : (
-            <div className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-600 backdrop-blur-sm dark:text-emerald-400">
-              EDIT
-            </div>
-          )}
+          <div className="pointer-events-auto flex items-center gap-2">
+            {onToggleEditMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!disabled) {
+                    onToggleEditMode();
+                  }
+                }}
+                disabled={disabled}
+                className={clsx(
+                  'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm transition',
+                  disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200',
+                  isReadOnly
+                    ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400'
+                    : 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400'
+                )}
+                title={isReadOnly ? 'Switch to edit mode (⇧⌘E)' : 'Switch to view mode (⇧⌘E)'}
+              >
+                {isReadOnly ? (
+                  <>
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>EDIT</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>VIEW</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           <HUDPill label={wordCountLabel} />
         </div>
 

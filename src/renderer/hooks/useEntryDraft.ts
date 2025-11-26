@@ -7,11 +7,15 @@ import type { Entry } from '@shared/types';
 
 interface UseEntryDraftOptions {
   onEntryCreated?: () => void;
+  onEntryCreatedFromBlank?: () => void;
 }
 
 type EnsureEntryExists = (html: string) => Promise<Entry | null>;
 
-export function useEntryDraft({ onEntryCreated }: UseEntryDraftOptions = {}) {
+export function useEntryDraft({
+  onEntryCreated,
+  onEntryCreatedFromBlank,
+}: UseEntryDraftOptions = {}) {
   const currentJournal = useJournalStore(selectCurrentJournal);
   const createEntry = useEntryStore((state) => state.createEntry);
   const setCurrentEntry = useEntryStore((state) => state.setCurrentEntry);
@@ -42,6 +46,7 @@ export function useEntryDraft({ onEntryCreated }: UseEntryDraftOptions = {}) {
         }).then((entry) => {
           setCurrentEntry(entry);
           onEntryCreated?.();
+          onEntryCreatedFromBlank?.();
           return entry;
         });
 
@@ -52,7 +57,7 @@ export function useEntryDraft({ onEntryCreated }: UseEntryDraftOptions = {}) {
 
       return creationPromiseRef.current;
     },
-    [createEntry, currentJournal, onEntryCreated, setCurrentEntry]
+    [createEntry, currentJournal, onEntryCreated, onEntryCreatedFromBlank, setCurrentEntry]
   );
 
   return { ensureEntryExists };

@@ -29,6 +29,7 @@ interface HudViewModel {
   lastUpdatedLabel: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  onToggleEditMode?: () => void;
 }
 
 export interface EditorController {
@@ -69,25 +70,41 @@ export function useEditorController(): EditorController {
 
   // Read-only mode state
   const [isEditModeOverride, setIsEditModeOverride] = useState<boolean | null>(null);
+  // Track if we're actively composing a new entry (just created it, not navigated to it)
+  const [isActivelyComposing, setIsActivelyComposing] = useState(false);
 
   // Determine if we're in a new blank draft (no current entry)
   const isNewDraft = useMemo(() => {
     return currentEntry === null;
   }, [currentEntry]);
 
-  // Calculate read-only state: only new blank drafts are editable by default
+  // Calculate read-only state: new drafts and actively composed entries are editable
   const isReadOnly = useMemo(() => {
     if (isEditModeOverride !== null) {
       return !isEditModeOverride;
     }
-    // New drafts are editable, all saved entries are read-only by default
-    return !isNewDraft;
-  }, [isEditModeOverride, isNewDraft]);
+    // New drafts or actively composing entries are editable
+    return !isNewDraft && !isActivelyComposing;
+  }, [isEditModeOverride, isNewDraft, isActivelyComposing]);
 
-  // Reset override when entry changes
+  // Track previous entry ID to detect navigation vs creation
+  const prevEntryIdRef = useRef<string | undefined>(currentEntry?.id);
+
+  // When entry changes (navigation), reset states
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsEditModeOverride(null);
+    const prevId = prevEntryIdRef.current;
+    const currentId = currentEntry?.id;
+
+    // Only reset if we're navigating between existing entries
+    // Don't reset when creating a new entry (undefined -> id)
+    if (prevId !== undefined && currentId !== prevId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsEditModeOverride(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsActivelyComposing(false);
+    }
+
+    prevEntryIdRef.current = currentId;
   }, [currentEntry?.id]);
 
   const currentEntryRef = useRef(currentEntry);
@@ -109,8 +126,13 @@ export function useEditorController(): EditorController {
     resetSessionTimer: sessionTimer.reset, // Use the stable reset function directly
   });
 
+  const handleEntryCreatedFromBlank = useCallback(() => {
+    setIsActivelyComposing(true);
+  }, []);
+
   const { ensureEntryExists } = useEntryDraft({
     onEntryCreated: showHudTemporarily,
+    onEntryCreatedFromBlank: handleEntryCreatedFromBlank,
   });
 
   const autoSave = useAutoSave({
@@ -171,15 +193,20 @@ export function useEditorController(): EditorController {
     onNavigate: showHudTemporarily,
   });
 
+  // Toggle edit mode handler
+  const handleToggleEditMode = useCallback(() => {
+    // Toggle: if no override exists, set to true (edit mode)
+    // If override exists, flip it
+    setIsEditModeOverride((prev) => (prev === null ? true : !prev));
+    showHudTemporarily();
+  }, [showHudTemporarily]);
+
   // Register keyboard shortcut for toggling edit mode
   useGlobalHotkeys(
     'mod+shift+e',
     (event) => {
       event.preventDefault();
-      // Toggle: if no override, set to opposite of current read-only state
-      // If override exists, flip it
-      setIsEditModeOverride((prev) => (prev === null ? !isReadOnly : !prev));
-      showHudTemporarily();
+      handleToggleEditMode();
     },
     { preventDefault: true }
   );
@@ -278,6 +305,8 @@ export function useEditorController(): EditorController {
     lastUpdatedLabel,
     isFavorite: currentEntry?.isFavorite ?? false,
     onToggleFavorite: handleToggleFavorite,
+    // Only show mode toggle if there's actual content
+    onToggleEditMode: wordCount > 0 ? handleToggleEditMode : undefined,
   };
 
   return {

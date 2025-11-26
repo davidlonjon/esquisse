@@ -256,13 +256,28 @@ interface HudViewModel {
 
 ## Testing Checklist
 
-- [ ] Newest entry is editable by default
-- [ ] Past entries are read-only by default
-- [ ] Cmd+Shift+E toggles edit mode on newest entry
-- [ ] Cmd+Shift+E toggles edit mode on past entries
-- [ ] Session timer shows only in edit mode
-- [ ] Autosave works only in edit mode
-- [ ] "Last updated" shows in read-only mode
-- [ ] Toggle state resets when navigating to different entry
-- [ ] Keyboard shortcut appears in shortcuts panel
-- [ ] Both English and French translations work
+- [x] Newest entry is editable by default
+- [x] Past entries are read-only by default
+- [x] Cmd+Shift+E toggles edit mode on newest entry
+- [x] Cmd+Shift+E toggles edit mode on past entries
+- [x] Session timer shows only in edit mode
+- [x] Autosave works only in edit mode
+- [x] "Last updated" shows in read-only mode
+- [x] Toggle state resets when navigating to different entry
+- [x] Keyboard shortcut appears in shortcuts panel
+- [x] Both English and French translations work
+- [x] Typing in blank entry creates entry and keeps it editable
+- [x] Navigation between entries properly resets isActivelyComposing state
+
+## Implementation Complete
+
+All phases completed successfully. The read-only view feature is now fully functional with the following behavior:
+
+- New blank drafts (currentEntry === null) are editable by default
+- All saved entries are read-only by default
+- Cmd+Shift+E toggles between read-only and edit mode
+- When typing in a blank entry, it remains editable after being created
+- Navigation between entries resets toggle state and isActivelyComposing
+- Visual indicators (READ-ONLY/EDIT badges) show current mode
+- Session timer and autosave only active in edit mode
+- Last updated date shown in read-only mode
