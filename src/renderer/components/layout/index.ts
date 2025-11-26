@@ -10,3 +10,4 @@ export { HUDPill } from './HUDPill';
 export { HUDTopBar } from './HUDTopBar';
 export { HUDBottomBar } from './HUDBottomBar';
 export { HUDEdgeFade } from './HUDEdgeFade';
+export { HUDHelpMenu } from './HUDHelpMenu';

@@ -1,12 +1,8 @@
-import clsx from 'clsx';
 import { BookOpen, Heart, Pencil } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { getShortcutCombo } from '@lib/shortcuts';
-import { ShortcutKeys } from '@ui';
-
 import { HUDButton } from './HUDButton';
+import { HUDHelpMenu } from './HUDHelpMenu';
 import { HUDPill } from './HUDPill';
 
 interface HUDTopBarProps {
@@ -31,7 +27,6 @@ export function HUDTopBar({
   onOpenShortcuts,
 }: HUDTopBarProps) {
   const { t } = useTranslation();
-  const shortcutsButtonCombo = useMemo(() => getShortcutCombo('toggleShortcutsPanel') ?? '⌘/', []);
 
   return (
     <>
@@ -62,22 +57,7 @@ export function HUDTopBar({
           />
         )}
 
-        <button
-          type="button"
-          onClick={() => {
-            if (!disabled) {
-              onOpenShortcuts();
-            }
-          }}
-          disabled={disabled}
-          className={clsx(
-            'flex items-center gap-2 rounded-full bg-base-200/50 px-3 py-1 text-xs font-medium text-base-content/60 transition',
-            disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-base-200'
-          )}
-        >
-          <ShortcutKeys combo={shortcutsButtonCombo} />
-          <span className="text-base-content/60">{t('hud.keyboard.button')}</span>
-        </button>
+        <HUDHelpMenu disabled={disabled} onOpenShortcuts={onOpenShortcuts} />
       </div>
       <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-base-100 to-transparent" />
     </>
