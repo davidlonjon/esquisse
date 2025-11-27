@@ -10,9 +10,10 @@ import { ShortcutKeys } from '@ui';
 interface HUDHelpMenuProps {
   disabled: boolean;
   onOpenShortcuts: () => void;
+  onShowHud?: () => void;
 }
 
-export function HUDHelpMenu({ disabled, onOpenShortcuts }: HUDHelpMenuProps) {
+export function HUDHelpMenu({ disabled, onOpenShortcuts, onShowHud }: HUDHelpMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const shortcutsCombo = getShortcutCombo('toggleShortcutsPanel') ?? '⌘/';
@@ -23,6 +24,8 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts }: HUDHelpMenuProps) {
   // Register keyboard shortcut to toggle help menu
   useGlobalHotkeys(helpMenuBindings, () => {
     if (!disabled) {
+      // Show HUD if it's hidden
+      onShowHud?.();
       setIsOpen((prev) => !prev);
     }
   });

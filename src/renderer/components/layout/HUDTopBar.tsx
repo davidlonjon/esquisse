@@ -14,6 +14,7 @@ interface HUDTopBarProps {
   onToggleFavorite?: () => void;
   onToggleEditMode?: () => void;
   onOpenShortcuts: () => void;
+  onShowHud?: () => void;
 }
 
 export function HUDTopBar({
@@ -25,6 +26,7 @@ export function HUDTopBar({
   onToggleFavorite,
   onToggleEditMode,
   onOpenShortcuts,
+  onShowHud,
 }: HUDTopBarProps) {
   const { t } = useTranslation();
 
@@ -57,7 +59,7 @@ export function HUDTopBar({
           />
         )}
 
-        <HUDHelpMenu disabled={disabled} onOpenShortcuts={onOpenShortcuts} />
+        <HUDHelpMenu disabled={disabled} onOpenShortcuts={onOpenShortcuts} onShowHud={onShowHud} />
       </div>
       <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-base-100 to-transparent" />
     </>

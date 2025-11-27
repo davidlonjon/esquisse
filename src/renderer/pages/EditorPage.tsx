@@ -52,6 +52,7 @@ export function EditorPage() {
           disabled={false}
           isFavorite={controller.hud.isFavorite}
           onToggleFavorite={controller.hud.onToggleFavorite}
+          onShowHud={controller.hud.onShowHud}
           {...(controller.hud.onToggleEditMode && {
             onToggleEditMode: controller.hud.onToggleEditMode,
           })}

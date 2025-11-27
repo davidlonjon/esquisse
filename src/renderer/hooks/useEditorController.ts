@@ -30,6 +30,7 @@ interface HudViewModel {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onToggleEditMode?: () => void;
+  onShowHud: () => void;
 }
 
 export interface EditorController {
@@ -307,6 +308,7 @@ export function useEditorController(): EditorController {
     onToggleFavorite: handleToggleFavorite,
     // Only show mode toggle if there's actual content
     onToggleEditMode: wordCount > 0 ? handleToggleEditMode : undefined,
+    onShowHud: showHudTemporarily,
   };
 
   return {

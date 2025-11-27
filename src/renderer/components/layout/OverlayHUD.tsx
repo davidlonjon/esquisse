@@ -20,6 +20,7 @@ interface OverlayHUDProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onToggleEditMode?: () => void;
+  onShowHud?: () => void;
 }
 
 export function OverlayHUD({
@@ -35,6 +36,7 @@ export function OverlayHUD({
   isFavorite = false,
   onToggleFavorite,
   onToggleEditMode,
+  onShowHud,
 }: OverlayHUDProps) {
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
   const hudSuppressed = disabled || isShortcutsOpen;
@@ -61,6 +63,7 @@ export function OverlayHUD({
           onToggleFavorite={onToggleFavorite}
           onToggleEditMode={onToggleEditMode}
           onOpenShortcuts={openShortcuts}
+          onShowHud={onShowHud}
         />
       </div>
 
