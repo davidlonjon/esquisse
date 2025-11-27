@@ -41,6 +41,10 @@ export function Tooltip({
     setIsVisible(false);
   };
 
+  const handleClick = () => {
+    hideTooltip();
+  };
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -64,6 +68,7 @@ export function Tooltip({
       onMouseLeave={hideTooltip}
       onFocus={showTooltip}
       onBlur={hideTooltip}
+      onClick={handleClick}
     >
       {children}
 
