@@ -155,8 +155,8 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: 'toggleHelpMenu',
-    keys: 'mod+shift+period',
-    description: 'Toggle help menu (Shift+Cmd+. or Shift+Ctrl+.)',
+    keys: 'mod+shift+h',
+    description: 'Toggle help menu (Shift+Cmd+H or Shift+Ctrl+H)',
     category: 'ui',
     location: 'components/layout/HUDHelpMenu.tsx',
     globallyControlled: true,
@@ -164,8 +164,8 @@ export const SHORTCUTS: Shortcut[] = [
       labelKey: 'hud.keyboard.shortcut.helpMenu.label',
       descriptionKey: 'hud.keyboard.shortcut.helpMenu.description',
       combos: {
-        mac: '⇧⌘.',
-        windows: 'Shift+Ctrl+.',
+        mac: '⇧⌘H',
+        windows: 'Shift+Ctrl+H',
       },
     },
   },
