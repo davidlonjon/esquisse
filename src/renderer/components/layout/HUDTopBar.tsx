@@ -1,6 +1,8 @@
 import { BookOpen, Heart, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { getShortcutCombo } from '@lib/shortcuts';
+
 import { HUDButton } from './HUDButton';
 import { HUDHelpMenu } from './HUDHelpMenu';
 import { HUDPill } from './HUDPill';
@@ -29,6 +31,8 @@ export function HUDTopBar({
   onShowHud,
 }: HUDTopBarProps) {
   const { t } = useTranslation();
+  const editModeShortcut = getShortcutCombo('toggleEditMode') ?? '⇧⌘E';
+  const favoriteShortcut = getShortcutCombo('toggleFavorite') ?? '⇧⌘F';
 
   return (
     <>
@@ -43,7 +47,7 @@ export function HUDTopBar({
             onClick={onToggleEditMode}
             disabled={disabled}
             tooltip={isReadOnly ? 'Switch to edit mode' : 'Switch to read mode'}
-            shortcut="⇧⌘E"
+            shortcut={editModeShortcut}
             icon={isReadOnly ? Pencil : BookOpen}
             variant="mode"
             isActive={isReadOnly}
@@ -54,7 +58,7 @@ export function HUDTopBar({
             onClick={onToggleFavorite}
             disabled={disabled}
             tooltip={t('timeline.feed.favorite', 'Favorite')}
-            shortcut="⇧⌘F"
+            shortcut={favoriteShortcut}
             icon={Heart}
             variant="favorite"
             isActive={isFavorite}

@@ -17,6 +17,7 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts, onShowHud }: HUDHelpMen
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const shortcutsCombo = getShortcutCombo('toggleShortcutsPanel') ?? '⌘/';
+  const helpMenuCombo = getShortcutCombo('toggleHelpMenu') ?? '⇧⌘H';
 
   // Get the actual key bindings for the help menu shortcut
   const helpMenuBindings = getShortcutBindings('toggleHelpMenu');
@@ -77,7 +78,7 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts, onShowHud }: HUDHelpMen
       {disabled ? (
         button
       ) : (
-        <Tooltip content="Help" shortcut="⇧⌘H">
+        <Tooltip content="Help" shortcut={helpMenuCombo}>
           {button}
         </Tooltip>
       )}

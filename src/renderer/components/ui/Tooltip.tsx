@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ReactNode, useState, useRef, useEffect } from 'react';
+import { ReactNode, useState, useRef, useEffect, useCallback } from 'react';
 
 import { ShortcutKeys } from './ShortcutKeys';
 
@@ -27,23 +27,23 @@ export function Tooltip({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const showTooltip = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, delay);
-  };
-
-  const hideTooltip = () => {
+  const hideTooltip = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     setIsVisible(false);
-  };
+  }, []);
 
-  const handleClick = () => {
+  const showTooltip = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(true);
+    }, delay);
+  }, [delay]);
+
+  const handleClick = useCallback(() => {
     hideTooltip();
-  };
+  }, [hideTooltip]);
 
   useEffect(() => {
     return () => {
@@ -74,6 +74,7 @@ export function Tooltip({
 
       {isVisible && (
         <div
+          role="tooltip"
           className={clsx(
             'pointer-events-none absolute z-50 whitespace-nowrap',
             positionClasses[position]
