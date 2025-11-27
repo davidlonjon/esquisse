@@ -42,7 +42,8 @@ export function HUDTopBar({
           <HUDButton
             onClick={onToggleEditMode}
             disabled={disabled}
-            title={isReadOnly ? 'Switch to edit mode (⇧⌘E)' : 'Switch to read mode (⇧⌘E)'}
+            tooltip={isReadOnly ? 'Switch to edit mode' : 'Switch to read mode'}
+            shortcut="⇧⌘E"
             icon={isReadOnly ? Pencil : BookOpen}
             variant="mode"
             isActive={isReadOnly}
@@ -52,7 +53,8 @@ export function HUDTopBar({
           <HUDButton
             onClick={onToggleFavorite}
             disabled={disabled}
-            title={t('timeline.feed.favorite', 'Favorite')}
+            tooltip={t('timeline.feed.favorite', 'Favorite')}
+            shortcut="⇧⌘F"
             icon={Heart}
             variant="favorite"
             isActive={isFavorite}

@@ -2,10 +2,13 @@ import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { Tooltip } from '@ui';
+
 interface HUDButtonProps {
   onClick: () => void;
   disabled?: boolean;
-  title: string;
+  tooltip: string;
+  shortcut?: string;
   icon: LucideIcon;
   variant?: 'default' | 'favorite' | 'mode';
   isActive?: boolean;
@@ -16,7 +19,8 @@ interface HUDButtonProps {
 export function HUDButton({
   onClick,
   disabled = false,
-  title,
+  tooltip,
+  shortcut,
   icon: Icon,
   variant = 'default',
   isActive = false,
@@ -33,7 +37,7 @@ export function HUDButton({
       : 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400',
   };
 
-  return (
+  const button = (
     <button
       type="button"
       onClick={() => {
@@ -47,10 +51,19 @@ export function HUDButton({
         disabled ? 'opacity-40 cursor-not-allowed' : variantStyles[variant],
         className
       )}
-      title={title}
     >
       <Icon className={clsx('h-4 w-4', variant === 'favorite' && isActive && 'fill-current')} />
       {children}
     </button>
+  );
+
+  if (disabled) {
+    return button;
+  }
+
+  return (
+    <Tooltip content={tooltip} shortcut={shortcut}>
+      {button}
+    </Tooltip>
   );
 }

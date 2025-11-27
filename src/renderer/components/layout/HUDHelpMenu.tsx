@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getShortcutBindings } from '@config/shortcuts';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { getShortcutCombo } from '@lib/shortcuts';
-import { ShortcutKeys } from '@ui';
+import { ShortcutKeys, Tooltip } from '@ui';
 
 interface HUDHelpMenuProps {
   disabled: boolean;
@@ -51,27 +51,36 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts, onShowHud }: HUDHelpMen
     }
   };
 
+  const button = (
+    <button
+      type="button"
+      onClick={() => {
+        if (!disabled) {
+          setIsOpen(!isOpen);
+        }
+      }}
+      disabled={disabled}
+      className={clsx(
+        'group flex items-center justify-center rounded-full px-2 py-1 transition',
+        disabled ? 'opacity-40 cursor-not-allowed' : ''
+      )}
+    >
+      <div className="flex h-[17px] w-[17px] items-center justify-center rounded-full border border-base-content/30 text-xs font-medium text-base-content/50 transition-colors group-hover:border-base-content group-hover:text-base-content">
+        ?
+      </div>
+    </button>
+  );
+
   return (
     <div className="relative" ref={menuRef}>
       {/* Help button */}
-      <button
-        type="button"
-        onClick={() => {
-          if (!disabled) {
-            setIsOpen(!isOpen);
-          }
-        }}
-        disabled={disabled}
-        className={clsx(
-          'group flex items-center justify-center rounded-full px-2 py-1 transition',
-          disabled ? 'opacity-40 cursor-not-allowed' : ''
-        )}
-        title="Help"
-      >
-        <div className="flex h-[17px] w-[17px] items-center justify-center rounded-full border border-base-content/30 text-xs font-medium text-base-content/50 transition-colors group-hover:border-base-content group-hover:text-base-content">
-          ?
-        </div>
-      </button>
+      {disabled ? (
+        button
+      ) : (
+        <Tooltip content="Help" shortcut="⇧⌘H">
+          {button}
+        </Tooltip>
+      )}
 
       {/* Dropdown menu */}
       {isOpen && (
