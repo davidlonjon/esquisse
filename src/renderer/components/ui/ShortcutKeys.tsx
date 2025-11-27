@@ -35,7 +35,10 @@ export function ShortcutKeys({ combo, className, size = 'md' }: ShortcutKeysProp
         <kbd
           key={index}
           className={cn(
-            'inline-flex items-center justify-center rounded border border-base-content/20 bg-base-200/50 font-sans font-medium text-base-content/90 shadow-sm',
+            'inline-flex items-center justify-center rounded font-sans font-medium',
+            size === 'sm'
+              ? 'border border-white/20 bg-white/10 text-white/90'
+              : 'border border-base-content/20 bg-base-200/50 text-base-content/90 shadow-sm',
             sizeClasses[size].kbd,
             // Make single characters square-ish
             key.length === 1 && sizeClasses[size].square

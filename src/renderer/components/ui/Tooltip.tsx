@@ -74,9 +74,9 @@ export function Tooltip({
             positionClasses[position]
           )}
         >
-          <div className="rounded-md border border-base-300 bg-base-200 px-3 py-2 shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-base-content">{content}</span>
+          <div className="rounded-lg bg-neutral-800 px-3 py-1.5 dark:bg-neutral-700">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-white">{content}</span>
               {shortcut && <ShortcutKeys combo={shortcut} size="sm" />}
             </div>
           </div>
