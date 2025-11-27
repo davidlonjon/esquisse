@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Keyboard } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { getShortcutBindings } from '@config/shortcuts';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { getShortcutCombo } from '@lib/shortcuts';
 import { ShortcutKeys } from '@ui';
@@ -16,8 +17,11 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts }: HUDHelpMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const shortcutsCombo = getShortcutCombo('toggleShortcutsPanel') ?? '⌘/';
 
+  // Get the actual key bindings for the help menu shortcut
+  const helpMenuBindings = getShortcutBindings('toggleHelpMenu');
+
   // Register keyboard shortcut to toggle help menu
-  useGlobalHotkeys('toggleHelpMenu', () => {
+  useGlobalHotkeys(helpMenuBindings, () => {
     if (!disabled) {
       setIsOpen((prev) => !prev);
     }
