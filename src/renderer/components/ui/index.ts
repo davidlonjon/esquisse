@@ -8,3 +8,6 @@ export { Toggle } from './Toggle';
 export { Drawer } from './Drawer';
 export { ShortcutKeys } from './ShortcutKeys';
 export { Tooltip } from './Tooltip';
+export { Popover } from './Popover';
+export { TimeInput } from './TimeInput';
+export { DateTimePicker } from './DateTimePicker';

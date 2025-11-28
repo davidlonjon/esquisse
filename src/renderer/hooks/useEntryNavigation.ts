@@ -28,6 +28,7 @@ export function useEntryNavigation({ entries, currentEntry, onNavigate }: UseEnt
         ? entries.findIndex((entry) => entry.id === currentEntry.id)
         : -1;
 
+      // From blank draft, only allow going previous (direction 1) to most recent entry
       if (currentIndex === -1) {
         if (direction === 1) {
           const firstEntry = entries[0];
@@ -38,12 +39,17 @@ export function useEntryNavigation({ entries, currentEntry, onNavigate }: UseEnt
       }
 
       const targetIndex = currentIndex + direction;
+
+      // Going next (direction -1) from Entry 0 goes to blank draft
       if (targetIndex < 0) {
-        setCurrentEntry(null);
-        onNavigate?.();
+        if (direction === -1) {
+          setCurrentEntry(null);
+          onNavigate?.();
+        }
         return;
       }
 
+      // Can't go past the oldest entry
       if (targetIndex >= entries.length) {
         return;
       }

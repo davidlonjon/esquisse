@@ -14,6 +14,7 @@ interface HUDButtonProps {
   isActive?: boolean;
   className?: string;
   children?: ReactNode;
+  tooltipPosition?: 'top' | 'bottom' | 'bottom-left' | 'left' | 'right';
 }
 
 export function HUDButton({
@@ -26,6 +27,7 @@ export function HUDButton({
   isActive = false,
   className,
   children,
+  tooltipPosition = 'bottom',
 }: HUDButtonProps) {
   const variantStyles = {
     default: 'text-base-content/40 hover:bg-base-200',
@@ -62,7 +64,7 @@ export function HUDButton({
   }
 
   return (
-    <Tooltip content={tooltip} shortcut={shortcut}>
+    <Tooltip content={tooltip} shortcut={shortcut} position={tooltipPosition}>
       {button}
     </Tooltip>
   );

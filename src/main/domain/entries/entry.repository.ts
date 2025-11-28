@@ -134,6 +134,10 @@ export class EntryRepository implements IEntryRepository {
         fields.push('is_favorite = ?');
         values.push(updates.isFavorite ? '1' : '0');
       }
+      if (updates.createdAt !== undefined) {
+        fields.push('created_at = ?');
+        values.push(updates.createdAt);
+      }
 
       if (fields.length === 0) {
         const entry = this.findById(id);

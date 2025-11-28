@@ -53,6 +53,12 @@ export function EditorPage() {
           isFavorite={controller.hud.isFavorite}
           onToggleFavorite={controller.hud.onToggleFavorite}
           onShowHud={controller.hud.onShowHud}
+          onNavigatePrevious={controller.hud.onNavigatePrevious}
+          onNavigateNext={controller.hud.onNavigateNext}
+          canNavigatePrevious={controller.hud.canNavigatePrevious}
+          canNavigateNext={controller.hud.canNavigateNext}
+          currentEntryCreatedAt={controller.hud.currentEntryCreatedAt}
+          onDateTimeChange={controller.hud.onDateTimeChange}
           {...(controller.hud.onToggleEditMode && {
             onToggleEditMode: controller.hud.onToggleEditMode,
           })}

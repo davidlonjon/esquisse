@@ -44,6 +44,8 @@ export function createMainWindow(devServerUrl?: string, rendererName?: string): 
   }
 
   // Open DevTools in development
+  // Note: Autofill CDP errors (Autofill.enable, Autofill.setAddresses) are expected and harmless
+  // Electron doesn't implement browser autofill features
   if (process.env.NODE_ENV === 'development' || devServerUrl) {
     mainWindow.webContents.openDevTools();
   }

@@ -8,6 +8,12 @@
       "save": "Impossible d'enregistrer : {{message}}"
     }
   },
+  "datePicker": {
+    "time": "Heure",
+    "hours": "Heures",
+    "minutes": "Minutes",
+    "now": "Maintenant"
+  },
   "editor": {
     "placeholder": "Commencez à écrire..."
   },
@@ -20,6 +26,11 @@
     "snapshotSaved": "Instantané enregistré · {{time}}",
     "snapshotPending": "Instantané en attente",
     "lastUpdated": "Mis à jour · {{date}}",
+    "dateTooltip": "Modifier la date de l'entrée",
+    "navigation": {
+      "previous": "Entrée précédente",
+      "next": "Entrée suivante"
+    },
     "keyboard": {
       "button": "Raccourcis clavier",
       "title": "Raccourcis clavier",

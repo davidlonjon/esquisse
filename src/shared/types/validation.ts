@@ -50,6 +50,7 @@ export const UpdateEntryInputSchema = z.object({
     .optional(),
   status: EntryStatusSchema.optional(),
   isFavorite: z.boolean().optional(),
+  createdAt: z.string().datetime().optional(),
 });
 
 // Settings validation schemas

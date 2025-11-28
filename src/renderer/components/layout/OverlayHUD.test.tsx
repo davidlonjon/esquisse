@@ -37,6 +37,14 @@ vi.mock('@lib/shortcuts', () => ({
   getShortcutCombo: () => '⌘/',
 }));
 
+vi.mock('@config/shortcuts', () => ({
+  getShortcutBindings: () => ['mod+/'],
+}));
+
+vi.mock('@hooks/useGlobalHotkeys', () => ({
+  useGlobalHotkeys: vi.fn(),
+}));
+
 describe('OverlayHUD', () => {
   const defaultProps = {
     showTop: true,
@@ -66,12 +74,11 @@ describe('OverlayHUD', () => {
       expect(screen.getByText('Last saved: 2 min ago')).toBeInTheDocument();
     });
 
-    it('should render shortcuts button', () => {
+    it('should render help button', () => {
       render(<OverlayHUD {...defaultProps} />);
 
-      expect(screen.getByText('Shortcuts')).toBeInTheDocument();
-      expect(screen.getByText('⌘')).toBeInTheDocument();
-      expect(screen.getByText('/')).toBeInTheDocument();
+      // The help button shows a "?" character
+      expect(screen.getByText('?')).toBeInTheDocument();
     });
 
     it('should render session indicator with green dot', () => {
@@ -110,24 +117,24 @@ describe('OverlayHUD', () => {
   });
 
   describe('Disabled state', () => {
-    it('should disable shortcuts button when disabled prop is true', () => {
+    it('should disable help button when disabled prop is true', () => {
       render(<OverlayHUD {...defaultProps} disabled={true} />);
 
-      const button = screen.getByRole('button', { name: /Shortcuts/ });
+      const button = screen.getByText('?').closest('button');
       expect(button).toBeDisabled();
     });
 
-    it('should not disable shortcuts button when disabled prop is false', () => {
+    it('should not disable help button when disabled prop is false', () => {
       render(<OverlayHUD {...defaultProps} disabled={false} />);
 
-      const button = screen.getByRole('button', { name: /Shortcuts/ });
+      const button = screen.getByText('?').closest('button');
       expect(button).not.toBeDisabled();
     });
 
     it('should apply opacity-40 class when disabled', () => {
       render(<OverlayHUD {...defaultProps} disabled={true} />);
 
-      const button = screen.getByRole('button', { name: /Shortcuts/ });
+      const button = screen.getByText('?').closest('button');
       expect(button).toHaveClass('opacity-40');
     });
   });
@@ -175,8 +182,20 @@ describe('OverlayHUD', () => {
     });
   });
 
-  describe('Shortcuts button interaction', () => {
-    it('should call openShortcuts when button is clicked and not disabled', async () => {
+  describe('Help menu interaction', () => {
+    it('should open help menu when button is clicked and not disabled', async () => {
+      const user = userEvent.setup();
+
+      render(<OverlayHUD {...defaultProps} disabled={false} />);
+
+      const button = screen.getByText('?').closest('button');
+      await user.click(button as HTMLElement);
+
+      // The dropdown menu should appear with "Shortcuts" text
+      expect(screen.getByText('Shortcuts')).toBeInTheDocument();
+    });
+
+    it('should call openShortcuts when shortcuts menu item is clicked', async () => {
       const user = userEvent.setup();
       const mockOpenShortcuts = vi.fn();
 
@@ -190,31 +209,15 @@ describe('OverlayHUD', () => {
 
       render(<OverlayHUD {...defaultProps} disabled={false} />);
 
-      const button = screen.getByRole('button', { name: /Shortcuts/ });
-      await user.click(button);
+      // Click help button to open dropdown
+      const helpButton = screen.getByText('?').closest('button');
+      await user.click(helpButton as HTMLElement);
+
+      // Click on "Shortcuts" menu item
+      const shortcutsButton = screen.getByText('Shortcuts').closest('button');
+      await user.click(shortcutsButton as HTMLElement);
 
       expect(mockOpenShortcuts).toHaveBeenCalledTimes(1);
-    });
-
-    it('should not call openShortcuts when disabled', async () => {
-      const user = userEvent.setup();
-      const mockOpenShortcuts = vi.fn();
-
-      const { useKeyboardShortcutsPanel } = await import('@hooks/useKeyboardShortcutsPanel');
-      vi.mocked(useKeyboardShortcutsPanel).mockReturnValue({
-        isShortcutsOpen: false,
-        openShortcuts: mockOpenShortcuts,
-        closeShortcuts: vi.fn(),
-        toggleShortcuts: vi.fn(),
-      });
-
-      render(<OverlayHUD {...defaultProps} disabled={true} />);
-
-      const button = screen.getByRole('button', { name: /Shortcuts/ });
-      await user.click(button);
-
-      // Button is disabled, so onClick won't fire
-      expect(mockOpenShortcuts).not.toHaveBeenCalled();
     });
   });
 

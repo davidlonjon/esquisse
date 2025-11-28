@@ -1,4 +1,5 @@
 @import url('tailwindcss');
+@import url('./renderer/styles/daypicker-theme.css');
 @plugin "daisyui";
 
 @layer base {

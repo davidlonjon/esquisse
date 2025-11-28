@@ -21,6 +21,12 @@ interface OverlayHUDProps {
   onToggleFavorite?: () => void;
   onToggleEditMode?: () => void;
   onShowHud?: () => void;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  canNavigatePrevious?: boolean;
+  canNavigateNext?: boolean;
+  currentEntryCreatedAt?: string;
+  onDateTimeChange?: (isoString: string) => void;
 }
 
 export function OverlayHUD({
@@ -37,6 +43,12 @@ export function OverlayHUD({
   onToggleFavorite,
   onToggleEditMode,
   onShowHud,
+  onNavigatePrevious,
+  onNavigateNext,
+  canNavigatePrevious = true,
+  canNavigateNext = true,
+  currentEntryCreatedAt,
+  onDateTimeChange,
 }: OverlayHUDProps) {
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
   const hudSuppressed = disabled || isShortcutsOpen;
@@ -56,7 +68,6 @@ export function OverlayHUD({
       >
         <HUDTopBar
           dateLabel={dateLabel}
-          wordCountLabel={wordCountLabel}
           isReadOnly={isReadOnly}
           disabled={disabled}
           isFavorite={isFavorite}
@@ -64,6 +75,12 @@ export function OverlayHUD({
           onToggleEditMode={onToggleEditMode}
           onOpenShortcuts={openShortcuts}
           onShowHud={onShowHud}
+          onNavigatePrevious={onNavigatePrevious}
+          onNavigateNext={onNavigateNext}
+          canNavigatePrevious={canNavigatePrevious}
+          canNavigateNext={canNavigateNext}
+          currentEntryCreatedAt={currentEntryCreatedAt}
+          onDateTimeChange={onDateTimeChange}
         />
       </div>
 
@@ -76,6 +93,7 @@ export function OverlayHUD({
       >
         <HUDBottomBar
           isReadOnly={isReadOnly}
+          wordCountLabel={wordCountLabel}
           sessionLabel={sessionLabel}
           snapshotLabel={snapshotLabel}
           lastUpdatedLabel={lastUpdatedLabel}

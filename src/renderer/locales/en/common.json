@@ -8,6 +8,12 @@
       "save": "Failed to save: {{message}}"
     }
   },
+  "datePicker": {
+    "time": "Time",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "now": "Set to now"
+  },
   "editor": {
     "placeholder": "Start writing..."
   },
@@ -20,6 +26,11 @@
     "snapshotSaved": "Snapshot saved · {{time}}",
     "snapshotPending": "Snapshot pending",
     "lastUpdated": "Last updated · {{date}}",
+    "dateTooltip": "Change entry date",
+    "navigation": {
+      "previous": "Previous entry",
+      "next": "Next entry"
+    },
     "keyboard": {
       "button": "Keyboard shortcuts",
       "title": "Keyboard Shortcuts",

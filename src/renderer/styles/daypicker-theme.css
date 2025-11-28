@@ -1,0 +1,20 @@
+/* DayPicker theme customization to match Esquisse dark theme */
+.rdp-custom {
+  --rdp-accent-color: hsl(var(--p));
+  --rdp-background-color: hsl(var(--b1));
+  --rdp-outline: 2px solid hsl(var(--p));
+}
+
+.rdp-custom .rdp-day_selected {
+  background-color: hsl(var(--p));
+  color: hsl(var(--pc));
+}
+
+.rdp-custom .rdp-day_disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.rdp-custom .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: hsl(var(--b2));
+}

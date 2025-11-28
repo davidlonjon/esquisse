@@ -142,6 +142,13 @@ export const useEntryStore = create(
           }
           state.entryLookup[id] = updated;
 
+          // Re-sort entries if createdAt was updated
+          if (updates.createdAt !== undefined) {
+            state.entries.sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          }
+
           const searchResultIndex = state.search.results.findIndex((e) => e.id === id);
           if (searchResultIndex !== -1) {
             state.search.results[searchResultIndex] = updated;

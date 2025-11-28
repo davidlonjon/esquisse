@@ -13,6 +13,12 @@ interface EditorHUDProps {
   onToggleFavorite: () => void;
   onToggleEditMode?: () => void;
   onShowHud?: () => void;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  canNavigatePrevious?: boolean;
+  canNavigateNext?: boolean;
+  currentEntryCreatedAt?: string;
+  onDateTimeChange?: (isoString: string) => void;
 }
 
 export function EditorHud({
@@ -28,6 +34,12 @@ export function EditorHud({
   onToggleFavorite,
   onToggleEditMode,
   onShowHud,
+  onNavigatePrevious,
+  onNavigateNext,
+  canNavigatePrevious,
+  canNavigateNext,
+  currentEntryCreatedAt,
+  onDateTimeChange,
 }: EditorHUDProps) {
   return (
     <OverlayHUD
@@ -44,6 +56,12 @@ export function EditorHud({
       onToggleFavorite={onToggleFavorite}
       onToggleEditMode={onToggleEditMode}
       onShowHud={onShowHud}
+      onNavigatePrevious={onNavigatePrevious}
+      onNavigateNext={onNavigateNext}
+      canNavigatePrevious={canNavigatePrevious}
+      canNavigateNext={canNavigateNext}
+      currentEntryCreatedAt={currentEntryCreatedAt}
+      onDateTimeChange={onDateTimeChange}
     />
   );
 }

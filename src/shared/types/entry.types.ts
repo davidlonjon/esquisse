@@ -31,6 +31,7 @@ export interface UpdateEntryInput {
   tags?: string[] | null;
   status?: EntryStatus;
   isFavorite?: boolean;
+  createdAt?: string;
 }
 
 export const isActiveEntry = (entry: Entry): boolean => entry.status === 'active';
