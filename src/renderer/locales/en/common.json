@@ -95,6 +95,10 @@
         "toggleEditMode": {
           "label": "Toggle Edit Mode",
           "description": "Switch between read-only and edit mode"
+        },
+        "changeDatePicker": {
+          "label": "Change Entry Date",
+          "description": "Open date/time picker to change entry date"
         }
       }
     }

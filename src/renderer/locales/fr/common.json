@@ -95,6 +95,10 @@
         "toggleEditMode": {
           "label": "Basculer mode édition",
           "description": "Alterner entre lecture seule et mode édition"
+        },
+        "changeDatePicker": {
+          "label": "Modifier la date de l'entrée",
+          "description": "Ouvrir le sélecteur de date/heure pour modifier la date de l'entrée"
         }
       }
     }

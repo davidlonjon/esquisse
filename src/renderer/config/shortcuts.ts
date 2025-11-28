@@ -25,7 +25,8 @@ export type ShortcutId =
   | 'deleteEntry'
   | 'toggleFavorite'
   | 'showTimeline'
-  | 'toggleEditMode';
+  | 'toggleEditMode'
+  | 'changeDatePicker';
 
 export interface ShortcutDisplayMetadata {
   labelKey: TranslationKey;
@@ -266,6 +267,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⇧⌘E',
         windows: 'Shift+Ctrl+E',
+      },
+    },
+  },
+  {
+    id: 'changeDatePicker',
+    keys: 'mod+shift+d',
+    description: 'Open date/time picker to change entry date',
+    category: 'editor',
+    location: 'hooks/useDatePicker.ts',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.changeDatePicker.label',
+      descriptionKey: 'hud.keyboard.shortcut.changeDatePicker.description',
+      combos: {
+        mac: '⇧⌘D',
+        windows: 'Shift+Ctrl+D',
       },
     },
   },
