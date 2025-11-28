@@ -25,6 +25,7 @@ export type ShortcutId =
   | 'deleteEntry'
   | 'toggleFavorite'
   | 'showTimeline'
+  | 'showYearlyCalendar'
   | 'toggleEditMode'
   | 'changeDatePicker'
   | 'bold'
@@ -127,6 +128,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⌘T',
         windows: 'Ctrl T',
+      },
+    },
+  },
+  {
+    id: 'showYearlyCalendar',
+    keys: 'mod+y',
+    description: 'Open yearly calendar (Cmd+Y or Ctrl+Y)',
+    category: 'navigation',
+    location: 'App.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.showYearlyCalendar.label',
+      descriptionKey: 'hud.keyboard.shortcut.showYearlyCalendar.description',
+      combos: {
+        mac: '⌘Y',
+        windows: 'Ctrl Y',
       },
     },
   },

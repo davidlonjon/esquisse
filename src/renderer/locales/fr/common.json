@@ -88,6 +88,10 @@
           "label": "Chronologie",
           "description": "Ouvrir la vue chronologique"
         },
+        "showYearlyCalendar": {
+          "label": "Calendrier annuel",
+          "description": "Ouvrir l'aperçu du calendrier annuel"
+        },
         "shortcutsPanel": {
           "label": "Panneau des raccourcis",
           "description": "Afficher ou masquer la référence des raccourcis"
@@ -238,5 +242,13 @@
   },
   "journals": {
     "defaultName": "Journal personnel"
+  },
+  "yearlyCalendar": {
+    "title": "Calendrier annuel",
+    "noEntries": "Aucune entrée cette année",
+    "entriesCount": "{{count}} entrée",
+    "entriesCount_other": "{{count}} entrées",
+    "selectEntry": "Sélectionner une entrée",
+    "emptyEntry": "Entrée vide"
   }
 }

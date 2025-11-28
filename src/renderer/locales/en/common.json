@@ -88,6 +88,10 @@
           "label": "Timeline",
           "description": "Open the timeline view"
         },
+        "showYearlyCalendar": {
+          "label": "Yearly Calendar",
+          "description": "Open the yearly calendar overview"
+        },
         "shortcutsPanel": {
           "label": "Shortcuts panel",
           "description": "Show or hide the shortcut reference"
@@ -238,5 +242,13 @@
   },
   "journals": {
     "defaultName": "Personal Journal"
+  },
+  "yearlyCalendar": {
+    "title": "Yearly Calendar",
+    "noEntries": "No entries this year",
+    "entriesCount": "{{count}} entry",
+    "entriesCount_other": "{{count}} entries",
+    "selectEntry": "Select an entry",
+    "emptyEntry": "Empty entry"
   }
 }

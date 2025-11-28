@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 
+import { YearlyCalendarOverlay } from '@components/layout/YearlyCalendarOverlay';
 import { useEntryStore } from '@features/entries/entries.store';
 import { useSettingsStore } from '@features/settings';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
+import { useYearlyCalendar } from '@hooks/useYearlyCalendar';
 import i18n from '@lib/i18n';
 import { useTheme } from '@providers/theme-provider';
 
@@ -15,6 +17,8 @@ export default function App() {
   const { setTheme } = useTheme();
   const currentEntryId = useEntryStore((state) => state.currentEntryId);
   const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
+
+  const yearlyCalendar = useYearlyCalendar();
 
   useEffect(() => {
     loadSettings();
@@ -65,5 +69,34 @@ export default function App() {
     { preventDefault: true }
   );
 
-  return <AppRouterProvider />;
+  // Register yearly calendar shortcut (Cmd/Ctrl+Y)
+  useGlobalHotkeys(
+    'mod+y',
+    (event) => {
+      event.preventDefault();
+      yearlyCalendar.open();
+    },
+    { preventDefault: true }
+  );
+
+  return (
+    <>
+      <AppRouterProvider />
+      <YearlyCalendarOverlay
+        isOpen={yearlyCalendar.isOpen}
+        onClose={yearlyCalendar.close}
+        year={yearlyCalendar.year}
+        onPreviousYear={yearlyCalendar.goToPreviousYear}
+        onNextYear={yearlyCalendar.goToNextYear}
+        onCurrentYear={yearlyCalendar.goToCurrentYear}
+        selectedDate={yearlyCalendar.selectedDate}
+        selectedDateEntries={yearlyCalendar.selectedDateEntries}
+        hasEntriesOnDate={yearlyCalendar.hasEntriesOnDate}
+        getEntryCountForDate={yearlyCalendar.getEntryCountForDate}
+        onDayClick={yearlyCalendar.handleDayClick}
+        onEntrySelect={yearlyCalendar.handleEntrySelect}
+        onClearSelectedDate={yearlyCalendar.clearSelectedDate}
+      />
+    </>
+  );
 }
