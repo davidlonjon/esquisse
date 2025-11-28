@@ -1,10 +1,12 @@
 import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 
+import { BubbleMenu } from './components';
 import {
   DEFAULT_PLACEHOLDER,
   EDITOR_FOCUS_DELAY,
@@ -45,6 +47,7 @@ export function Editor({
           heading: {
             levels: HEADING_LEVELS,
           },
+          link: false,
         }),
         Placeholder.configure({
           placeholder,
@@ -54,6 +57,14 @@ export function Editor({
         Image.configure({
           HTMLAttributes: {
             class: 'editor-image',
+          },
+        }),
+        Link.configure({
+          openOnClick: false,
+          HTMLAttributes: {
+            class: 'editor-link',
+            rel: 'noopener noreferrer',
+            target: '_blank',
           },
         }),
         ...(focusMode
@@ -158,6 +169,7 @@ export function Editor({
   return (
     <div className="editor-container" onKeyDown={handleKeyDown}>
       <EditorContent editor={editor} />
+      {editor && <BubbleMenu editor={editor} />}
     </div>
   );
 }

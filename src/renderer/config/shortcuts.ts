@@ -26,7 +26,17 @@ export type ShortcutId =
   | 'toggleFavorite'
   | 'showTimeline'
   | 'toggleEditMode'
-  | 'changeDatePicker';
+  | 'changeDatePicker'
+  | 'bold'
+  | 'italic'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'bulletList'
+  | 'orderedList'
+  | 'blockquote'
+  | 'inlineCode'
+  | 'insertLink';
 
 export interface ShortcutDisplayMetadata {
   labelKey: TranslationKey;
@@ -283,6 +293,168 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⇧⌘D',
         windows: 'Shift+Ctrl+D',
+      },
+    },
+  },
+
+  // Editor formatting (Tiptap keymaps)
+  {
+    id: 'bold',
+    keys: 'mod+b',
+    description: 'Toggle bold formatting',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.bold.label',
+      descriptionKey: 'hud.keyboard.shortcut.bold.description',
+      combos: {
+        mac: '⌘B',
+        windows: 'Ctrl B',
+      },
+    },
+  },
+  {
+    id: 'italic',
+    keys: 'mod+i',
+    description: 'Toggle italic formatting',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.italic.label',
+      descriptionKey: 'hud.keyboard.shortcut.italic.description',
+      combos: {
+        mac: '⌘I',
+        windows: 'Ctrl I',
+      },
+    },
+  },
+  {
+    id: 'heading1',
+    keys: 'mod+alt+1',
+    description: 'Toggle heading level 1',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.heading1.label',
+      descriptionKey: 'hud.keyboard.shortcut.heading1.description',
+      combos: {
+        mac: '⌘⌥1',
+        windows: 'Ctrl+Alt+1',
+      },
+    },
+  },
+  {
+    id: 'heading2',
+    keys: 'mod+alt+2',
+    description: 'Toggle heading level 2',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.heading2.label',
+      descriptionKey: 'hud.keyboard.shortcut.heading2.description',
+      combos: {
+        mac: '⌘⌥2',
+        windows: 'Ctrl+Alt+2',
+      },
+    },
+  },
+  {
+    id: 'heading3',
+    keys: 'mod+alt+3',
+    description: 'Toggle heading level 3',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.heading3.label',
+      descriptionKey: 'hud.keyboard.shortcut.heading3.description',
+      combos: {
+        mac: '⌘⌥3',
+        windows: 'Ctrl+Alt+3',
+      },
+    },
+  },
+  {
+    id: 'bulletList',
+    keys: 'mod+shift+8',
+    description: 'Toggle bullet list',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.bulletList.label',
+      descriptionKey: 'hud.keyboard.shortcut.bulletList.description',
+      combos: {
+        mac: '⇧⌘8',
+        windows: 'Shift+Ctrl+8',
+      },
+    },
+  },
+  {
+    id: 'orderedList',
+    keys: 'mod+shift+7',
+    description: 'Toggle numbered list',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.orderedList.label',
+      descriptionKey: 'hud.keyboard.shortcut.orderedList.description',
+      combos: {
+        mac: '⇧⌘7',
+        windows: 'Shift+Ctrl+7',
+      },
+    },
+  },
+  {
+    id: 'blockquote',
+    keys: 'mod+shift+b',
+    description: 'Toggle blockquote',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.blockquote.label',
+      descriptionKey: 'hud.keyboard.shortcut.blockquote.description',
+      combos: {
+        mac: '⇧⌘B',
+        windows: 'Shift+Ctrl+B',
+      },
+    },
+  },
+  {
+    id: 'inlineCode',
+    keys: 'mod+e',
+    description: 'Toggle inline code',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.inlineCode.label',
+      descriptionKey: 'hud.keyboard.shortcut.inlineCode.description',
+      combos: {
+        mac: '⌘E',
+        windows: 'Ctrl E',
+      },
+    },
+  },
+  {
+    id: 'insertLink',
+    keys: 'mod+k',
+    description: 'Insert or edit a link',
+    category: 'editor',
+    location: 'Tiptap editor',
+    globallyControlled: false,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.insertLink.label',
+      descriptionKey: 'hud.keyboard.shortcut.insertLink.description',
+      combos: {
+        mac: '⌘K',
+        windows: 'Ctrl K',
       },
     },
   },

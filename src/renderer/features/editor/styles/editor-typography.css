@@ -69,3 +69,21 @@
   border-top: 2px solid hsl(var(--border));
   margin: 2em 0;
 }
+
+/* Links */
+.editor-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 2px;
+}
+
+.editor-content a:hover {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.editor-content a:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}

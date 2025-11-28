@@ -15,7 +15,23 @@
     "now": "Maintenant"
   },
   "editor": {
-    "placeholder": "Commencez à écrire..."
+    "placeholder": "Commencez à écrire...",
+    "bubbleMenu": {
+      "label": "Mise en forme",
+      "bold": "Gras",
+      "italic": "Italique",
+      "heading1": "Titre 1",
+      "heading2": "Titre 2",
+      "heading3": "Titre 3",
+      "bulletList": "Liste à puces",
+      "orderedList": "Liste numérotée",
+      "blockquote": "Citation",
+      "code": "Code",
+      "link": "Lien",
+      "linkPlaceholder": "Saisissez une URL...",
+      "applyLink": "Appliquer le lien",
+      "cancel": "Annuler"
+    }
   },
   "hud": {
     "today": "Aujourd'hui · {{date}}",
@@ -99,6 +115,46 @@
         "changeDatePicker": {
           "label": "Modifier la date de l'entrée",
           "description": "Ouvrir le sélecteur de date/heure pour modifier la date de l'entrée"
+        },
+        "bold": {
+          "label": "Gras",
+          "description": "Basculer le texte en gras"
+        },
+        "italic": {
+          "label": "Italique",
+          "description": "Basculer le texte en italique"
+        },
+        "heading1": {
+          "label": "Titre 1",
+          "description": "Basculer vers un titre de niveau 1"
+        },
+        "heading2": {
+          "label": "Titre 2",
+          "description": "Basculer vers un titre de niveau 2"
+        },
+        "heading3": {
+          "label": "Titre 3",
+          "description": "Basculer vers un titre de niveau 3"
+        },
+        "bulletList": {
+          "label": "Liste à puces",
+          "description": "Basculer une liste à puces"
+        },
+        "orderedList": {
+          "label": "Liste numérotée",
+          "description": "Basculer une liste numérotée"
+        },
+        "blockquote": {
+          "label": "Citation",
+          "description": "Basculer une citation"
+        },
+        "inlineCode": {
+          "label": "Code en ligne",
+          "description": "Basculer le code en ligne"
+        },
+        "insertLink": {
+          "label": "Insérer un lien",
+          "description": "Ajouter ou modifier un lien"
         }
       }
     }

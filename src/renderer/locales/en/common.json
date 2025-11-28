@@ -15,7 +15,23 @@
     "now": "Set to now"
   },
   "editor": {
-    "placeholder": "Start writing..."
+    "placeholder": "Start writing...",
+    "bubbleMenu": {
+      "label": "Text formatting",
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "bulletList": "Bullet list",
+      "orderedList": "Numbered list",
+      "blockquote": "Quote",
+      "code": "Code",
+      "link": "Link",
+      "linkPlaceholder": "Enter URL...",
+      "applyLink": "Apply link",
+      "cancel": "Cancel"
+    }
   },
   "hud": {
     "today": "Today · {{date}}",
@@ -99,6 +115,46 @@
         "changeDatePicker": {
           "label": "Change Entry Date",
           "description": "Open date/time picker to change entry date"
+        },
+        "bold": {
+          "label": "Bold",
+          "description": "Toggle bold formatting"
+        },
+        "italic": {
+          "label": "Italic",
+          "description": "Toggle italic formatting"
+        },
+        "heading1": {
+          "label": "Heading 1",
+          "description": "Toggle heading level 1"
+        },
+        "heading2": {
+          "label": "Heading 2",
+          "description": "Toggle heading level 2"
+        },
+        "heading3": {
+          "label": "Heading 3",
+          "description": "Toggle heading level 3"
+        },
+        "bulletList": {
+          "label": "Bullet list",
+          "description": "Toggle a bullet list"
+        },
+        "orderedList": {
+          "label": "Numbered list",
+          "description": "Toggle a numbered list"
+        },
+        "blockquote": {
+          "label": "Quote",
+          "description": "Toggle a blockquote"
+        },
+        "inlineCode": {
+          "label": "Inline code",
+          "description": "Toggle inline code"
+        },
+        "insertLink": {
+          "label": "Insert link",
+          "description": "Add or edit a link"
         }
       }
     }

@@ -13,11 +13,13 @@ const mockEditor = {
   },
   setEditable: vi.fn(),
   isDestroyed: false,
+  isEditable: true,
   view: {},
   state: {
     selection: {
       from: 0,
       to: 0,
+      empty: false,
     },
   },
 };
@@ -55,6 +57,12 @@ vi.mock('@tiptap/extension-image', () => ({
   },
 }));
 
+vi.mock('@tiptap/extension-link', () => ({
+  default: {
+    configure: vi.fn(() => ({})),
+  },
+}));
+
 vi.mock('./extensions/FocusMode', () => ({
   FocusMode: {
     configure: vi.fn(() => ({})),
@@ -65,6 +73,12 @@ vi.mock('./extensions/TypewriterScroll', () => ({
   TypewriterScroll: {
     configure: vi.fn(() => ({})),
   },
+}));
+
+vi.mock('./components', () => ({
+  BubbleMenu: ({ editor }: { editor: unknown }) => (
+    <div data-testid="bubble-menu" data-editor={editor ? 'ready' : 'missing'} />
+  ),
 }));
 
 describe('Editor', () => {
@@ -94,6 +108,14 @@ describe('Editor', () => {
       render(<Editor />);
 
       expect(screen.queryByText('Loading editor...')).not.toBeInTheDocument();
+    });
+
+    it('should render the bubble menu when editor is ready', () => {
+      render(<Editor />);
+
+      const bubbleMenu = screen.getByTestId('bubble-menu');
+      expect(bubbleMenu).toBeInTheDocument();
+      expect(bubbleMenu).toHaveAttribute('data-editor', 'ready');
     });
 
     it('should render with editor-container class', () => {

@@ -33,3 +33,8 @@ export const DEFAULT_PLACEHOLDER = 'Start writing...';
 export const HEADING_LEVELS = [1, 2, 3] as Array<1 | 2 | 3 | 4 | 5 | 6>;
 
 export const HUD_AUTO_HIDE_DELAY = 5000; // ms - HUD auto-hide duration
+
+// Bubble menu configuration
+export const BUBBLE_MENU_GAP = 8; // px - gap between menu and selection
+export const BUBBLE_MENU_TRANSITION_DURATION = 200; // ms
+export const BUBBLE_MENU_SHOW_DELAY = 100; // ms - delay before showing
