@@ -1,12 +1,21 @@
 import clsx from 'clsx';
 import type { Locale } from 'date-fns';
-import { eachDayOfInterval, endOfMonth, format, getDay, isToday, startOfMonth } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  getDay,
+  isSameDay,
+  isToday,
+  startOfMonth,
+} from 'date-fns';
 import { enUS, fr } from 'date-fns/locale';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface YearlyCalendarProps {
   year: number;
+  focusedDate: Date;
   hasEntriesOnDate: (date: Date) => boolean;
   getEntryCountForDate: (date: Date) => number;
   onDayClick: (date: Date) => void;
@@ -21,6 +30,7 @@ const MonthGrid = memo(
     year,
     locale,
     weekdays,
+    focusedDate,
     hasEntriesOnDate,
     getEntryCountForDate,
     onDayClick,
@@ -29,6 +39,7 @@ const MonthGrid = memo(
     year: number;
     locale: Locale;
     weekdays: string[];
+    focusedDate: Date;
     hasEntriesOnDate: (date: Date) => boolean;
     getEntryCountForDate: (date: Date) => number;
     onDayClick: (date: Date) => void;
@@ -80,18 +91,19 @@ const MonthGrid = memo(
               const hasEntries = hasEntriesOnDate(day);
               const entryCount = hasEntries ? getEntryCountForDate(day) : 0;
               const today = isToday(day);
+              const isFocused = isSameDay(day, focusedDate);
 
               return (
                 <button
                   key={day.toISOString()}
-                  onClick={() => hasEntries && onDayClick(day)}
-                  disabled={!hasEntries}
+                  onClick={() => onDayClick(day)}
                   className={clsx(
                     'relative h-5 w-5 rounded text-[10px] transition-colors',
                     hasEntries
                       ? 'cursor-pointer hover:bg-primary/20 text-base-content'
-                      : 'cursor-default text-base-content/30',
-                    today && 'ring-1 ring-primary/50'
+                      : 'cursor-pointer text-base-content/30 hover:bg-base-200',
+                    today && !isFocused && 'ring-1 ring-primary/30',
+                    isFocused && 'ring-2 ring-primary bg-primary/10'
                   )}
                   title={
                     hasEntries
@@ -121,7 +133,13 @@ const MonthGrid = memo(
 MonthGrid.displayName = 'MonthGrid';
 
 export const YearlyCalendar = memo(
-  ({ year, hasEntriesOnDate, getEntryCountForDate, onDayClick }: YearlyCalendarProps) => {
+  ({
+    year,
+    focusedDate,
+    hasEntriesOnDate,
+    getEntryCountForDate,
+    onDayClick,
+  }: YearlyCalendarProps) => {
     const { i18n } = useTranslation();
     const locale = i18n.language === 'fr' ? fr : enUS;
     const weekdays = i18n.language === 'fr' ? WEEKDAYS_FR : WEEKDAYS_EN;
@@ -137,6 +155,7 @@ export const YearlyCalendar = memo(
             year={year}
             locale={locale}
             weekdays={weekdays}
+            focusedDate={focusedDate}
             hasEntriesOnDate={hasEntriesOnDate}
             getEntryCountForDate={getEntryCountForDate}
             onDayClick={onDayClick}

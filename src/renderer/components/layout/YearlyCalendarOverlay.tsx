@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { DayEntriesPopover } from '@components/ui/DayEntriesPopover';
 import { YearlyCalendar } from '@components/ui/YearlyCalendar';
@@ -15,6 +14,13 @@ interface YearlyCalendarOverlayProps {
   onPreviousYear: () => void;
   onNextYear: () => void;
   onCurrentYear: () => void;
+  focusedDate: Date;
+  onFocusPreviousDay: () => void;
+  onFocusNextDay: () => void;
+  onFocusPreviousWeek: () => void;
+  onFocusNextWeek: () => void;
+  onFocusToday: () => void;
+  onSelectFocusedDate: () => void;
   selectedDate: Date | null;
   selectedDateEntries: Entry[];
   hasEntriesOnDate: (date: Date) => boolean;
@@ -31,6 +37,13 @@ export function YearlyCalendarOverlay({
   onPreviousYear,
   onNextYear,
   onCurrentYear,
+  focusedDate,
+  onFocusPreviousDay,
+  onFocusNextDay,
+  onFocusPreviousWeek,
+  onFocusNextWeek,
+  onFocusToday,
+  onSelectFocusedDate,
   selectedDate,
   selectedDateEntries,
   hasEntriesOnDate,
@@ -39,7 +52,6 @@ export function YearlyCalendarOverlay({
   onEntrySelect,
   onClearSelectedDate,
 }: YearlyCalendarOverlayProps) {
-  const { t } = useTranslation();
   const { openModal, closeModal } = useHotkeysContext();
 
   useEffect(() => {
@@ -51,6 +63,7 @@ export function YearlyCalendarOverlay({
     }
   }, [isOpen, openModal, closeModal]);
 
+  // Escape: close popover or overlay
   useGlobalHotkeys(
     'escape',
     () => {
@@ -61,6 +74,90 @@ export function YearlyCalendarOverlay({
       }
     },
     { enabled: isOpen },
+    false
+  );
+
+  // Arrow keys for day navigation
+  useGlobalHotkeys(
+    'arrowleft',
+    (e) => {
+      e.preventDefault();
+      onFocusPreviousDay();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  useGlobalHotkeys(
+    'arrowright',
+    (e) => {
+      e.preventDefault();
+      onFocusNextDay();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  useGlobalHotkeys(
+    'arrowup',
+    (e) => {
+      e.preventDefault();
+      onFocusPreviousWeek();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  useGlobalHotkeys(
+    'arrowdown',
+    (e) => {
+      e.preventDefault();
+      onFocusNextWeek();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  // Enter: select focused date
+  useGlobalHotkeys(
+    'enter',
+    (e) => {
+      e.preventDefault();
+      onSelectFocusedDate();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  // t: jump to today
+  useGlobalHotkeys(
+    't',
+    (e) => {
+      e.preventDefault();
+      onFocusToday();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  // Shift+arrows for year navigation
+  useGlobalHotkeys(
+    'shift+arrowleft',
+    (e) => {
+      e.preventDefault();
+      onPreviousYear();
+    },
+    { enabled: isOpen && !selectedDate },
+    false
+  );
+
+  useGlobalHotkeys(
+    'shift+arrowright',
+    (e) => {
+      e.preventDefault();
+      onNextYear();
+    },
+    { enabled: isOpen && !selectedDate },
     false
   );
 
@@ -111,14 +208,15 @@ export function YearlyCalendarOverlay({
         {/* Calendar Grid */}
         <YearlyCalendar
           year={year}
+          focusedDate={focusedDate}
           hasEntriesOnDate={hasEntriesOnDate}
           getEntryCountForDate={getEntryCountForDate}
           onDayClick={onDayClick}
         />
 
-        {/* Hint */}
+        {/* Keyboard hints */}
         <p className="mt-6 text-center text-xs text-base-content/40">
-          {t('hud.keyboard.shortcut.closeModal.label')}: Esc
+          ← → ↑ ↓ navigate · Enter select · t today · Shift+← → year · Esc close
         </p>
       </div>
 

@@ -89,6 +89,13 @@ export default function App() {
         onPreviousYear={yearlyCalendar.goToPreviousYear}
         onNextYear={yearlyCalendar.goToNextYear}
         onCurrentYear={yearlyCalendar.goToCurrentYear}
+        focusedDate={yearlyCalendar.focusedDate}
+        onFocusPreviousDay={yearlyCalendar.focusPreviousDay}
+        onFocusNextDay={yearlyCalendar.focusNextDay}
+        onFocusPreviousWeek={yearlyCalendar.focusPreviousWeek}
+        onFocusNextWeek={yearlyCalendar.focusNextWeek}
+        onFocusToday={yearlyCalendar.focusToday}
+        onSelectFocusedDate={yearlyCalendar.selectFocusedDate}
         selectedDate={yearlyCalendar.selectedDate}
         selectedDateEntries={yearlyCalendar.selectedDateEntries}
         hasEntriesOnDate={yearlyCalendar.hasEntriesOnDate}

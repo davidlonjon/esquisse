@@ -1,3 +1,4 @@
+import { addDays, isFuture, startOfDay } from 'date-fns';
 import { useCallback, useMemo, useState } from 'react';
 
 import { router } from '@/router';
@@ -13,10 +14,13 @@ const toDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+const getToday = (): Date => startOfDay(new Date());
+
 export function useYearlyCalendar() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
+  const [focusedDate, setFocusedDate] = useState<Date>(getToday);
   const entries = useEntryStore((state) => state.entries);
   const setCurrentEntryId = useEntryStore((state) => state.setCurrentEntryId);
 
@@ -32,9 +36,11 @@ export function useYearlyCalendar() {
   }, [entries]);
 
   const open = useCallback(() => {
+    const today = getToday();
     setIsOpen(true);
     setSelectedDate(null);
-    setYear(new Date().getFullYear());
+    setYear(today.getFullYear());
+    setFocusedDate(today);
   }, []);
 
   const close = useCallback(() => {
@@ -52,6 +58,30 @@ export function useYearlyCalendar() {
 
   const goToCurrentYear = useCallback(() => {
     setYear(new Date().getFullYear());
+  }, []);
+
+  const moveFocus = useCallback((days: number) => {
+    setFocusedDate((current) => {
+      const newDate = addDays(current, days);
+      // Don't allow navigating to future dates
+      if (isFuture(newDate)) {
+        return current;
+      }
+      // Auto-update year when crossing year boundary
+      setYear(newDate.getFullYear());
+      return newDate;
+    });
+  }, []);
+
+  const focusPreviousDay = useCallback(() => moveFocus(-1), [moveFocus]);
+  const focusNextDay = useCallback(() => moveFocus(1), [moveFocus]);
+  const focusPreviousWeek = useCallback(() => moveFocus(-7), [moveFocus]);
+  const focusNextWeek = useCallback(() => moveFocus(7), [moveFocus]);
+
+  const focusToday = useCallback(() => {
+    const today = getToday();
+    setFocusedDate(today);
+    setYear(today.getFullYear());
   }, []);
 
   const getEntriesForDate = useCallback(
@@ -111,6 +141,10 @@ export function useYearlyCalendar() {
     setSelectedDate(null);
   }, []);
 
+  const selectFocusedDate = useCallback(() => {
+    handleDayClick(focusedDate);
+  }, [focusedDate, handleDayClick]);
+
   return {
     isOpen,
     open,
@@ -119,6 +153,13 @@ export function useYearlyCalendar() {
     goToPreviousYear,
     goToNextYear,
     goToCurrentYear,
+    focusedDate,
+    focusPreviousDay,
+    focusNextDay,
+    focusPreviousWeek,
+    focusNextWeek,
+    focusToday,
+    selectFocusedDate,
     entriesByDate,
     selectedDate,
     selectedDateEntries: selectedDate ? getEntriesForDate(selectedDate) : [],
