@@ -1,8 +1,7 @@
 import { BookOpen, Heart, Pencil } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
+import { useDatePicker } from '@hooks/useDatePicker';
 import { getShortcutCombo } from '@lib/shortcuts';
 import { DateTimePicker, Tooltip } from '@ui';
 
@@ -49,59 +48,19 @@ export function HUDTopBar({
   const favoriteShortcut = getShortcutCombo('toggleFavorite') ?? '⇧⌘F';
   const datePickerShortcut = '⇧⌘D';
 
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const datePillRef = useRef<HTMLDivElement>(null);
-  const hudKeepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const handleDatePillClick = () => {
-    if (currentEntryCreatedAt && onDateTimeChange && !disabled) {
-      setIsDatePickerOpen((prev) => !prev);
-    }
-  };
-
-  // Register keyboard shortcut for date picker (Shift+Cmd+D)
-  useGlobalHotkeys(
-    'mod+shift+d',
-    (event) => {
-      event.preventDefault();
-      if (currentEntryCreatedAt && onDateTimeChange && !disabled) {
-        setIsDatePickerOpen((prev) => !prev);
-      }
-    },
-    { preventDefault: true }
-  );
-
-  const handleDateTimeChange = (isoString: string) => {
-    if (onDateTimeChange) {
-      onDateTimeChange(isoString);
-    }
-  };
-
-  // Keep HUD visible while date picker is open
-  useEffect(() => {
-    if (isDatePickerOpen && onShowHud) {
-      // Show HUD immediately
-      onShowHud();
-
-      // Keep refreshing HUD visibility every 2 seconds to prevent auto-hide
-      hudKeepAliveRef.current = setInterval(() => {
-        onShowHud();
-      }, 2000);
-    } else {
-      // Clean up interval when picker closes
-      if (hudKeepAliveRef.current) {
-        clearInterval(hudKeepAliveRef.current);
-        hudKeepAliveRef.current = null;
-      }
-    }
-
-    return () => {
-      if (hudKeepAliveRef.current) {
-        clearInterval(hudKeepAliveRef.current);
-        hudKeepAliveRef.current = null;
-      }
-    };
-  }, [isDatePickerOpen, onShowHud]);
+  // Date picker state and logic
+  const {
+    isDatePickerOpen,
+    setIsDatePickerOpen,
+    datePillRef,
+    handleDatePillClick,
+    handleDateTimeChange,
+  } = useDatePicker({
+    currentEntryCreatedAt,
+    onDateTimeChange,
+    onShowHud,
+    disabled,
+  });
 
   return (
     <>
@@ -130,6 +89,7 @@ export function HUDTopBar({
           <HUDPill ref={datePillRef} label={dateLabel} onClick={handleDatePillClick} />
         )}
 
+        {/* Key forces component reset when entry changes - simple but remounts tree */}
         {currentEntryCreatedAt && onDateTimeChange && (
           <DateTimePicker
             key={currentEntryCreatedAt}

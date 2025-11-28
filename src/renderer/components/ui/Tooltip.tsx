@@ -2,6 +2,8 @@ import clsx from 'clsx';
 import { ReactNode, useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
+import { calculateTooltipPosition, type TooltipPosition } from '@lib/positioning';
+
 import { ShortcutKeys } from './ShortcutKeys';
 
 interface TooltipProps {
@@ -12,7 +14,7 @@ interface TooltipProps {
   /** Optional keyboard shortcut to display */
   shortcut?: string;
   /** Tooltip position relative to trigger element */
-  position?: 'top' | 'bottom' | 'bottom-left' | 'left' | 'right';
+  position?: TooltipPosition;
   /** Delay before showing tooltip in ms */
   delay?: number;
 }
@@ -52,36 +54,12 @@ export function Tooltip({
     if (!isVisible || !triggerRef.current) return;
 
     const rect = triggerRef.current.getBoundingClientRect();
-    let top = 0;
-    let left = 0;
-
-    switch (position) {
-      case 'top':
-        top = rect.top - 8; // 8px gap (mb-2)
-        left = rect.left + rect.width / 2;
-        break;
-      case 'bottom':
-        top = rect.bottom + 8; // 8px gap (mt-2)
-        left = rect.left + rect.width / 2;
-        break;
-      case 'bottom-left':
-        top = rect.bottom + 8;
-        left = rect.left;
-        break;
-      case 'left':
-        top = rect.top + rect.height / 2;
-        left = rect.left - 8;
-        break;
-      case 'right':
-        top = rect.top + rect.height / 2;
-        left = rect.right + 8;
-        break;
-    }
+    const newPosition = calculateTooltipPosition(rect, position);
 
     // Use functional update to avoid setting state if position hasn't changed
     setTooltipPosition((prev) => {
-      if (prev.top === top && prev.left === left) return prev;
-      return { top, left };
+      if (prev.top === newPosition.top && prev.left === newPosition.left) return prev;
+      return newPosition;
     });
   }, [isVisible, position]);
 

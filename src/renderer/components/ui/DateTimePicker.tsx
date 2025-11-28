@@ -1,5 +1,5 @@
 import { enUS, fr } from 'date-fns/locale';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { createPortal } from 'react-dom';
 import 'react-day-picker/dist/style.css';
@@ -42,25 +42,31 @@ export function DateTimePicker({
   const [selectedHours, setSelectedHours] = useState(parsedTime.hours);
   const [selectedMinutes, setSelectedMinutes] = useState(parsedTime.minutes);
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
+  const handleDateSelect = useCallback(
+    (date: Date | undefined) => {
+      if (!date) return;
 
-    const combined = combineDateAndTime(date, selectedHours, selectedMinutes);
-    const isoString = toISOString(combined);
+      const combined = combineDateAndTime(date, selectedHours, selectedMinutes);
+      const isoString = toISOString(combined);
 
-    onDateTimeChange(isoString);
-    onClose();
-  };
+      onDateTimeChange(isoString);
+      onClose();
+    },
+    [selectedHours, selectedMinutes, onDateTimeChange, onClose]
+  );
 
-  const handleTimeChange = (hours: number, minutes: number) => {
-    setSelectedHours(hours);
-    setSelectedMinutes(minutes);
+  const handleTimeChange = useCallback(
+    (hours: number, minutes: number) => {
+      setSelectedHours(hours);
+      setSelectedMinutes(minutes);
 
-    const combined = combineDateAndTime(parsedDate, hours, minutes);
-    const isoString = toISOString(combined);
+      const combined = combineDateAndTime(parsedDate, hours, minutes);
+      const isoString = toISOString(combined);
 
-    onDateTimeChange(isoString);
-  };
+      onDateTimeChange(isoString);
+    },
+    [parsedDate, onDateTimeChange]
+  );
 
   const content = (
     <Popover isOpen={isOpen} onClose={onClose} anchorRef={anchorRef} className="p-0">
