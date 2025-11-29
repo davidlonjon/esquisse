@@ -5,6 +5,7 @@
 
 export * from './journal.types';
 export * from './entry.types';
+export * from './mood.types';
 export * from './settings.types';
 export * from './result.types';
 export * from './validation';

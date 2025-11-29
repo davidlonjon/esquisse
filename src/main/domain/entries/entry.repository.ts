@@ -5,7 +5,13 @@
 
 import { randomUUID } from 'crypto';
 
-import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
+import type {
+  CreateEntryInput,
+  Entry,
+  EntryStatus,
+  MoodValue,
+  UpdateEntryInput,
+} from '@shared/types';
 
 import { getDatabase, withTransaction } from '../../database/index';
 import {
@@ -18,7 +24,7 @@ import {
 import type { FindAllOptions, IEntryRepository } from './entry.repository.interface';
 
 const ENTRY_COLUMNS =
-  'id, journal_id as journalId, title, content, tags, status, is_favorite as isFavorite, created_at as createdAt, updated_at as updatedAt';
+  'id, journal_id as journalId, title, content, tags, status, is_favorite as isFavorite, mood, created_at as createdAt, updated_at as updatedAt';
 
 const mapEntryRow = (row: Record<string, unknown>): Entry => ({
   id: String(row.id),
@@ -28,6 +34,7 @@ const mapEntryRow = (row: Record<string, unknown>): Entry => ({
   tags: row.tags ? JSON.parse(String(row.tags)) : undefined,
   status: String(row.status ?? 'active') as EntryStatus,
   isFavorite: Boolean(row.isFavorite),
+  mood: row.mood != null ? (Number(row.mood) as MoodValue) : null,
   createdAt: String(row.createdAt),
   updatedAt: String(row.updatedAt),
 });
@@ -40,10 +47,11 @@ export class EntryRepository implements IEntryRepository {
       const tagsJson = entry.tags ? JSON.stringify(entry.tags) : null;
       const status = entry.status ?? 'active';
       const isFavorite = entry.isFavorite ? 1 : 0;
+      const mood = entry.mood ?? null;
 
       db.prepare(
-        `INSERT INTO entries (id, journal_id, title, content, tags, status, is_favorite, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO entries (id, journal_id, title, content, tags, status, is_favorite, mood, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         id,
         entry.journalId,
@@ -52,6 +60,7 @@ export class EntryRepository implements IEntryRepository {
         tagsJson,
         status,
         isFavorite,
+        mood,
         now,
         now
       );
@@ -64,6 +73,7 @@ export class EntryRepository implements IEntryRepository {
         tags: entry.tags,
         status,
         isFavorite: Boolean(isFavorite),
+        mood,
         createdAt: now,
         updatedAt: now,
       };
@@ -133,6 +143,10 @@ export class EntryRepository implements IEntryRepository {
       if (updates.isFavorite !== undefined) {
         fields.push('is_favorite = ?');
         values.push(updates.isFavorite ? '1' : '0');
+      }
+      if (updates.mood !== undefined) {
+        fields.push('mood = ?');
+        values.push(updates.mood !== null ? String(updates.mood) : null);
       }
       if (updates.createdAt !== undefined) {
         fields.push('created_at = ?');

@@ -2,6 +2,8 @@
  * Entry type definitions
  */
 
+import type { MoodValue } from './mood.types';
+
 export type EntryStatus = 'active' | 'archived' | 'draft';
 
 export interface Entry {
@@ -12,6 +14,7 @@ export interface Entry {
   tags?: string[];
   status: EntryStatus;
   isFavorite: boolean;
+  mood?: MoodValue | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +26,7 @@ export interface CreateEntryInput {
   tags?: string[];
   status?: EntryStatus;
   isFavorite?: boolean;
+  mood?: MoodValue | null;
 }
 
 export interface UpdateEntryInput {
@@ -31,6 +35,7 @@ export interface UpdateEntryInput {
   tags?: string[] | null;
   status?: EntryStatus;
   isFavorite?: boolean;
+  mood?: MoodValue | null;
   createdAt?: string;
 }
 

@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS entries (
   tags TEXT,
   status TEXT DEFAULT 'active',
   is_favorite INTEGER DEFAULT 0,
+  mood INTEGER DEFAULT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY (journal_id) REFERENCES journals(id) ON DELETE CASCADE

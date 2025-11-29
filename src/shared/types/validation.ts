@@ -30,6 +30,13 @@ export const UpdateJournalInputSchema = z.object({
 
 // Entry validation schemas
 export const EntryStatusSchema = z.enum(['active', 'archived', 'draft']);
+export const MoodValueSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+]);
 
 export const CreateEntryInputSchema = z.object({
   journalId: z.string().min(1, 'Journal ID is required'),
@@ -38,6 +45,7 @@ export const CreateEntryInputSchema = z.object({
   tags: z.array(z.string().max(50, 'Tag is too long')).max(20, 'Too many tags').optional(),
   status: EntryStatusSchema.optional(),
   isFavorite: z.boolean().optional(),
+  mood: MoodValueSchema.nullable().optional(),
 });
 
 export const UpdateEntryInputSchema = z.object({
@@ -50,6 +58,7 @@ export const UpdateEntryInputSchema = z.object({
     .optional(),
   status: EntryStatusSchema.optional(),
   isFavorite: z.boolean().optional(),
+  mood: MoodValueSchema.nullable().optional(),
   createdAt: z.string().datetime().optional(),
 });
 
@@ -104,6 +113,7 @@ export const EntrySchema = z.object({
   tags: z.array(z.string()).optional(),
   status: EntryStatusSchema,
   isFavorite: z.boolean(),
+  mood: MoodValueSchema.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

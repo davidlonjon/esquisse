@@ -62,6 +62,18 @@ const MIGRATIONS: Migration[] = [
       ).run();
     },
   },
+  {
+    id: '005_add_mood_field',
+    up: (db) => {
+      const columns = db.pragma('table_info(entries)') as Array<{ name: string }>;
+      const hasMood = columns.some((col) => col.name === 'mood');
+
+      if (!hasMood) {
+        db.prepare('ALTER TABLE entries ADD COLUMN mood INTEGER DEFAULT NULL').run();
+      }
+      db.prepare('CREATE INDEX IF NOT EXISTS idx_entries_mood ON entries(mood)').run();
+    },
+  },
 ];
 
 const MIGRATIONS_TABLE = 'schema_migrations';
