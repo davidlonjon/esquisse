@@ -52,9 +52,9 @@ export default function App() {
     { preventDefault: true }
   );
 
-  // Register timeline shortcut (Cmd/Ctrl+T)
+  // Register timeline shortcut (Cmd/Ctrl+Shift+T)
   useGlobalHotkeys(
-    'mod+t',
+    'mod+shift+t',
     (event) => {
       event.preventDefault();
       router.navigate({ to: '/timeline' });
@@ -84,9 +84,9 @@ export default function App() {
     { preventDefault: true }
   );
 
-  // Register yearly calendar shortcut (Cmd/Ctrl+Y)
+  // Register yearly calendar shortcut (Cmd/Ctrl+Shift+Y)
   useGlobalHotkeys(
-    'mod+y',
+    'mod+shift+y',
     (event) => {
       event.preventDefault();
       const initialDate = currentEntry ? new Date(currentEntry.createdAt) : undefined;
