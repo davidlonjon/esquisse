@@ -35,12 +35,12 @@ export function useYearlyCalendar() {
     return map;
   }, [entries]);
 
-  const open = useCallback(() => {
-    const today = getToday();
+  const open = useCallback((initialDate?: Date) => {
+    const targetDate = initialDate ? startOfDay(initialDate) : getToday();
     setIsOpen(true);
     setSelectedDate(null);
-    setYear(today.getFullYear());
-    setFocusedDate(today);
+    setYear(targetDate.getFullYear());
+    setFocusedDate(targetDate);
   }, []);
 
   const close = useCallback(() => {
@@ -49,15 +49,57 @@ export function useYearlyCalendar() {
   }, []);
 
   const goToPreviousYear = useCallback(() => {
-    setYear((y) => y - 1);
+    setFocusedDate((current) => {
+      const newYear = current.getFullYear() - 1;
+      const month = current.getMonth();
+      const day = current.getDate();
+      // Handle Feb 29 -> Feb 28 for non-leap years
+      let newDate = new Date(newYear, month, day);
+      if (newDate.getMonth() !== month) {
+        // Day overflowed (e.g., Feb 29 -> Mar 1), use last day of month
+        newDate = new Date(newYear, month + 1, 0);
+      }
+      setYear(newYear);
+      return newDate;
+    });
   }, []);
 
   const goToNextYear = useCallback(() => {
-    setYear((y) => y + 1);
+    setFocusedDate((current) => {
+      const newYear = current.getFullYear() + 1;
+      const month = current.getMonth();
+      const day = current.getDate();
+      // Handle Feb 29 -> Feb 28 for non-leap years
+      let newDate = new Date(newYear, month, day);
+      if (newDate.getMonth() !== month) {
+        // Day overflowed, use last day of month
+        newDate = new Date(newYear, month + 1, 0);
+      }
+      // Don't allow navigating to future dates
+      if (isFuture(newDate)) {
+        return current;
+      }
+      setYear(newYear);
+      return newDate;
+    });
   }, []);
 
   const goToCurrentYear = useCallback(() => {
-    setYear(new Date().getFullYear());
+    setFocusedDate((current) => {
+      const currentYear = new Date().getFullYear();
+      const month = current.getMonth();
+      const day = current.getDate();
+      let newDate = new Date(currentYear, month, day);
+      if (newDate.getMonth() !== month) {
+        newDate = new Date(currentYear, month + 1, 0);
+      }
+      // If the date is in the future, use today
+      if (isFuture(newDate)) {
+        newDate = getToday();
+      }
+      setYear(currentYear);
+      return newDate;
+    });
   }, []);
 
   const moveFocus = useCallback((days: number) => {

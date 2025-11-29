@@ -16,7 +16,9 @@ export default function App() {
   const language = useSettingsStore((state) => state.language);
   const { setTheme } = useTheme();
   const currentEntryId = useEntryStore((state) => state.currentEntryId);
+  const entryLookup = useEntryStore((state) => state.entryLookup);
   const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
+  const currentEntry = currentEntryId ? entryLookup[currentEntryId] : null;
 
   const yearlyCalendar = useYearlyCalendar();
 
@@ -74,7 +76,8 @@ export default function App() {
     'mod+y',
     (event) => {
       event.preventDefault();
-      yearlyCalendar.open();
+      const initialDate = currentEntry ? new Date(currentEntry.createdAt) : undefined;
+      yearlyCalendar.open(initialDate);
     },
     { preventDefault: true }
   );
