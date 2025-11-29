@@ -71,9 +71,9 @@ export function OverlayHUD({
           isReadOnly={isReadOnly}
           disabled={disabled}
           isFavorite={isFavorite}
+          sessionLabel={sessionLabel}
           onToggleFavorite={onToggleFavorite}
           onToggleEditMode={onToggleEditMode}
-          onOpenShortcuts={openShortcuts}
           onShowHud={onShowHud}
           onNavigatePrevious={onNavigatePrevious}
           onNavigateNext={onNavigateNext}
@@ -94,9 +94,11 @@ export function OverlayHUD({
         <HUDBottomBar
           isReadOnly={isReadOnly}
           wordCountLabel={wordCountLabel}
-          sessionLabel={sessionLabel}
           snapshotLabel={snapshotLabel}
           lastUpdatedLabel={lastUpdatedLabel}
+          disabled={disabled}
+          onOpenShortcuts={openShortcuts}
+          onShowHud={onShowHud}
         />
       </div>
 

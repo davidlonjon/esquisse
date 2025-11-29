@@ -78,14 +78,14 @@ export function HUDHelpMenu({ disabled, onOpenShortcuts, onShowHud }: HUDHelpMen
       {disabled ? (
         button
       ) : (
-        <Tooltip content="Help" shortcut={helpMenuCombo}>
+        <Tooltip content="Help" shortcut={helpMenuCombo} position="right">
           {button}
         </Tooltip>
       )}
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-xl">
+        <div className="absolute left-2 bottom-full z-50 mb-2 w-56 overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-xl">
           <button
             type="button"
             onClick={handleShortcutsClick}

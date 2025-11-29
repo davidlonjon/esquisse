@@ -2,22 +2,23 @@ import { BookOpen, Heart, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useDatePicker } from '@hooks/useDatePicker';
+import { useMoodPicker } from '@hooks/useMoodPicker';
 import { getShortcutCombo } from '@lib/shortcuts';
 import { DateTimePicker, Tooltip } from '@ui';
 
 import { HUDButton } from './HUDButton';
-import { HUDHelpMenu } from './HUDHelpMenu';
 import { HUDNavigationButtons } from './HUDNavigationButtons';
 import { HUDPill } from './HUDPill';
+import { MoodPicker } from './MoodPicker';
 
 interface HUDTopBarProps {
   dateLabel: string;
   isReadOnly: boolean;
   disabled: boolean;
   isFavorite: boolean;
+  sessionLabel: string;
   onToggleFavorite?: () => void;
   onToggleEditMode?: () => void;
-  onOpenShortcuts: () => void;
   onShowHud?: () => void;
   onNavigatePrevious?: () => void;
   onNavigateNext?: () => void;
@@ -32,9 +33,9 @@ export function HUDTopBar({
   isReadOnly,
   disabled,
   isFavorite,
+  sessionLabel,
   onToggleFavorite,
   onToggleEditMode,
-  onOpenShortcuts,
   onShowHud,
   onNavigatePrevious,
   onNavigateNext,
@@ -46,7 +47,11 @@ export function HUDTopBar({
   const { t } = useTranslation();
   const editModeShortcut = getShortcutCombo('toggleEditMode') ?? '⇧⌘E';
   const favoriteShortcut = getShortcutCombo('toggleFavorite') ?? '⇧⌘F';
+  const moodShortcut = getShortcutCombo('openMoodPicker') ?? '⌘M';
   const datePickerShortcut = '⇧⌘D';
+
+  // Mood picker state
+  const moodPicker = useMoodPicker();
 
   // Date picker state and logic
   const {
@@ -75,8 +80,8 @@ export function HUDTopBar({
         />
       )}
 
-      {/* Center - Date */}
-      <div className="absolute left-1/2 -translate-x-1/2">
+      {/* Center - Date and Session */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
         {currentEntryCreatedAt && onDateTimeChange && !disabled ? (
           <Tooltip
             content={t('hud.dateTooltip', 'Change entry date')}
@@ -87,6 +92,16 @@ export function HUDTopBar({
           </Tooltip>
         ) : (
           <HUDPill ref={datePillRef} label={dateLabel} onClick={handleDatePillClick} />
+        )}
+
+        {/* Session indicator (edit mode only) */}
+        {!isReadOnly && (
+          <div className="flex items-center gap-2 text-xs font-medium text-base-content/60">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>
+              {t('hud.session')} · {sessionLabel}
+            </span>
+          </div>
         )}
 
         {/* Key forces component reset when entry changes - simple but remounts tree */}
@@ -126,8 +141,21 @@ export function HUDTopBar({
             isActive={isFavorite}
           />
         )}
-
-        <HUDHelpMenu disabled={disabled} onOpenShortcuts={onOpenShortcuts} onShowHud={onShowHud} />
+        <MoodPicker
+          isOpen={moodPicker.isOpen}
+          onClose={moodPicker.close}
+          onToggle={moodPicker.toggle}
+          selectedIndex={moodPicker.selectedIndex}
+          currentMood={moodPicker.currentMood}
+          onSelectPrevious={moodPicker.selectPrevious}
+          onSelectNext={moodPicker.selectNext}
+          onSelectCurrent={moodPicker.selectCurrentMood}
+          onSelectByNumber={moodPicker.selectByNumber}
+          onClear={moodPicker.clearMood}
+          disabled={disabled || !moodPicker.hasEntry}
+          shortcut={moodShortcut}
+          onShowHud={onShowHud}
+        />
       </div>
       <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-base-100 to-transparent" />
     </>

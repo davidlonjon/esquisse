@@ -1,37 +1,33 @@
-import { useTranslation } from 'react-i18next';
-
+import { HUDHelpMenu } from './HUDHelpMenu';
 import { HUDPill } from './HUDPill';
 
 interface HUDBottomBarProps {
   isReadOnly: boolean;
   wordCountLabel: string;
-  sessionLabel: string;
   snapshotLabel: string;
   lastUpdatedLabel?: string;
+  disabled: boolean;
+  onOpenShortcuts: () => void;
+  onShowHud?: () => void;
 }
 
 export function HUDBottomBar({
   isReadOnly,
   wordCountLabel,
-  sessionLabel,
   snapshotLabel,
   lastUpdatedLabel,
+  disabled,
+  onOpenShortcuts,
+  onShowHud,
 }: HUDBottomBarProps) {
-  const { t } = useTranslation();
-
   return (
     <>
       <div className="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-gradient-to-t from-base-100 to-transparent" />
 
-      {/* Left - Session indicator (edit mode only) */}
-      {!isReadOnly && (
-        <div className="flex items-center gap-2 text-xs font-medium text-base-content/60">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span>
-            {t('hud.session')} · {sessionLabel}
-          </span>
-        </div>
-      )}
+      {/* Left - Help Menu */}
+      <div className="pointer-events-auto">
+        <HUDHelpMenu disabled={disabled} onOpenShortcuts={onOpenShortcuts} onShowHud={onShowHud} />
+      </div>
 
       {/* Center - Word count */}
       <div className="absolute left-1/2 -translate-x-1/2">
