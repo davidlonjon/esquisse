@@ -92,6 +92,10 @@
           "label": "Yearly Calendar",
           "description": "Open the yearly calendar overview"
         },
+        "showFavoritesList": {
+          "label": "Favorites List",
+          "description": "Open the favorites list"
+        },
         "shortcutsPanel": {
           "label": "Shortcuts panel",
           "description": "Show or hide the shortcut reference"
@@ -250,5 +254,10 @@
     "entriesCount_other": "{{count}} entries",
     "selectEntry": "Select an entry",
     "emptyEntry": "Empty entry"
+  },
+  "favoritesList": {
+    "title": "Favorites",
+    "empty": "No favorites yet",
+    "emptyHint": "Press ⌘F to favorite an entry"
   }
 }

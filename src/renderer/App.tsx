@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 
+import { FavoritesListOverlay } from '@components/layout/FavoritesListOverlay';
 import { YearlyCalendarOverlay } from '@components/layout/YearlyCalendarOverlay';
 import { useEntryStore } from '@features/entries/entries.store';
 import { useSettingsStore } from '@features/settings';
+import { useFavoritesList } from '@hooks/useFavoritesList';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useYearlyCalendar } from '@hooks/useYearlyCalendar';
 import i18n from '@lib/i18n';
@@ -21,6 +23,7 @@ export default function App() {
   const currentEntry = currentEntryId ? entryLookup[currentEntryId] : null;
 
   const yearlyCalendar = useYearlyCalendar();
+  const favoritesList = useFavoritesList();
 
   useEffect(() => {
     loadSettings();
@@ -59,14 +62,24 @@ export default function App() {
     { preventDefault: true }
   );
 
-  // Register toggle favorite shortcut (Cmd+Shift+F)
+  // Register toggle favorite shortcut (Cmd+F)
   useGlobalHotkeys(
-    'mod+shift+f',
+    'mod+f',
     (event) => {
       event.preventDefault();
       if (currentEntryId) {
         void toggleFavorite(currentEntryId);
       }
+    },
+    { preventDefault: true }
+  );
+
+  // Register favorites list shortcut (Cmd+Shift+F)
+  useGlobalHotkeys(
+    'mod+shift+f',
+    (event) => {
+      event.preventDefault();
+      favoritesList.open();
     },
     { preventDefault: true }
   );
@@ -106,6 +119,17 @@ export default function App() {
         onDayClick={yearlyCalendar.handleDayClick}
         onEntrySelect={yearlyCalendar.handleEntrySelect}
         onClearSelectedDate={yearlyCalendar.clearSelectedDate}
+      />
+      <FavoritesListOverlay
+        isOpen={favoritesList.isOpen}
+        onClose={favoritesList.close}
+        favoriteEntries={favoritesList.favoriteEntries}
+        selectedIndex={favoritesList.selectedIndex}
+        isEmpty={favoritesList.isEmpty}
+        onSelectPrevious={favoritesList.selectPrevious}
+        onSelectNext={favoritesList.selectNext}
+        onNavigateToSelected={favoritesList.navigateToSelected}
+        onUnfavoriteSelected={favoritesList.unfavoriteSelected}
       />
     </>
   );

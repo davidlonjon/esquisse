@@ -92,6 +92,10 @@
           "label": "Calendrier annuel",
           "description": "Ouvrir l'aperçu du calendrier annuel"
         },
+        "showFavoritesList": {
+          "label": "Liste des favoris",
+          "description": "Ouvrir la liste des favoris"
+        },
         "shortcutsPanel": {
           "label": "Panneau des raccourcis",
           "description": "Afficher ou masquer la référence des raccourcis"
@@ -250,5 +254,10 @@
     "entriesCount_other": "{{count}} entrées",
     "selectEntry": "Sélectionner une entrée",
     "emptyEntry": "Entrée vide"
+  },
+  "favoritesList": {
+    "title": "Favoris",
+    "empty": "Aucun favori pour le moment",
+    "emptyHint": "Appuyez sur ⌘F pour ajouter un favori"
   }
 }

@@ -24,6 +24,7 @@ export type ShortcutId =
   | 'closeModal'
   | 'deleteEntry'
   | 'toggleFavorite'
+  | 'showFavoritesList'
   | 'showTimeline'
   | 'showYearlyCalendar'
   | 'toggleEditMode'
@@ -267,7 +268,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: 'toggleFavorite',
-    keys: 'mod+shift+f',
+    keys: 'mod+f',
     description: 'Toggle favorite status for current entry',
     category: 'editor',
     location: 'App.tsx',
@@ -275,6 +276,22 @@ export const SHORTCUTS: Shortcut[] = [
     display: {
       labelKey: 'hud.keyboard.shortcut.toggleFavorite.label',
       descriptionKey: 'hud.keyboard.shortcut.toggleFavorite.description',
+      combos: {
+        mac: '⌘F',
+        windows: 'Ctrl F',
+      },
+    },
+  },
+  {
+    id: 'showFavoritesList',
+    keys: 'mod+shift+f',
+    description: 'Open favorites list (Shift+Cmd+F or Shift+Ctrl+F)',
+    category: 'navigation',
+    location: 'App.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.showFavoritesList.label',
+      descriptionKey: 'hud.keyboard.shortcut.showFavoritesList.description',
       combos: {
         mac: '⇧⌘F',
         windows: 'Shift+Ctrl+F',
