@@ -163,6 +163,10 @@
         "insertLink": {
           "label": "Insérer un lien",
           "description": "Ajouter ou modifier un lien"
+        },
+        "openMoodPicker": {
+          "label": "Humeur",
+          "description": "Ouvrir le sélecteur d'humeur"
         }
       }
     }
@@ -259,5 +263,18 @@
     "title": "Favoris",
     "empty": "Aucun favori pour le moment",
     "emptyHint": "Appuyez sur ⌘F pour ajouter un favori"
+  },
+  "mood": {
+    "button": "Humeur",
+    "pickerLabel": "Sélectionner l'humeur",
+    "awful": "Terrible",
+    "bad": "Mauvais",
+    "neutral": "Neutre",
+    "good": "Bien",
+    "great": "Excellent",
+    "clear": "Effacer l'humeur",
+    "navigate": "naviguer",
+    "select": "sélectionner",
+    "quickSelect": "sélection rapide"
   }
 }

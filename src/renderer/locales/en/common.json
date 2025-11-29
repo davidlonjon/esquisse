@@ -163,6 +163,10 @@
         "insertLink": {
           "label": "Insert link",
           "description": "Add or edit a link"
+        },
+        "openMoodPicker": {
+          "label": "Mood",
+          "description": "Open mood picker"
         }
       }
     }
@@ -259,5 +263,18 @@
     "title": "Favorites",
     "empty": "No favorites yet",
     "emptyHint": "Press ⌘F to favorite an entry"
+  },
+  "mood": {
+    "button": "Mood",
+    "pickerLabel": "Select mood",
+    "awful": "Awful",
+    "bad": "Bad",
+    "neutral": "Neutral",
+    "good": "Good",
+    "great": "Great",
+    "clear": "Clear mood",
+    "navigate": "navigate",
+    "select": "select",
+    "quickSelect": "quick select"
   }
 }

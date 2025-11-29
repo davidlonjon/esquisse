@@ -25,6 +25,7 @@ export type ShortcutId =
   | 'deleteEntry'
   | 'toggleFavorite'
   | 'showFavoritesList'
+  | 'openMoodPicker'
   | 'showTimeline'
   | 'showYearlyCalendar'
   | 'toggleEditMode'
@@ -295,6 +296,22 @@ export const SHORTCUTS: Shortcut[] = [
       combos: {
         mac: '⇧⌘F',
         windows: 'Shift+Ctrl+F',
+      },
+    },
+  },
+  {
+    id: 'openMoodPicker',
+    keys: 'mod+m',
+    description: 'Open mood picker (Cmd+M or Ctrl+M)',
+    category: 'editor',
+    location: 'components/layout/MoodPicker.tsx',
+    globallyControlled: true,
+    display: {
+      labelKey: 'hud.keyboard.shortcut.openMoodPicker.label',
+      descriptionKey: 'hud.keyboard.shortcut.openMoodPicker.description',
+      combos: {
+        mac: '⌘M',
+        windows: 'Ctrl M',
       },
     },
   },

@@ -45,6 +45,32 @@ vi.mock('@hooks/useGlobalHotkeys', () => ({
   useGlobalHotkeys: vi.fn(),
 }));
 
+vi.mock('@providers/hotkeys-provider', () => ({
+  useHotkeysContext: () => ({
+    openModal: vi.fn(),
+    closeModal: vi.fn(),
+    isGloballyEnabled: true,
+  }),
+}));
+
+vi.mock('@hooks/useMoodPicker', () => ({
+  useMoodPicker: () => ({
+    isOpen: false,
+    open: vi.fn(),
+    close: vi.fn(),
+    toggle: vi.fn(),
+    selectedIndex: 2,
+    currentMood: null,
+    selectPrevious: vi.fn(),
+    selectNext: vi.fn(),
+    selectMood: vi.fn(),
+    selectCurrentMood: vi.fn(),
+    selectByNumber: vi.fn(),
+    clearMood: vi.fn(),
+    hasEntry: true,
+  }),
+}));
+
 describe('OverlayHUD', () => {
   const defaultProps = {
     showTop: true,
