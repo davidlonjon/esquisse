@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -150,22 +150,21 @@ describe('useSearch', () => {
 
     expect(mockAdvancedSearch).not.toHaveBeenCalled();
 
-    // Fast-forward time
-    act(() => {
+    // Fast-forward time and flush promises
+    await act(async () => {
       vi.advanceTimersByTime(700);
+      await vi.runAllTimersAsync();
     });
 
-    await waitFor(() => {
-      expect(mockAdvancedSearch).toHaveBeenCalledWith('test query', 'journal-1', {});
-    });
+    expect(mockAdvancedSearch).toHaveBeenCalledWith('test query', 'journal-1', {});
 
     vi.useRealTimers();
   });
 
-  it('clears search when input is empty', () => {
+  it('clears search when input is empty', async () => {
     const { result } = renderHook(() => useSearch());
 
-    act(() => {
+    await act(async () => {
       result.current.handleInputChange('');
     });
 
@@ -203,14 +202,14 @@ describe('useSearch', () => {
       result.current.handleInputChange('test query');
     });
 
-    act(() => {
+    // Fast-forward time and flush promises
+    await act(async () => {
       vi.advanceTimersByTime(700);
+      await vi.runAllTimersAsync();
     });
 
-    await waitFor(() => {
-      expect(mockAdvancedSearch).toHaveBeenCalledWith('test query', 'journal-1', {
-        tags: ['work'],
-      });
+    expect(mockAdvancedSearch).toHaveBeenCalledWith('test query', 'journal-1', {
+      tags: ['work'],
     });
 
     vi.useRealTimers();

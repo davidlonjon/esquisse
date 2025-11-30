@@ -46,13 +46,14 @@ describe('entry.ipc.ts - Entry IPC Handlers', () => {
 
   describe('registerEntryHandlers', () => {
     it('should register all entry IPC handlers', () => {
-      expect(mockHandlers.size).toBe(10);
+      expect(mockHandlers.size).toBe(11);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_CREATE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_GET_ALL)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_GET_BY_ID)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UPDATE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_DELETE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_SEARCH)).toBe(true);
+      expect(mockHandlers.has(IPC_CHANNELS.ENTRY_ADVANCED_SEARCH)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_ARCHIVE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UNARCHIVE)).toBe(true);
       expect(mockHandlers.has(IPC_CHANNELS.ENTRY_UPDATE_STATUS)).toBe(true);
