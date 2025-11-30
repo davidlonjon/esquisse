@@ -257,12 +257,20 @@
     "entriesCount": "{{count}} entrée",
     "entriesCount_other": "{{count}} entrées",
     "selectEntry": "Sélectionner une entrée",
-    "emptyEntry": "Entrée vide"
+    "emptyEntry": "Entrée vide",
+    "previousYear": "Année précédente",
+    "nextYear": "Année suivante",
+    "close": "Fermer le calendrier",
+    "keyboardHints": "← → ↑ ↓ naviguer · Entrée sélectionner · t aujourd'hui · Maj+← → année · Échap fermer"
   },
   "favoritesList": {
     "title": "Favoris",
     "empty": "Aucun favori pour le moment",
-    "emptyHint": "Appuyez sur ⌘F pour ajouter un favori"
+    "emptyHint": "Appuyez sur ⌘F pour ajouter un favori",
+    "keyboardHints": {
+      "withEntries": "↑ ↓ naviguer · Entrée sélectionner · u retirer des favoris · Échap fermer",
+      "empty": "Échap fermer"
+    }
   },
   "mood": {
     "button": "Humeur",
@@ -285,6 +293,9 @@
     "noResults": "Aucun résultat trouvé",
     "noResultsHint": "Essayez une requête différente ou moins de filtres",
     "error": "La recherche a échoué",
+    "actions": {
+      "clearSearch": "Effacer la recherche"
+    },
     "filters": {
       "tag": "étiquette",
       "mood": "humeur",
@@ -301,6 +312,14 @@
         "favorite": "favori",
         "archived": "archivé"
       }
+    },
+    "keyboardHints": {
+      "withResults": "↑ ↓ naviguer · Entrée sélectionner · Échap {{action}}",
+      "empty": "Échap {{action}}",
+      "actions": {
+        "clear": "effacer",
+        "close": "fermer"
+      }
     }
   },
   "common": {
@@ -308,6 +327,11 @@
     "noTags": "Aucune étiquette disponible",
     "clearFilters": "Effacer les filtres",
     "selected": "{{count}} sélectionné",
-    "selected_other": "{{count}} sélectionnés"
+    "selected_other": "{{count}} sélectionnés",
+    "emptyEntry": "Entrée vide",
+    "emptyEntryPreview": "Entrée vide...",
+    "actions": {
+      "close": "Fermer"
+    }
   }
 }

@@ -129,7 +129,7 @@ export function FilterBar({ filters, onFiltersChange, availableTags }: FilterBar
         <button
           onClick={handleClearFilters}
           className="btn btn-xs btn-ghost gap-1 ml-auto"
-          aria-label="Clear filters"
+          aria-label={t('common.clearFilters')}
         >
           <X className="h-3 w-3" />
           {t('common.clearFilters')}

@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DayEntriesPopover } from '@components/ui/DayEntriesPopover';
 import { YearlyCalendar } from '@components/ui/YearlyCalendar';
@@ -52,6 +53,7 @@ export function YearlyCalendarOverlay({
   onEntrySelect,
   onClearSelectedDate,
 }: YearlyCalendarOverlayProps) {
+  const { t } = useTranslation();
   const { openModal, closeModal } = useHotkeysContext();
 
   useEffect(() => {
@@ -174,7 +176,7 @@ export function YearlyCalendarOverlay({
             <button
               onClick={onPreviousYear}
               className="p-2 rounded-lg hover:bg-base-200 transition-colors"
-              aria-label="Previous year"
+              aria-label={t('yearlyCalendar.previousYear')}
             >
               <ChevronLeft className="h-5 w-5 text-base-content/70" />
             </button>
@@ -190,7 +192,7 @@ export function YearlyCalendarOverlay({
               onClick={onNextYear}
               disabled={year >= new Date().getFullYear()}
               className="p-2 rounded-lg hover:bg-base-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Next year"
+              aria-label={t('yearlyCalendar.nextYear')}
             >
               <ChevronRight className="h-5 w-5 text-base-content/70" />
             </button>
@@ -199,7 +201,7 @@ export function YearlyCalendarOverlay({
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-base-200 transition-colors"
-            aria-label="Close"
+            aria-label={t('yearlyCalendar.close')}
           >
             <X className="h-5 w-5 text-base-content/70" />
           </button>
@@ -216,7 +218,7 @@ export function YearlyCalendarOverlay({
 
         {/* Keyboard hints */}
         <p className="mt-6 text-center text-xs text-base-content/40">
-          ← → ↑ ↓ navigate · Enter select · t today · Shift+← → year · Esc close
+          {t('yearlyCalendar.keyboardHints')}
         </p>
       </div>
 

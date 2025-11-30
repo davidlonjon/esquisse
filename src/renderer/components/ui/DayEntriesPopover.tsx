@@ -13,21 +13,17 @@ interface DayEntriesPopoverProps {
   onClose: () => void;
 }
 
-const entryTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
-
 const EntryItem = memo(
   ({
     entry,
     onSelect,
     emptyLabel,
+    timeFormatter,
   }: {
     entry: Entry;
     onSelect: (id: string) => void;
     emptyLabel: string;
+    timeFormatter: Intl.DateTimeFormat;
   }) => {
     const plainText = useMemo(
       () => entry.content.replace(/<[^>]*>?/gm, '').trim() || emptyLabel,
@@ -35,8 +31,8 @@ const EntryItem = memo(
     );
 
     const time = useMemo(
-      () => entryTimeFormatter.format(new Date(entry.createdAt)),
-      [entry.createdAt]
+      () => timeFormatter.format(new Date(entry.createdAt)),
+      [entry.createdAt, timeFormatter]
     );
 
     return (
@@ -59,6 +55,15 @@ export const DayEntriesPopover = memo(
   ({ date, entries, onEntrySelect, onClose }: DayEntriesPopoverProps) => {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'fr' ? fr : enUS;
+    const entryTimeFormatter = useMemo(
+      () =>
+        new Intl.DateTimeFormat(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }),
+      [i18n.language]
+    );
 
     const formattedDate = useMemo(() => format(date, 'EEEE, MMMM d', { locale }), [date, locale]);
 
@@ -88,7 +93,7 @@ export const DayEntriesPopover = memo(
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg hover:bg-base-200 transition-colors"
-              aria-label="Close"
+              aria-label={t('common.actions.close')}
             >
               <X className="h-4 w-4 text-base-content/60" />
             </button>
@@ -101,7 +106,8 @@ export const DayEntriesPopover = memo(
                   key={entry.id}
                   entry={entry}
                   onSelect={onEntrySelect}
-                  emptyLabel={t('yearlyCalendar.emptyEntry')}
+                  emptyLabel={t('common.emptyEntry')}
+                  timeFormatter={entryTimeFormatter}
                 />
               ))}
             </div>

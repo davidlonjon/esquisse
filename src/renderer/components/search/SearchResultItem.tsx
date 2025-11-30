@@ -3,6 +3,7 @@ import type { Locale } from 'date-fns';
 import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 import { memo, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { SearchResult } from '@shared/types';
 
@@ -14,6 +15,7 @@ interface SearchResultItemProps {
 
 export const SearchResultItem = memo(({ result, isSelected, locale }: SearchResultItemProps) => {
   const itemRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isSelected && itemRef.current) {
@@ -26,7 +28,7 @@ export const SearchResultItem = memo(({ result, isSelected, locale }: SearchResu
   // Determine what to display
   const displayText = result.snippet?.text
     ? result.snippet.text
-    : result.title || result.content.replace(/<[^>]*>?/gm, '').trim() || 'Empty entry';
+    : result.title || result.content.replace(/<[^>]*>?/gm, '').trim() || t('common.emptyEntry');
 
   // Highlight matched text if we have snippet info
   const renderText = () => {

@@ -16,16 +16,6 @@ interface TimelineFeedProps {
   filter: TimelineFilter;
 }
 
-// Memoize DateTimeFormat to avoid creating it for every entry render
-const entryDateFormatter = new Intl.DateTimeFormat('en-US', {
-  weekday: 'short',
-  month: 'short',
-  day: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
-
 const TimelineEntry = memo(
   ({
     entry,
@@ -34,6 +24,7 @@ const TimelineEntry = memo(
     onSelect,
     onToggleFavorite,
     onDelete,
+    dateFormatter,
   }: {
     entry: Entry;
     index: number;
@@ -41,13 +32,14 @@ const TimelineEntry = memo(
     onSelect: (index: number, entryId: string) => void;
     onToggleFavorite: (id: string) => void;
     onDelete: (entry: Entry) => void;
+    dateFormatter: Intl.DateTimeFormat;
   }) => {
     const { t } = useTranslation();
 
     // Memoize plain text content to avoid regex on every render
     const plainText = useMemo(
-      () => entry.content.replace(/<[^>]*>?/gm, '') || 'Empty entry...',
-      [entry.content]
+      () => entry.content.replace(/<[^>]*>?/gm, '') || t('common.emptyEntryPreview'),
+      [entry.content, t]
     );
 
     const wordCount = useMemo(() => entry.content.split(/\s+/).length, [entry.content]);
@@ -65,7 +57,7 @@ const TimelineEntry = memo(
       >
         <div className="mb-2 flex items-center justify-between">
           <div className="font-semibold text-base-content">
-            {entryDateFormatter.format(new Date(entry.createdAt))}
+            {dateFormatter.format(new Date(entry.createdAt))}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -119,7 +111,7 @@ const TimelineEntry = memo(
 TimelineEntry.displayName = 'TimelineEntry';
 
 export function TimelineFeed({ filter }: TimelineFeedProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const entries = useEntryStore((state) => state.entries);
   const loadEntries = useEntryStore((state) => state.loadEntries);
   const toggleFavorite = useEntryStore((state) => state.toggleFavorite);
@@ -134,6 +126,27 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
   } = useTimelineDeletion();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+  const entryDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
+    [locale]
+  );
+  const monthLabelFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [locale]
+  );
 
   useEffect(() => {
     loadEntries();
@@ -269,9 +282,7 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
 
         <div className="space-y-6">
           <div className="mb-6 text-sm font-medium text-base-content">
-            {new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(
-              new Date()
-            )}
+            {monthLabelFormatter.format(new Date())}
           </div>
 
           {filteredEntries.length === 0 ? (
@@ -288,6 +299,7 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
                 onSelect={handleSelect}
                 onToggleFavorite={handleToggleFavorite}
                 onDelete={requestDelete}
+                dateFormatter={entryDateFormatter}
               />
             ))
           )}

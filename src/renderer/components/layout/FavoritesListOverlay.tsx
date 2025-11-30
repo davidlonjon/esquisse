@@ -23,7 +23,17 @@ interface FavoritesListOverlayProps {
 }
 
 const FavoriteEntryItem = memo(
-  ({ entry, isSelected, locale }: { entry: Entry; isSelected: boolean; locale: Locale }) => {
+  ({
+    entry,
+    isSelected,
+    locale,
+    emptyLabel,
+  }: {
+    entry: Entry;
+    isSelected: boolean;
+    locale: Locale;
+    emptyLabel: string;
+  }) => {
     const itemRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -32,7 +42,7 @@ const FavoriteEntryItem = memo(
       }
     }, [isSelected]);
 
-    const plainText = entry.content.replace(/<[^>]*>?/gm, '').trim() || 'Empty entry';
+    const plainText = entry.content.replace(/<[^>]*>?/gm, '').trim() || emptyLabel;
     const formattedDate = format(new Date(entry.createdAt), 'MMM d, yyyy · HH:mm', { locale });
 
     return (
@@ -131,6 +141,10 @@ export function FavoritesListOverlay({
     return null;
   }
 
+  const keyboardHint = isEmpty
+    ? t('favoritesList.keyboardHints.empty')
+    : t('favoritesList.keyboardHints.withEntries');
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-base-100/95 backdrop-blur-sm">
       <div className="relative w-full max-w-4xl mx-auto px-6 py-8">
@@ -147,7 +161,7 @@ export function FavoritesListOverlay({
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-base-200 transition-colors"
-            aria-label="Close"
+            aria-label={t('common.actions.close')}
           >
             <X className="h-5 w-5 text-base-content/70" />
           </button>
@@ -168,15 +182,14 @@ export function FavoritesListOverlay({
                 entry={entry}
                 isSelected={index === selectedIndex}
                 locale={locale}
+                emptyLabel={t('common.emptyEntry')}
               />
             ))}
           </div>
         )}
 
         {/* Keyboard hints */}
-        <p className="mt-6 text-center text-xs text-base-content/40">
-          {isEmpty ? 'Esc close' : '↑ ↓ navigate · Enter select · u unfavorite · Esc close'}
-        </p>
+        <p className="mt-6 text-center text-xs text-base-content/40">{keyboardHint}</p>
       </div>
     </div>
   );

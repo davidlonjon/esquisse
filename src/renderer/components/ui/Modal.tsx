@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useOnClickOutside } from '@hooks/useOnClickOutside';
@@ -42,6 +43,7 @@ export function Modal({
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const { openModal, closeModal } = useHotkeysContext();
+  const { t } = useTranslation();
 
   useOnClickOutside(panelRef, () => {
     if (!disableOutsideClose) {
@@ -90,7 +92,7 @@ export function Modal({
 
       {!disableOutsideClose && (
         <form method="dialog" className="modal-backdrop" onClick={onClose}>
-          <button type="button" aria-label="Close" />
+          <button type="button" aria-label={t('common.actions.close')} />
         </form>
       )}
 

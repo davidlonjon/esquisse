@@ -257,12 +257,20 @@
     "entriesCount": "{{count}} entry",
     "entriesCount_other": "{{count}} entries",
     "selectEntry": "Select an entry",
-    "emptyEntry": "Empty entry"
+    "emptyEntry": "Empty entry",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "close": "Close calendar",
+    "keyboardHints": "← → ↑ ↓ navigate · Enter select · t today · Shift+← → year · Esc close"
   },
   "favoritesList": {
     "title": "Favorites",
     "empty": "No favorites yet",
-    "emptyHint": "Press ⌘F to favorite an entry"
+    "emptyHint": "Press ⌘F to favorite an entry",
+    "keyboardHints": {
+      "withEntries": "↑ ↓ navigate · Enter select · u unfavorite · Esc close",
+      "empty": "Esc close"
+    }
   },
   "mood": {
     "button": "Mood",
@@ -285,6 +293,9 @@
     "noResults": "No results found",
     "noResultsHint": "Try a different query or fewer filters",
     "error": "Search failed",
+    "actions": {
+      "clearSearch": "Clear search"
+    },
     "filters": {
       "tag": "tag",
       "mood": "mood",
@@ -301,6 +312,14 @@
         "favorite": "favorite",
         "archived": "archived"
       }
+    },
+    "keyboardHints": {
+      "withResults": "↑ ↓ navigate · Enter select · Esc {{action}}",
+      "empty": "Esc {{action}}",
+      "actions": {
+        "clear": "clear",
+        "close": "close"
+      }
     }
   },
   "common": {
@@ -308,6 +327,11 @@
     "noTags": "No tags available",
     "clearFilters": "Clear filters",
     "selected": "{{count}} selected",
-    "selected_other": "{{count}} selected"
+    "selected_other": "{{count}} selected",
+    "emptyEntry": "Empty entry",
+    "emptyEntryPreview": "Empty entry...",
+    "actions": {
+      "close": "Close"
+    }
   }
 }

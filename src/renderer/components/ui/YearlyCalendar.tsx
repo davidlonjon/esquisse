@@ -44,6 +44,7 @@ const MonthGrid = memo(
     getEntryCountForDate: (date: Date) => number;
     onDayClick: (date: Date) => void;
   }) => {
+    const { t } = useTranslation();
     const monthDate = new Date(year, month, 1);
     const monthStart = startOfMonth(monthDate);
     const monthEnd = endOfMonth(monthDate);
@@ -106,9 +107,7 @@ const MonthGrid = memo(
                     isFocused && 'ring-2 ring-primary bg-primary/10'
                   )}
                   title={
-                    hasEntries
-                      ? `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}`
-                      : undefined
+                    hasEntries ? t('yearlyCalendar.entriesCount', { count: entryCount }) : undefined
                   }
                 >
                   {format(day, 'd')}

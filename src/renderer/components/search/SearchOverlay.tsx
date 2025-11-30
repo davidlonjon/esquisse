@@ -113,6 +113,9 @@ export function SearchOverlay({
 
   const showEmptyState = isEmpty && !isLoading && !hasError;
   const showResults = searchResults.length > 0 && !hasError;
+  const closeActionLabel = inputValue.trim()
+    ? t('search.keyboardHints.actions.clear')
+    : t('search.keyboardHints.actions.close');
 
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center bg-base-100/95 backdrop-blur-sm pt-20">
@@ -133,7 +136,7 @@ export function SearchOverlay({
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-base-200 transition-colors"
-            aria-label="Close"
+            aria-label={t('common.actions.close')}
           >
             <X className="h-5 w-5 text-base-content/70" />
           </button>
@@ -154,7 +157,7 @@ export function SearchOverlay({
               <button
                 onClick={() => onInputChange('')}
                 className="p-1 rounded hover:bg-base-300 transition-colors"
-                aria-label="Clear search"
+                aria-label={t('search.actions.clearSearch')}
               >
                 <X className="h-4 w-4 text-base-content/50" />
               </button>
@@ -210,8 +213,8 @@ export function SearchOverlay({
         {/* Keyboard hints */}
         <p className="text-center text-xs text-base-content/40 flex-shrink-0">
           {showResults
-            ? `↑ ↓ navigate · Enter select · Esc ${inputValue.trim() ? 'clear' : 'close'}`
-            : `Esc ${inputValue.trim() ? 'clear' : 'close'}`}
+            ? t('search.keyboardHints.withResults', { action: closeActionLabel })
+            : t('search.keyboardHints.empty', { action: closeActionLabel })}
         </p>
       </div>
     </div>
