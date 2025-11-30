@@ -210,7 +210,7 @@ export function TagsOverlay({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex bg-background/98 backdrop-blur-md">
+    <div className="fixed inset-0 z-40 flex bg-background/98 backdrop-blur-md overlay-panel-enter">
       {/* Left sidebar - Tags */}
       <div className="w-64 flex-shrink-0 border-r border-base-200 flex flex-col overflow-hidden">
         <div className="p-4 border-b border-base-200">

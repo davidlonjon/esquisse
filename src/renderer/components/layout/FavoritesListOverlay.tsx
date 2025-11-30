@@ -102,7 +102,7 @@ export function FavoritesListOverlay({
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-background/98 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl mx-auto px-6 py-8">
+      <div className="relative w-full max-w-4xl mx-auto px-6 py-8 overlay-panel-enter">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">

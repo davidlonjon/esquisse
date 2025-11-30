@@ -120,7 +120,7 @@ export function SearchOverlay({
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center bg-base-100/95 backdrop-blur-sm pt-20">
       <div
-        className="relative w-full max-w-4xl mx-auto px-6 flex flex-col"
+        className="relative w-full max-w-4xl mx-auto px-6 flex flex-col overlay-panel-enter"
         style={{ height: 'calc(100vh - 10rem)' }}
       >
         {/* Header */}

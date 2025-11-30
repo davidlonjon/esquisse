@@ -33,7 +33,9 @@ export const SearchResultItem = memo(({ result, isSelected, locale }: SearchResu
   // Highlight matched text if we have snippet info
   const renderText = () => {
     if (!result.snippet) {
-      return <p className="text-sm text-base-content line-clamp-3">{displayText}</p>;
+      return (
+        <p className="text-sm text-base-content/80 leading-relaxed line-clamp-3">{displayText}</p>
+      );
     }
 
     const { text, highlightStart, highlightEnd } = result.snippet;
@@ -42,7 +44,7 @@ export const SearchResultItem = memo(({ result, isSelected, locale }: SearchResu
     const after = text.substring(highlightEnd);
 
     return (
-      <p className="text-sm text-base-content line-clamp-3">
+      <p className="text-sm text-base-content/80 leading-relaxed line-clamp-3">
         {before}
         <mark className="bg-warning/30 text-base-content">{match}</mark>
         {after}
