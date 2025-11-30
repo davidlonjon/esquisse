@@ -100,14 +100,20 @@ export function useEditorHud({
   // Labels
   const dateLabel = useMemo(() => {
     if (!currentEntry) {
-      return t('hud.today', { date: dateFormatterWithoutYear.format(new Date()) });
+      const now = new Date();
+      return t('hud.today', {
+        date: `${dateFormatterWithoutYear.format(now)} · ${timeFormatter.format(now)}`,
+      });
     }
     const entryDate = new Date(currentEntry.createdAt);
     const currentYear = new Date().getFullYear();
     const entryYear = entryDate.getFullYear();
-    const formatter = entryYear === currentYear ? dateFormatterWithoutYear : dateFormatterWithYear;
-    return t('hud.entryDate', { date: formatter.format(entryDate) });
-  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, t]);
+    const dateFormatter =
+      entryYear === currentYear ? dateFormatterWithoutYear : dateFormatterWithYear;
+    const dateText = dateFormatter.format(entryDate);
+    const timeText = timeFormatter.format(entryDate);
+    return t('hud.entryDate', { date: `${dateText} · ${timeText}` });
+  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, timeFormatter, t]);
 
   const snapshotLabel = useMemo(
     () =>
@@ -124,8 +130,10 @@ export function useEditorHud({
     const updatedYear = updatedDate.getFullYear();
     const formatter =
       updatedYear === currentYear ? dateFormatterWithoutYear : dateFormatterWithYear;
-    return t('hud.lastUpdated', { date: formatter.format(updatedDate) });
-  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, t]);
+    const dateText = formatter.format(updatedDate);
+    const timeText = timeFormatter.format(updatedDate);
+    return t('hud.lastUpdated', { date: `${dateText} · ${timeText}` });
+  }, [currentEntry, dateFormatterWithYear, dateFormatterWithoutYear, timeFormatter, t]);
 
   const wordCountLabel = useMemo(
     () => t('hud.words', { count: editorWordCount }),
