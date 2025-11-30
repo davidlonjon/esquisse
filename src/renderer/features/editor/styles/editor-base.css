@@ -100,3 +100,37 @@
   pointer-events: none;
   height: 0;
 }
+
+.editor-page-transition {
+  height: 100%;
+}
+
+.editor-page-transition-newer {
+  animation: editor-page-slide-newer 300ms ease-out;
+}
+
+.editor-page-transition-older {
+  animation: editor-page-slide-older 300ms ease-out;
+}
+
+@keyframes editor-page-slide-newer {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes editor-page-slide-older {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
