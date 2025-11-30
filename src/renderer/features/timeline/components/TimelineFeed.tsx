@@ -126,7 +126,8 @@ export function TimelineFeed({ filter }: TimelineFeedProps) {
   } = useTimelineDeletion();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+  const language = i18n?.language ?? 'en';
+  const locale = language === 'fr' ? 'fr-FR' : 'en-US';
   const entryDateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {

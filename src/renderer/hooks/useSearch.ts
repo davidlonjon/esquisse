@@ -93,12 +93,19 @@ export function useSearch() {
         clearTimeout(debounceTimerRef.current);
       }
 
+      // If query and filters are empty, clear immediately without debounce
+      if (!value.trim() && Object.keys(filters).length === 0) {
+        clearSearch();
+        debounceTimerRef.current = null;
+        return;
+      }
+
       // Debounce the search
       debounceTimerRef.current = setTimeout(() => {
         performSearch(value, filters);
       }, DEBOUNCE_MS);
     },
-    [performSearch, filters]
+    [performSearch, filters, clearSearch]
   );
 
   const handleFiltersChange = useCallback(
