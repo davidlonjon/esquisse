@@ -84,9 +84,9 @@
           "label": "Settings",
           "description": "Open the preferences panel"
         },
-        "showTimeline": {
-          "label": "Timeline",
-          "description": "Open the timeline view"
+        "showTagsOverlay": {
+          "label": "Tags",
+          "description": "Browse entries by tags"
         },
         "showYearlyCalendar": {
           "label": "Yearly Calendar",
@@ -221,33 +221,6 @@
       }
     }
   },
-  "timeline": {
-    "collections": {
-      "title": "Collections",
-      "all": "All Entries",
-      "today": "Today",
-      "morning": "Morning Pages",
-      "work": "#work (last 30d)",
-      "favorites": "Favorites",
-      "new": "+ New collection from filter"
-    },
-    "title": "Timeline",
-    "navigation": "↑ ↓ Navigate · Enter open",
-    "feed": {
-      "empty": "No entries found. Start writing!",
-      "favorite": "Favorite",
-      "words": "{{count}} words"
-    },
-    "onThisDay": {
-      "title": "On This Day"
-    },
-    "session": {
-      "title": "Session",
-      "today": "Today",
-      "stats": "Words: {{words}} · Entries: {{entries}} · Focus: {{focus}}m",
-      "feedback": "Minimal feedback to avoid pressure."
-    }
-  },
   "journals": {
     "defaultName": "Personal Journal"
   },
@@ -271,6 +244,22 @@
       "withEntries": "↑ ↓ navigate · Enter select · u unfavorite · Esc close",
       "empty": "Esc close"
     }
+  },
+  "tagsOverlay": {
+    "title": "Tags",
+    "clearAll": "Clear",
+    "noTags": "No tags yet",
+    "noTagsHint": "Add #tags to your entries",
+    "selectTags": "Select tags to filter",
+    "entriesCount": "{{count}} entry",
+    "entriesCount_other": "{{count}} entries",
+    "emptyState": "Select tags from the sidebar",
+    "emptyStateHint": "Use ↑↓ to navigate, Space or Enter to select",
+    "noEntries": "No entries match these tags",
+    "noEntriesHint": "Try selecting fewer tags",
+    "favorite": "Favorite",
+    "words": "{{count}} words",
+    "keyboardHints": "↑↓ navigate · Space/Enter select · Tab switch panel · c clear · Esc close"
   },
   "mood": {
     "button": "Mood",

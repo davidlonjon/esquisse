@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { FavoritesListOverlay } from '@components/layout/FavoritesListOverlay';
+import { TagsOverlay } from '@components/layout/TagsOverlay';
 import { YearlyCalendarOverlay } from '@components/layout/YearlyCalendarOverlay';
 import { SearchOverlay } from '@components/search/SearchOverlay';
 import { useEntryStore } from '@features/entries/entries.store';
@@ -8,6 +9,7 @@ import { useSettingsStore } from '@features/settings';
 import { useFavoritesList } from '@hooks/useFavoritesList';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useSearch } from '@hooks/useSearch';
+import { useTagsOverlay } from '@hooks/useTagsOverlay';
 import { useYearlyCalendar } from '@hooks/useYearlyCalendar';
 import i18n from '@lib/i18n';
 import { useTheme } from '@providers/theme-provider';
@@ -26,6 +28,7 @@ export default function App() {
 
   const yearlyCalendar = useYearlyCalendar();
   const favoritesList = useFavoritesList();
+  const tagsOverlay = useTagsOverlay();
   const search = useSearch();
 
   useEffect(() => {
@@ -55,12 +58,12 @@ export default function App() {
     { preventDefault: true }
   );
 
-  // Register timeline shortcut (Cmd/Ctrl+Shift+T)
+  // Register tags overlay shortcut (Cmd/Ctrl+Shift+T)
   useGlobalHotkeys(
     'mod+shift+t',
     (event) => {
       event.preventDefault();
-      router.navigate({ to: '/timeline' });
+      tagsOverlay.open();
     },
     { preventDefault: true }
   );
@@ -143,6 +146,30 @@ export default function App() {
         onSelectNext={favoritesList.selectNext}
         onNavigateToSelected={favoritesList.navigateToSelected}
         onUnfavoriteSelected={favoritesList.unfavoriteSelected}
+      />
+      <TagsOverlay
+        isOpen={tagsOverlay.isOpen}
+        onClose={tagsOverlay.close}
+        tagsWithCounts={tagsOverlay.tagsWithCounts}
+        selectedTags={tagsOverlay.selectedTags}
+        onToggleTag={tagsOverlay.toggleTag}
+        onClearSelectedTags={tagsOverlay.clearSelectedTags}
+        filteredEntries={tagsOverlay.filteredEntries}
+        selectedEntryIndex={tagsOverlay.selectedEntryIndex}
+        focusedTagIndex={tagsOverlay.focusedTagIndex}
+        focusArea={tagsOverlay.focusArea}
+        onFocusPreviousTag={tagsOverlay.focusPreviousTag}
+        onFocusNextTag={tagsOverlay.focusNextTag}
+        onSelectFocusedTag={tagsOverlay.selectFocusedTag}
+        onSelectPreviousEntry={tagsOverlay.selectPreviousEntry}
+        onSelectNextEntry={tagsOverlay.selectNextEntry}
+        onNavigateToSelectedEntry={tagsOverlay.navigateToSelectedEntry}
+        onSwitchFocusToEntries={tagsOverlay.switchFocusToEntries}
+        onSwitchFocusToTags={tagsOverlay.switchFocusToTags}
+        onToggleFavorite={tagsOverlay.handleToggleFavorite}
+        onEntryClick={tagsOverlay.handleEntryClick}
+        hasNoTags={tagsOverlay.hasNoTags}
+        hasNoEntries={tagsOverlay.hasNoEntries}
       />
       <SearchOverlay
         isOpen={search.isOpen}

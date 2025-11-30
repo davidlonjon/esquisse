@@ -84,9 +84,9 @@
           "label": "Paramètres",
           "description": "Ouvrir le panneau de préférences"
         },
-        "showTimeline": {
-          "label": "Chronologie",
-          "description": "Ouvrir la vue chronologique"
+        "showTagsOverlay": {
+          "label": "Étiquettes",
+          "description": "Parcourir les entrées par étiquettes"
         },
         "showYearlyCalendar": {
           "label": "Calendrier annuel",
@@ -221,33 +221,6 @@
       }
     }
   },
-  "timeline": {
-    "collections": {
-      "title": "Collections",
-      "all": "Toutes les entrées",
-      "today": "Aujourd'hui",
-      "morning": "Pages du matin",
-      "work": "#travail (30 derniers jours)",
-      "favorites": "Favoris",
-      "new": "+ Nouvelle collection depuis filtre"
-    },
-    "title": "Chronologie",
-    "navigation": "↑ ↓ Naviguer · Entrée ouvrir",
-    "feed": {
-      "empty": "Aucune entrée trouvée. Commencez à écrire !",
-      "favorite": "Favori",
-      "words": "{{count}} mots"
-    },
-    "onThisDay": {
-      "title": "Ce jour-là"
-    },
-    "session": {
-      "title": "Session",
-      "today": "Aujourd'hui",
-      "stats": "Mots : {{words}} · Entrées : {{entries}} · Focus : {{focus}}m",
-      "feedback": "Retour minimal pour éviter la pression."
-    }
-  },
   "journals": {
     "defaultName": "Journal personnel"
   },
@@ -271,6 +244,22 @@
       "withEntries": "↑ ↓ naviguer · Entrée sélectionner · u retirer des favoris · Échap fermer",
       "empty": "Échap fermer"
     }
+  },
+  "tagsOverlay": {
+    "title": "Étiquettes",
+    "clearAll": "Effacer",
+    "noTags": "Aucune étiquette",
+    "noTagsHint": "Ajoutez des #étiquettes à vos entrées",
+    "selectTags": "Sélectionnez des étiquettes pour filtrer",
+    "entriesCount": "{{count}} entrée",
+    "entriesCount_other": "{{count}} entrées",
+    "emptyState": "Sélectionnez des étiquettes dans la barre latérale",
+    "emptyStateHint": "Utilisez ↑↓ pour naviguer, Espace ou Entrée pour sélectionner",
+    "noEntries": "Aucune entrée ne correspond à ces étiquettes",
+    "noEntriesHint": "Essayez de sélectionner moins d'étiquettes",
+    "favorite": "Favori",
+    "words": "{{count}} mots",
+    "keyboardHints": "↑↓ naviguer · Espace/Entrée sélectionner · Tab changer de panneau · c effacer · Échap fermer"
   },
   "mood": {
     "button": "Humeur",

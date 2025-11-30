@@ -8,7 +8,6 @@ import {
 
 import { RootLayout } from '@/layouts';
 import { EditorPage } from '@pages/EditorPage';
-import { TimelinePage } from '@pages/TimelinePage';
 
 interface AppRouterContext {
   searchOpen?: () => void;
@@ -41,16 +40,7 @@ const settingsRoute = createRoute({
   ),
 });
 
-/**
- * Timeline route - Eagerly loaded for instant switching
- */
-const timelineRoute = createRoute({
-  getParentRoute: () => RootRoute,
-  path: '/timeline',
-  component: TimelinePage,
-});
-
-const routeTree = RootRoute.addChildren([editorRoute, settingsRoute, timelineRoute]);
+const routeTree = RootRoute.addChildren([editorRoute, settingsRoute]);
 
 export const router = createRouter({
   routeTree,

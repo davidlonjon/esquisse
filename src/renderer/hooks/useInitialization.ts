@@ -45,8 +45,8 @@ export function useInitialization({
 
         setCurrentJournal(journal);
         await loadEntries(journal.id);
-        // Only clear current entry if we haven't selected one already (e.g. from timeline)
-        // This prevents overwriting the selection when navigating from Timeline -> Editor
+        // Only clear current entry if we haven't selected one already (e.g. from an overlay)
+        // This prevents overwriting the selection when navigating from overlays -> Editor
         // setCurrentEntry(null);
         // setContent(''); // Removed
         showHudTemporarily();

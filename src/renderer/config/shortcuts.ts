@@ -27,7 +27,7 @@ export type ShortcutId =
   | 'toggleFavorite'
   | 'showFavoritesList'
   | 'openMoodPicker'
-  | 'showTimeline'
+  | 'showTagsOverlay'
   | 'showYearlyCalendar'
   | 'toggleEditMode'
   | 'changeDatePicker'
@@ -119,15 +119,15 @@ export const SHORTCUTS: Shortcut[] = [
     },
   },
   {
-    id: 'showTimeline',
+    id: 'showTagsOverlay',
     keys: 'mod+shift+t',
-    description: 'Open timeline (Shift+Cmd+T or Shift+Ctrl+T)',
+    description: 'Open tags overlay (Shift+Cmd+T or Shift+Ctrl+T)',
     category: 'navigation',
     location: 'App.tsx',
     globallyControlled: true,
     display: {
-      labelKey: 'hud.keyboard.shortcut.showTimeline.label',
-      descriptionKey: 'hud.keyboard.shortcut.showTimeline.description',
+      labelKey: 'hud.keyboard.shortcut.showTagsOverlay.label',
+      descriptionKey: 'hud.keyboard.shortcut.showTagsOverlay.description',
       combos: {
         mac: '⇧⌘T',
         windows: 'Shift+Ctrl+T',
