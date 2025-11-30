@@ -45,10 +45,6 @@ export function Tooltip({
     }, delay);
   }, [delay]);
 
-  const handleClick = useCallback(() => {
-    hideTooltip();
-  }, [hideTooltip]);
-
   // Calculate tooltip position based on trigger element
   useEffect(() => {
     if (!isVisible || !triggerRef.current) return;
@@ -105,7 +101,8 @@ export function Tooltip({
       onMouseLeave={hideTooltip}
       onFocus={showTooltip}
       onBlur={hideTooltip}
-      onClick={handleClick}
+      onClick={hideTooltip}
+      onPointerDown={hideTooltip}
     >
       {children}
       {tooltipContent && createPortal(tooltipContent, document.body)}
