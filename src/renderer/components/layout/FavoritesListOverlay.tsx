@@ -1,14 +1,12 @@
-import clsx from 'clsx';
-import type { Locale } from 'date-fns';
-import { format } from 'date-fns';
 import { enUS, fr } from 'date-fns/locale';
 import { Heart, X } from 'lucide-react';
-import { memo, useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
 import { useHotkeysContext } from '@providers/hotkeys-provider';
 import type { Entry } from '@shared/types';
+import { EntryCard } from '@ui';
 
 interface FavoritesListOverlayProps {
   isOpen: boolean;
@@ -20,52 +18,8 @@ interface FavoritesListOverlayProps {
   onSelectNext: () => void;
   onNavigateToSelected: () => void;
   onUnfavoriteSelected: () => void;
+  onToggleFavorite: (entryId: string) => void;
 }
-
-const FavoriteEntryItem = memo(
-  ({
-    entry,
-    isSelected,
-    locale,
-    emptyLabel,
-  }: {
-    entry: Entry;
-    isSelected: boolean;
-    locale: Locale;
-    emptyLabel: string;
-  }) => {
-    const itemRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      if (isSelected && itemRef.current) {
-        itemRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
-    }, [isSelected]);
-
-    const plainText = entry.content.replace(/<[^>]*>?/gm, '').trim() || emptyLabel;
-    const formattedDate = format(new Date(entry.createdAt), 'MMM d, yyyy · HH:mm', { locale });
-
-    return (
-      <div
-        ref={itemRef}
-        className={clsx(
-          'px-4 py-3 rounded-lg transition-colors',
-          isSelected ? 'bg-primary/10 ring-1 ring-primary' : 'hover:bg-base-200'
-        )}
-      >
-        <div className="flex items-start gap-3">
-          <Heart className="h-4 w-4 mt-1 text-error fill-error shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-base-content line-clamp-3">{plainText}</p>
-            <p className="text-xs text-base-content/50 mt-1.5">{formattedDate}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-);
-
-FavoriteEntryItem.displayName = 'FavoriteEntryItem';
 
 export function FavoritesListOverlay({
   isOpen,
@@ -77,6 +31,7 @@ export function FavoritesListOverlay({
   onSelectNext,
   onNavigateToSelected,
   onUnfavoriteSelected,
+  onToggleFavorite,
 }: FavoritesListOverlayProps) {
   const { t, i18n } = useTranslation();
   const { openModal, closeModal } = useHotkeysContext();
@@ -175,14 +130,15 @@ export function FavoritesListOverlay({
             <p className="text-sm text-base-content/40">{t('favoritesList.emptyHint')}</p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-[70vh] overflow-y-auto p-1 -m-1">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 -m-1">
             {favoriteEntries.map((entry, index) => (
-              <FavoriteEntryItem
+              <EntryCard
                 key={entry.id}
                 entry={entry}
                 isSelected={index === selectedIndex}
                 locale={locale}
                 emptyLabel={t('common.emptyEntry')}
+                onToggleFavorite={onToggleFavorite}
               />
             ))}
           </div>

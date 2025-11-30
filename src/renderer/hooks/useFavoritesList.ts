@@ -53,16 +53,40 @@ export function useFavoritesList() {
     }
   }, [favoriteEntries, selectedIndex, setCurrentEntryId, close]);
 
+  const toggleFavoriteEntry = useCallback(
+    (entryId: string) => {
+      const index = favoriteEntries.findIndex((e) => e.id === entryId);
+
+      void toggleFavorite(entryId);
+
+      if (index === -1) {
+        return;
+      }
+
+      setSelectedIndex((current) => {
+        if (current === index) {
+          if (index >= favoriteEntries.length - 1 && index > 0) {
+            return current - 1;
+          }
+          return current;
+        }
+
+        if (current > index) {
+          return current - 1;
+        }
+
+        return current;
+      });
+    },
+    [favoriteEntries, toggleFavorite]
+  );
+
   const unfavoriteSelected = useCallback(() => {
     const entry = favoriteEntries[selectedIndex];
     if (entry) {
-      void toggleFavorite(entry.id);
-      // Adjust selection if we removed the last item
-      if (selectedIndex >= favoriteEntries.length - 1 && selectedIndex > 0) {
-        setSelectedIndex(selectedIndex - 1);
-      }
+      toggleFavoriteEntry(entry.id);
     }
-  }, [favoriteEntries, selectedIndex, toggleFavorite]);
+  }, [favoriteEntries, selectedIndex, toggleFavoriteEntry]);
 
   const selectedEntry = favoriteEntries[selectedIndex] ?? null;
 
@@ -77,6 +101,7 @@ export function useFavoritesList() {
     selectNext,
     navigateToSelected,
     unfavoriteSelected,
+    toggleFavoriteEntry,
     isEmpty: favoriteEntries.length === 0,
   };
 }

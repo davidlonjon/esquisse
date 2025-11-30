@@ -146,6 +146,7 @@ export default function App() {
         onSelectNext={favoritesList.selectNext}
         onNavigateToSelected={favoritesList.navigateToSelected}
         onUnfavoriteSelected={favoritesList.unfavoriteSelected}
+        onToggleFavorite={favoritesList.toggleFavoriteEntry}
       />
       <TagsOverlay
         isOpen={tagsOverlay.isOpen}
