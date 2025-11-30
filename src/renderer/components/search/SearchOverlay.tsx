@@ -124,7 +124,7 @@ export function SearchOverlay({
         style={{ height: 'calc(100vh - 10rem)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 flex-shrink-0">
+        <div className="flex items-center justify-between mb-6 shrink-0">
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold text-base-content">{t('search.title')}</h2>
@@ -143,13 +143,13 @@ export function SearchOverlay({
         </div>
 
         {/* Search Input */}
-        <div className="relative mb-6 flex-shrink-0">
+        <div className="relative mb-6 shrink-0">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder={t('search.placeholder')}
-            className="w-full px-4 py-3 pr-10 rounded-lg bg-base-200 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-3 pr-10 rounded-full border border-base-300 bg-base-200/90 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary shadow-sm"
             autoFocus
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -167,7 +167,7 @@ export function SearchOverlay({
         </div>
 
         {/* Filter controls */}
-        <div className="mb-6 flex-shrink-0">
+        <div className="mb-6 shrink-0">
           <FilterBar
             filters={filters}
             onFiltersChange={onFiltersChange}
@@ -221,7 +221,7 @@ export function SearchOverlay({
         </div>
 
         {/* Keyboard hints */}
-        <p className="text-center text-xs text-base-content/40 flex-shrink-0">
+        <p className="text-center text-xs text-base-content/40 shrink-0">
           {showResults
             ? t('search.keyboardHints.withResults', { action: closeActionLabel })
             : t('search.keyboardHints.empty', { action: closeActionLabel })}

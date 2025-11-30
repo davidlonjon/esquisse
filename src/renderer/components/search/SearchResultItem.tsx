@@ -54,8 +54,10 @@ export const SearchResultItem = memo(({ result, isSelected, locale }: SearchResu
     <div
       ref={itemRef}
       className={clsx(
-        'px-4 py-3 rounded-lg transition-colors',
-        isSelected ? 'bg-primary/10 ring-1 ring-primary' : 'hover:bg-base-200'
+        'rounded-xl border px-4 py-3 bg-card/80 transition-all',
+        isSelected
+          ? 'border-primary bg-primary/5 shadow-warm-md ring-1 ring-primary/40'
+          : 'border-transparent hover:bg-base-200/80 hover:border-primary/20 hover:shadow-warm-sm'
       )}
     >
       <div className="flex items-start gap-3">

@@ -60,10 +60,14 @@ const TagItem = memo(
         ref={itemRef}
         onClick={onClick}
         className={clsx(
-          'flex w-full items-center justify-between px-4 py-3 rounded-lg text-sm transition-colors',
-          isSelected && 'bg-primary/10 text-primary',
-          isFocused && !isSelected && 'ring-1 ring-primary/50',
-          !isSelected && !isFocused && 'hover:bg-base-200 text-base-content/70'
+          'flex w-full items-center justify-between px-4 py-2.5 rounded-full border text-sm transition-all',
+          isSelected && 'border-primary bg-primary/10 text-primary shadow-warm-sm',
+          isFocused &&
+            !isSelected &&
+            'border-primary/40 bg-base-200/80 text-base-content shadow-warm-sm',
+          !isSelected &&
+            !isFocused &&
+            'border-transparent bg-base-100/90 text-base-content/70 hover:bg-base-200/90 hover:border-base-300 hover:shadow-warm-sm'
         )}
       >
         <span className="flex items-center gap-2">
