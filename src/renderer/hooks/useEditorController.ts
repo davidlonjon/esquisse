@@ -224,6 +224,7 @@ export function useEditorController(): EditorController {
     canNavigatePrevious: navigation.canNavigatePrevious,
     canNavigateNext: navigation.canNavigateNext,
     onApiError: setApiError,
+    onOpenSearch: undefined, // Will be provided by EditorPage
   });
 
   const placeholder = t('editor.placeholder');

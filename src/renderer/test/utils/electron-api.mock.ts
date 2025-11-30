@@ -59,6 +59,7 @@ export const createElectronApiMock = (overrides: ElectronApiOverrides = {}): Ele
     updateEntry: vi.fn(() => success(entry)),
     deleteEntry: vi.fn(() => success(true)),
     searchEntries: vi.fn(() => success([entry])),
+    advancedSearch: vi.fn(() => success([entry])),
     archiveEntry: vi.fn(() => success({ ...entry, status: 'archived' as const })),
     unarchiveEntry: vi.fn(() => success({ ...entry, status: 'active' as const })),
     updateEntryStatus: vi.fn((_, status) => success({ ...entry, status })),

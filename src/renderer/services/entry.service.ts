@@ -1,5 +1,13 @@
-import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
+import type {
+  AdvancedSearchInput,
+  CreateEntryInput,
+  Entry,
+  EntryStatus,
+  SearchResult,
+  UpdateEntryInput,
+} from '@shared/types';
 import {
+  AdvancedSearchInputSchema,
   CreateEntryInputSchema,
   EntryStatusSchema,
   IdSchema,
@@ -39,6 +47,12 @@ export const entryService = {
     const validatedQuery = SearchQuerySchema.parse(query);
     const api = getWindowAPI();
     return resolveResult(await api.searchEntries(validatedQuery));
+  },
+
+  async advancedSearch(input: AdvancedSearchInput): Promise<SearchResult[]> {
+    const validated = AdvancedSearchInputSchema.parse(input);
+    const api = getWindowAPI();
+    return resolveResult(await api.advancedSearch(validated));
   },
 
   async archive(id: string): Promise<Entry> {

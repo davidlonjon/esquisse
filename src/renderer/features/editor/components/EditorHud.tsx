@@ -19,6 +19,7 @@ interface EditorHUDProps {
   canNavigateNext?: boolean;
   currentEntryCreatedAt?: string;
   onDateTimeChange?: (isoString: string) => void;
+  onOpenSearch?: () => void;
 }
 
 export function EditorHud({
@@ -40,6 +41,7 @@ export function EditorHud({
   canNavigateNext,
   currentEntryCreatedAt,
   onDateTimeChange,
+  onOpenSearch,
 }: EditorHUDProps) {
   return (
     <OverlayHUD
@@ -62,6 +64,7 @@ export function EditorHud({
       canNavigateNext={canNavigateNext}
       currentEntryCreatedAt={currentEntryCreatedAt}
       onDateTimeChange={onDateTimeChange}
+      onOpenSearch={onOpenSearch}
     />
   );
 }

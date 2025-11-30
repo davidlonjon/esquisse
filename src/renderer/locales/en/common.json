@@ -276,5 +276,36 @@
     "navigate": "navigate",
     "select": "select",
     "quickSelect": "quick select"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search entries...",
+    "syntaxHelp": "Use filters to narrow your search:",
+    "syntaxExamples": "tag:work mood:happy date:2024-01 is:favorite",
+    "noResults": "No results found",
+    "noResultsHint": "Try a different query or fewer filters",
+    "error": "Search failed",
+    "filters": {
+      "tag": "tag",
+      "mood": "mood",
+      "date": "date",
+      "is": "is",
+      "moods": {
+        "happy": "happy",
+        "good": "good",
+        "neutral": "neutral",
+        "bad": "bad",
+        "sad": "sad"
+      },
+      "states": {
+        "favorite": "favorite",
+        "archived": "archived"
+      }
+    }
+  },
+  "common": {
+    "any": "Any",
+    "noTags": "No tags available",
+    "clearFilters": "Clear filters"
   }
 }

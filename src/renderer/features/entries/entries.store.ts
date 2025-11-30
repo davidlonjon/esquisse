@@ -3,13 +3,22 @@ import { immer } from 'zustand/middleware/immer';
 
 import { createAsyncSlice, toAsyncSlice, withAsyncHandler, type AsyncSlice } from '@lib/store';
 import { entryService } from '@services/entry.service';
-import type { CreateEntryInput, Entry, UpdateEntryInput } from '@shared/types';
+import type {
+  AdvancedSearchInput,
+  CreateEntryInput,
+  Entry,
+  ParsedSearchQuery,
+  SearchFilter,
+  SearchResult,
+  UpdateEntryInput,
+} from '@shared/types';
 
 type EntryLookup = Record<string, Entry>;
 
 interface EntrySearchState {
-  query: string;
-  results: Entry[];
+  rawQuery: string;
+  parsedQuery: ParsedSearchQuery | null;
+  results: SearchResult[];
   status: AsyncSlice;
 }
 
@@ -34,6 +43,11 @@ interface EntryState {
   updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Entry>;
   deleteEntry: (id: string) => Promise<void>;
   searchEntries: (query: string) => Promise<Entry[]>;
+  advancedSearch: (
+    rawQuery: string,
+    journalId?: string,
+    filters?: SearchFilter
+  ) => Promise<SearchResult[]>;
   clearSearch: () => void;
   setCurrentEntry: (entry: Entry | null) => void;
   setCurrentEntryId: (entryId: string | null) => void;
@@ -59,7 +73,8 @@ const createInitialState = (): EntryState => ({
   showArchived: false,
   archivedEntries: [],
   search: {
-    query: '',
+    rawQuery: '',
+    parsedQuery: null,
     results: [],
     status: createAsyncSlice(),
   },
@@ -81,6 +96,7 @@ const createInitialState = (): EntryState => ({
     throw new Error('Store not initialized');
   },
   searchEntries: async () => [],
+  advancedSearch: async () => [],
   clearSearch: () => undefined,
   setCurrentEntry: () => undefined,
   setCurrentEntryId: () => undefined,
@@ -194,7 +210,8 @@ export const useEntryStore = create(
         return await withAsyncHandler(set, 'search', async () => {
           const results = await entryService.search(query);
           set((state) => {
-            state.search.query = query;
+            state.search.rawQuery = query;
+            state.search.parsedQuery = null;
             state.search.results = results;
             state.search.status = toAsyncSlice('success');
           });
@@ -210,9 +227,46 @@ export const useEntryStore = create(
       }
     },
 
+    advancedSearch: async (rawQuery, journalId, filters) => {
+      set((state) => {
+        state.search.status = toAsyncSlice('loading');
+      });
+
+      try {
+        return await withAsyncHandler(set, 'search', async () => {
+          // Build parsed query with full-text search and UI filters
+          const parsedQuery: ParsedSearchQuery = {
+            fullTextQuery: rawQuery.trim(),
+            filters: filters || {},
+          };
+
+          const input: AdvancedSearchInput = {
+            query: parsedQuery,
+            journalId,
+          };
+
+          const results = await entryService.advancedSearch(input);
+          set((state) => {
+            state.search.rawQuery = rawQuery;
+            state.search.parsedQuery = parsedQuery;
+            state.search.results = results;
+            state.search.status = toAsyncSlice('success');
+          });
+          return results;
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        set((state) => {
+          state.search.status = toAsyncSlice('error', message);
+        });
+        throw error;
+      }
+    },
+
     clearSearch: () =>
       set((state) => {
-        state.search.query = '';
+        state.search.rawQuery = '';
+        state.search.parsedQuery = null;
         state.search.results = [];
         state.search.status = createAsyncSlice();
         state.progress.search = createAsyncSlice();

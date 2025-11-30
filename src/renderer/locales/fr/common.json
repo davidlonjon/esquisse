@@ -276,5 +276,36 @@
     "navigate": "naviguer",
     "select": "sélectionner",
     "quickSelect": "sélection rapide"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Rechercher des entrées...",
+    "syntaxHelp": "Utilisez des filtres pour affiner votre recherche :",
+    "syntaxExamples": "étiquette:travail humeur:excellent date:2024-01 est:favori",
+    "noResults": "Aucun résultat trouvé",
+    "noResultsHint": "Essayez une requête différente ou moins de filtres",
+    "error": "La recherche a échoué",
+    "filters": {
+      "tag": "étiquette",
+      "mood": "humeur",
+      "date": "date",
+      "is": "est",
+      "moods": {
+        "happy": "excellent",
+        "good": "bien",
+        "neutral": "neutre",
+        "bad": "mauvais",
+        "sad": "terrible"
+      },
+      "states": {
+        "favorite": "favori",
+        "archived": "archivé"
+      }
+    }
+  },
+  "common": {
+    "any": "Tous",
+    "noTags": "Aucune étiquette disponible",
+    "clearFilters": "Effacer les filtres"
   }
 }

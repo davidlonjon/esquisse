@@ -27,6 +27,7 @@ interface HudViewModel {
   canNavigateNext: boolean;
   currentEntryCreatedAt?: string;
   onDateTimeChange?: (isoString: string) => void;
+  onOpenSearch?: () => void;
 }
 
 interface UseEditorHudOptions {
@@ -42,6 +43,7 @@ interface UseEditorHudOptions {
   canNavigatePrevious: boolean;
   canNavigateNext: boolean;
   onApiError: (message: string) => void;
+  onOpenSearch?: () => void;
 }
 
 export function useEditorHud({
@@ -57,6 +59,7 @@ export function useEditorHud({
   canNavigatePrevious,
   canNavigateNext,
   onApiError,
+  onOpenSearch,
 }: UseEditorHudOptions): HudViewModel {
   const { t, i18n } = useTranslation();
   const currentEntry = useEntryStore(selectCurrentEntry);
@@ -171,5 +174,6 @@ export function useEditorHud({
     canNavigateNext,
     currentEntryCreatedAt: currentEntry?.createdAt,
     onDateTimeChange: handleDateTimeChange,
+    onOpenSearch,
   };
 }

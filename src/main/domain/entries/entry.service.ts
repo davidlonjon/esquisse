@@ -3,7 +3,14 @@
  * Business logic layer for entry operations
  */
 
-import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
+import type {
+  AdvancedSearchInput,
+  CreateEntryInput,
+  Entry,
+  EntryStatus,
+  SearchResult,
+  UpdateEntryInput,
+} from '@shared/types';
 
 import type { PaginationOptions } from '../../database/utils';
 import type { IJournalRepository } from '../journals/journal.repository.interface';
@@ -88,6 +95,16 @@ export class EntryService {
    */
   searchEntries(query: string, options?: PaginationOptions): Entry[] {
     return this.entryRepository.search(query, options);
+  }
+
+  /**
+   * Advanced search with filters and context snippets
+   */
+  advancedSearchEntries(input: AdvancedSearchInput): SearchResult[] {
+    if (input.journalId && !this.journalRepository.exists(input.journalId)) {
+      throw new Error(`Journal with id ${input.journalId} not found`);
+    }
+    return this.entryRepository.advancedSearch(input);
   }
 
   /**

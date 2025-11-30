@@ -133,3 +133,25 @@ export const BackupInfoSchema = z.object({
   date: z.string(),
   size: z.number().int(),
 });
+
+// Advanced search validation schemas
+export const SearchFilterSchema = z.object({
+  tags: z.array(z.string()).optional(),
+  mood: MoodValueSchema.nullable().optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+  isFavorite: z.boolean().optional(),
+  isArchived: z.boolean().optional(),
+});
+
+export const ParsedSearchQuerySchema = z.object({
+  fullTextQuery: z.string(),
+  filters: SearchFilterSchema,
+});
+
+export const AdvancedSearchInputSchema = z.object({
+  query: ParsedSearchQuerySchema,
+  journalId: z.string().optional(),
+  limit: z.number().int().positive().optional(),
+  offset: z.number().int().nonnegative().optional(),
+});

@@ -17,6 +17,7 @@ export const IPC_CHANNELS = {
   ENTRY_UPDATE: 'entry:update',
   ENTRY_DELETE: 'entry:delete',
   ENTRY_SEARCH: 'entry:search',
+  ENTRY_ADVANCED_SEARCH: 'entry:advancedSearch',
   ENTRY_ARCHIVE: 'entry:archive',
   ENTRY_UNARCHIVE: 'entry:unarchive',
   ENTRY_UPDATE_STATUS: 'entry:updateStatus',

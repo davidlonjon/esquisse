@@ -19,6 +19,7 @@ export type ShortcutId =
   | 'toggleHudPin'
   | 'toggleShortcutsPanel'
   | 'toggleHelpMenu'
+  | 'search'
   | 'searchEntries'
   | 'commandPalette'
   | 'closeModal'

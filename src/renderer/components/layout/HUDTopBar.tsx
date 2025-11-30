@@ -1,4 +1,4 @@
-import { BookOpen, Heart, Pencil } from 'lucide-react';
+import { BookOpen, Heart, Pencil, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useDatePicker } from '@hooks/useDatePicker';
@@ -26,6 +26,7 @@ interface HUDTopBarProps {
   canNavigateNext?: boolean;
   currentEntryCreatedAt?: string;
   onDateTimeChange?: (isoString: string) => void;
+  onOpenSearch?: () => void;
 }
 
 export function HUDTopBar({
@@ -43,11 +44,13 @@ export function HUDTopBar({
   canNavigateNext = true,
   currentEntryCreatedAt,
   onDateTimeChange,
+  onOpenSearch,
 }: HUDTopBarProps) {
   const { t } = useTranslation();
   const editModeShortcut = getShortcutCombo('toggleEditMode') ?? '⇧⌘E';
   const favoriteShortcut = getShortcutCombo('toggleFavorite') ?? '⇧⌘F';
   const moodShortcut = getShortcutCombo('openMoodPicker') ?? '⌘M';
+  const searchShortcut = getShortcutCombo('search') ?? '⌘K';
   const datePickerShortcut = '⇧⌘D';
 
   // Mood picker state
@@ -69,16 +72,28 @@ export function HUDTopBar({
 
   return (
     <>
-      {/* Left - Navigation */}
-      {onNavigatePrevious && onNavigateNext && (
-        <HUDNavigationButtons
-          onNavigatePrevious={onNavigatePrevious}
-          onNavigateNext={onNavigateNext}
-          disabled={disabled}
-          canNavigatePrevious={canNavigatePrevious}
-          canNavigateNext={canNavigateNext}
-        />
-      )}
+      {/* Left - Search and Navigation */}
+      <div className="pointer-events-auto flex items-center gap-2">
+        {onOpenSearch && (
+          <HUDButton
+            onClick={onOpenSearch}
+            disabled={disabled}
+            tooltip="Search"
+            shortcut={searchShortcut}
+            icon={Search}
+            variant="default"
+          />
+        )}
+        {onNavigatePrevious && onNavigateNext && (
+          <HUDNavigationButtons
+            onNavigatePrevious={onNavigatePrevious}
+            onNavigateNext={onNavigateNext}
+            disabled={disabled}
+            canNavigatePrevious={canNavigatePrevious}
+            canNavigateNext={canNavigateNext}
+          />
+        )}
+      </div>
 
       {/* Center - Date and Session */}
       <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">

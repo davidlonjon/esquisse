@@ -3,7 +3,14 @@
  * Defines the contract for entry data access operations
  */
 
-import type { CreateEntryInput, Entry, EntryStatus, UpdateEntryInput } from '@shared/types';
+import type {
+  AdvancedSearchInput,
+  CreateEntryInput,
+  Entry,
+  EntryStatus,
+  SearchResult,
+  UpdateEntryInput,
+} from '@shared/types';
 
 import type { PaginationOptions } from '../../database/utils';
 
@@ -45,6 +52,12 @@ export interface IEntryRepository {
    * Searches in title, content, and tags
    */
   search(query: string, options?: PaginationOptions): Entry[];
+
+  /**
+   * Advanced search with filters and context snippets
+   * Supports tag, mood, date, favorite, and archived filters
+   */
+  advancedSearch(input: AdvancedSearchInput): SearchResult[];
 
   /**
    * Check if an entry exists by ID

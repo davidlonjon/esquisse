@@ -10,6 +10,10 @@ import { RootLayout } from '@/layouts';
 import { EditorPage } from '@pages/EditorPage';
 import { TimelinePage } from '@pages/TimelinePage';
 
+interface AppRouterContext {
+  searchOpen?: () => void;
+}
+
 /**
  * Root route with error boundary and suspense
  */
@@ -51,14 +55,18 @@ const routeTree = RootRoute.addChildren([editorRoute, settingsRoute, timelineRou
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
+  context: {} as AppRouterContext,
 });
 
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
   }
+  interface StaticDataRouteOption {
+    context?: AppRouterContext;
+  }
 }
 
-export function AppRouterProvider() {
-  return <RouterProvider router={router} />;
+export function AppRouterProvider({ searchOpen }: { searchOpen?: () => void }) {
+  return <RouterProvider router={router} context={{ searchOpen }} />;
 }

@@ -6,7 +6,15 @@
 import { ipcRenderer } from 'electron';
 
 import { IPC_CHANNELS } from '@shared/ipc';
-import type { Entry, CreateEntryInput, UpdateEntryInput, EntryStatus, Result } from '@shared/types';
+import type {
+  AdvancedSearchInput,
+  Entry,
+  CreateEntryInput,
+  UpdateEntryInput,
+  EntryStatus,
+  Result,
+  SearchResult,
+} from '@shared/types';
 
 export const entryAPI = {
   createEntry: (entry: CreateEntryInput): Promise<Result<Entry>> =>
@@ -26,6 +34,9 @@ export const entryAPI = {
 
   searchEntries: (query: string): Promise<Result<Entry[]>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_SEARCH, query),
+
+  advancedSearch: (input: AdvancedSearchInput): Promise<Result<SearchResult[]>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENTRY_ADVANCED_SEARCH, input),
 
   archiveEntry: (id: string): Promise<Result<Entry>> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENTRY_ARCHIVE, id),

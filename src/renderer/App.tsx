@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 
 import { FavoritesListOverlay } from '@components/layout/FavoritesListOverlay';
 import { YearlyCalendarOverlay } from '@components/layout/YearlyCalendarOverlay';
+import { SearchOverlay } from '@components/search/SearchOverlay';
 import { useEntryStore } from '@features/entries/entries.store';
 import { useSettingsStore } from '@features/settings';
 import { useFavoritesList } from '@hooks/useFavoritesList';
 import { useGlobalHotkeys } from '@hooks/useGlobalHotkeys';
+import { useSearch } from '@hooks/useSearch';
 import { useYearlyCalendar } from '@hooks/useYearlyCalendar';
 import i18n from '@lib/i18n';
 import { useTheme } from '@providers/theme-provider';
@@ -24,6 +26,7 @@ export default function App() {
 
   const yearlyCalendar = useYearlyCalendar();
   const favoritesList = useFavoritesList();
+  const search = useSearch();
 
   useEffect(() => {
     loadSettings();
@@ -95,9 +98,19 @@ export default function App() {
     { preventDefault: true }
   );
 
+  // Register search shortcut (Cmd+K)
+  useGlobalHotkeys(
+    'mod+k',
+    (event) => {
+      event.preventDefault();
+      search.open();
+    },
+    { preventDefault: true }
+  );
+
   return (
     <>
-      <AppRouterProvider />
+      <AppRouterProvider searchOpen={search.open} />
       <YearlyCalendarOverlay
         isOpen={yearlyCalendar.isOpen}
         onClose={yearlyCalendar.close}
@@ -130,6 +143,24 @@ export default function App() {
         onSelectNext={favoritesList.selectNext}
         onNavigateToSelected={favoritesList.navigateToSelected}
         onUnfavoriteSelected={favoritesList.unfavoriteSelected}
+      />
+      <SearchOverlay
+        isOpen={search.isOpen}
+        onClose={search.close}
+        inputValue={search.inputValue}
+        onInputChange={search.handleInputChange}
+        filters={search.filters}
+        onFiltersChange={search.handleFiltersChange}
+        availableTags={search.availableTags}
+        searchResults={search.searchResults}
+        selectedIndex={search.selectedIndex}
+        isEmpty={search.isEmpty}
+        isLoading={search.isLoading}
+        hasError={search.hasError}
+        errorMessage={search.errorMessage}
+        onSelectPrevious={search.selectPrevious}
+        onSelectNext={search.selectNext}
+        onNavigateToSelected={search.navigateToSelected}
       />
     </>
   );

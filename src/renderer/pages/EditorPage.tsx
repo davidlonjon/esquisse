@@ -1,3 +1,4 @@
+import { useRouteContext } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { DeleteEntryDialog } from '@components/dialogs';
@@ -7,6 +8,7 @@ import { EditorErrorToast, EditorHud, EditorStatus } from '@features/editor/comp
 import { useEditorController } from '@hooks/useEditorController';
 
 export function EditorPage() {
+  const { searchOpen } = useRouteContext({ from: '/' }) as { searchOpen?: () => void };
   const { t } = useTranslation();
   const controller = useEditorController();
   const isApiAvailable = typeof window !== 'undefined' && Boolean(window.api);
@@ -41,28 +43,7 @@ export function EditorPage() {
       )}
     >
       <div className="relative h-screen w-screen">
-        <EditorHud
-          isVisible={controller.hud.isVisible}
-          isReadOnly={controller.hud.isReadOnly}
-          dateLabel={controller.hud.dateLabel}
-          wordCountLabel={controller.hud.wordCountLabel}
-          sessionLabel={controller.hud.sessionLabel}
-          snapshotLabel={controller.hud.snapshotLabel}
-          lastUpdatedLabel={controller.hud.lastUpdatedLabel}
-          disabled={false}
-          isFavorite={controller.hud.isFavorite}
-          onToggleFavorite={controller.hud.onToggleFavorite}
-          onShowHud={controller.hud.onShowHud}
-          onNavigatePrevious={controller.hud.onNavigatePrevious}
-          onNavigateNext={controller.hud.onNavigateNext}
-          canNavigatePrevious={controller.hud.canNavigatePrevious}
-          canNavigateNext={controller.hud.canNavigateNext}
-          currentEntryCreatedAt={controller.hud.currentEntryCreatedAt}
-          onDateTimeChange={controller.hud.onDateTimeChange}
-          {...(controller.hud.onToggleEditMode && {
-            onToggleEditMode: controller.hud.onToggleEditMode,
-          })}
-        />
+        <EditorHud {...controller.hud} disabled={false} onOpenSearch={searchOpen} />
         <Editor
           content={controller.content}
           onChange={controller.handleContentChange}

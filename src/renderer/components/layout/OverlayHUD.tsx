@@ -27,6 +27,7 @@ interface OverlayHUDProps {
   canNavigateNext?: boolean;
   currentEntryCreatedAt?: string;
   onDateTimeChange?: (isoString: string) => void;
+  onOpenSearch?: () => void;
 }
 
 export function OverlayHUD({
@@ -49,6 +50,7 @@ export function OverlayHUD({
   canNavigateNext = true,
   currentEntryCreatedAt,
   onDateTimeChange,
+  onOpenSearch,
 }: OverlayHUDProps) {
   const { isShortcutsOpen, openShortcuts, closeShortcuts } = useKeyboardShortcutsPanel();
   const hudSuppressed = disabled || isShortcutsOpen;
@@ -81,6 +83,7 @@ export function OverlayHUD({
           canNavigateNext={canNavigateNext}
           currentEntryCreatedAt={currentEntryCreatedAt}
           onDateTimeChange={onDateTimeChange}
+          onOpenSearch={onOpenSearch}
         />
       </div>
 

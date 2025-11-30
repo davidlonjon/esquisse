@@ -178,7 +178,8 @@ describe('useEntryStore', () => {
         entries: [entry],
         entryLookup: { 'entry-1': entry },
         search: {
-          query: 'test',
+          rawQuery: 'test',
+          parsedQuery: null,
           results: [entry],
           status: { status: 'success', error: null },
         },
@@ -268,7 +269,8 @@ describe('useEntryStore', () => {
         entries: [entry1, entry2],
         entryLookup: { 'entry-1': entry1, 'entry-2': entry2 },
         search: {
-          query: 'test',
+          rawQuery: 'test',
+          parsedQuery: null,
           results: [entry1, entry2],
           status: { status: 'success', error: null },
         },
@@ -340,7 +342,8 @@ describe('useEntryStore', () => {
         entries: [entry],
         entryLookup: { 'entry-1': entry },
         search: {
-          query: 'test',
+          rawQuery: 'test',
+          parsedQuery: null,
           results: [entry],
           status: { status: 'success', error: null },
         },
@@ -369,7 +372,7 @@ describe('useEntryStore', () => {
       await useEntryStore.getState().searchEntries('test');
 
       const state = useEntryStore.getState();
-      expect(state.search.query).toBe('test');
+      expect(state.search.rawQuery).toBe('test');
       expect(state.search.results).toEqual([entry]);
       expect(state.search.status.status).toBe('success');
       expect(state.progress.search.status).toBe('success');
@@ -392,7 +395,8 @@ describe('useEntryStore', () => {
       const entry = createMockEntry({ id: 'entry-1' });
       useEntryStore.setState({
         search: {
-          query: 'test',
+          rawQuery: 'test',
+          parsedQuery: null,
           results: [entry],
           status: { status: 'success', error: null },
         },
@@ -405,7 +409,7 @@ describe('useEntryStore', () => {
       useEntryStore.getState().clearSearch();
 
       const state = useEntryStore.getState();
-      expect(state.search.query).toBe('');
+      expect(state.search.rawQuery).toBe('');
       expect(state.search.results).toEqual([]);
       expect(state.search.status.status).toBe('idle');
       expect(state.progress.search.status).toBe('idle');
@@ -516,7 +520,8 @@ describe('useEntryStore', () => {
 
     it('selectEntrySearch returns search state', () => {
       const searchState = {
-        query: 'test',
+        rawQuery: 'test',
+        parsedQuery: null,
         results: [createMockEntry({ id: 'entry-1' })],
         status: { status: 'success' as const, error: null },
       };

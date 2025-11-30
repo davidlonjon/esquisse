@@ -6,10 +6,12 @@
 import { randomUUID } from 'crypto';
 
 import type {
+  AdvancedSearchInput,
   CreateEntryInput,
   Entry,
   EntryStatus,
   MoodValue,
+  SearchResult,
   UpdateEntryInput,
 } from '@shared/types';
 
@@ -221,6 +223,151 @@ export class EntryRepository implements IEntryRepository {
     );
 
     return rows.map(mapEntryRow);
+  }
+
+  advancedSearch(input: AdvancedSearchInput): SearchResult[] {
+    const db = getDatabase();
+    const { query, journalId, limit, offset } = input;
+    const { fullTextQuery, filters } = query;
+
+    let sql = `SELECT ${ENTRY_COLUMNS} FROM entries WHERE 1=1`;
+    const params: (string | number | null)[] = [];
+
+    // Journal filter
+    if (journalId) {
+      sql += ' AND journal_id = ?';
+      params.push(journalId);
+    }
+
+    // Tag filter (OR logic)
+    if (filters.tags && filters.tags.length > 0) {
+      const tagConditions = filters.tags.map(() => 'tags LIKE ?').join(' OR ');
+      sql += ` AND (${tagConditions})`;
+      filters.tags.forEach((tag) => params.push(`%"${tag}"%`));
+    }
+
+    // Mood filter
+    if (filters.mood !== undefined && filters.mood !== null) {
+      sql += ' AND mood = ?';
+      params.push(filters.mood);
+    }
+
+    // Date range filter
+    if (filters.dateFrom) {
+      sql += ' AND created_at >= ?';
+      params.push(filters.dateFrom);
+    }
+    if (filters.dateTo) {
+      sql += ' AND created_at <= ?';
+      params.push(filters.dateTo);
+    }
+
+    // Favorite filter
+    if (filters.isFavorite !== undefined) {
+      sql += ' AND is_favorite = ?';
+      params.push(filters.isFavorite ? 1 : 0);
+    }
+
+    // Archived filter
+    if (filters.isArchived) {
+      sql += ' AND status = ?';
+      params.push('archived');
+    } else {
+      sql += ' AND status = ?';
+      params.push('active');
+    }
+
+    // Full-text search (if query provided)
+    if (fullTextQuery) {
+      const searchPattern = `%${fullTextQuery}%`;
+      sql += ' AND (title LIKE ? OR content LIKE ? OR tags LIKE ?)';
+      params.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    // Pagination
+    const { clause, params: paginationParams } = createPaginationClause({ limit, offset });
+    sql += ` ORDER BY created_at DESC${clause}`;
+    params.push(...(paginationParams as (string | number | null)[]));
+
+    const rows = selectRows(db, sql, params);
+
+    // Map to SearchResult with snippets
+    return rows.map((row) => {
+      const entry = mapEntryRow(row);
+      const snippet = fullTextQuery ? this.extractSnippet(entry, fullTextQuery) : undefined;
+
+      return {
+        ...entry,
+        snippet,
+        matchedField: snippet?.matchedField,
+      };
+    });
+  }
+
+  /**
+   * Extract context snippet from entry for search results
+   */
+  private extractSnippet(
+    entry: Entry,
+    query: string
+  ):
+    | {
+        text: string;
+        highlightStart: number;
+        highlightEnd: number;
+        matchedField?: 'content' | 'title' | 'tags';
+      }
+    | undefined {
+    const lowerQuery = query.toLowerCase();
+
+    // Try title first
+    if (entry.title) {
+      const titleLower = entry.title.toLowerCase();
+      const titleIndex = titleLower.indexOf(lowerQuery);
+      if (titleIndex !== -1) {
+        return {
+          text: entry.title,
+          highlightStart: titleIndex,
+          highlightEnd: titleIndex + query.length,
+          matchedField: 'title',
+        };
+      }
+    }
+
+    // Try content (strip HTML first)
+    const plainContent = entry.content.replace(/<[^>]*>/g, '');
+    const contentLower = plainContent.toLowerCase();
+    const contentIndex = contentLower.indexOf(lowerQuery);
+
+    if (contentIndex !== -1) {
+      // Extract 150 chars of context (75 before, 75 after)
+      const start = Math.max(0, contentIndex - 75);
+      const end = Math.min(plainContent.length, contentIndex + query.length + 75);
+      const snippet = plainContent.substring(start, end);
+      const highlightStart = contentIndex - start;
+
+      return {
+        text: (start > 0 ? '...' : '') + snippet + (end < plainContent.length ? '...' : ''),
+        highlightStart: highlightStart + (start > 0 ? 3 : 0),
+        highlightEnd: highlightStart + query.length + (start > 0 ? 3 : 0),
+        matchedField: 'content',
+      };
+    }
+
+    // Try tags
+    if (entry.tags) {
+      const matchedTag = entry.tags.find((tag) => tag.toLowerCase().includes(lowerQuery));
+      if (matchedTag) {
+        return {
+          text: `Tags: ${entry.tags.join(', ')}`,
+          highlightStart: 0,
+          highlightEnd: 0,
+          matchedField: 'tags',
+        };
+      }
+    }
+
+    return undefined;
   }
 
   exists(id: string): boolean {

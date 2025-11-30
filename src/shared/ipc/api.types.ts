@@ -14,6 +14,8 @@ import type {
   UpdateSettingsInput,
   Result,
   BackupInfo,
+  AdvancedSearchInput,
+  SearchResult,
 } from '../types';
 
 export interface ElectronAPI {
@@ -31,6 +33,7 @@ export interface ElectronAPI {
   updateEntry: (id: string, updates: UpdateEntryInput) => Promise<Result<Entry>>;
   deleteEntry: (id: string) => Promise<Result<boolean>>;
   searchEntries: (query: string) => Promise<Result<Entry[]>>;
+  advancedSearch: (input: AdvancedSearchInput) => Promise<Result<SearchResult[]>>;
   archiveEntry: (id: string) => Promise<Result<Entry>>;
   unarchiveEntry: (id: string) => Promise<Result<Entry>>;
   updateEntryStatus: (id: string, status: EntryStatus) => Promise<Result<Entry>>;

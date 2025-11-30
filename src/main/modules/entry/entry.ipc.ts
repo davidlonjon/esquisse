@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import { IPC_CHANNELS } from '@shared/ipc';
 import {
+  AdvancedSearchInputSchema,
   CreateEntryInputSchema,
   EntryStatusSchema,
   IdSchema,
@@ -23,6 +24,7 @@ const listEntriesSchema = z.tuple([IdSchema.optional()]);
 const entryIdSchema = z.tuple([IdSchema]);
 const updateEntrySchema = z.tuple([IdSchema, UpdateEntryInputSchema]);
 const searchSchema = z.tuple([SearchQuerySchema]);
+const advancedSearchSchema = z.tuple([AdvancedSearchInputSchema]);
 const updateStatusSchema = z.tuple([IdSchema, EntryStatusSchema]);
 const getByStatusSchema = z.tuple([IdSchema.optional(), EntryStatusSchema]);
 
@@ -54,6 +56,12 @@ export function registerEntryHandlers(): void {
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_SEARCH, searchSchema, async (_event, [query]) =>
     entryService.searchEntries(query)
+  );
+
+  registerSafeHandler(
+    IPC_CHANNELS.ENTRY_ADVANCED_SEARCH,
+    advancedSearchSchema,
+    async (_event, [input]) => entryService.advancedSearchEntries(input)
   );
 
   registerSafeHandler(IPC_CHANNELS.ENTRY_ARCHIVE, entryIdSchema, async (_event, [id]) =>
