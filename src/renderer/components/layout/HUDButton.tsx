@@ -54,7 +54,9 @@ export function HUDButton({
         className
       )}
     >
-      <Icon className={clsx('h-4 w-4', variant === 'favorite' && isActive && 'fill-current')} />
+      <Icon
+        className={clsx('h-4 w-4', variant === 'favorite' && isActive && 'fill-current heart-pop')}
+      />
       {children}
     </button>
   );

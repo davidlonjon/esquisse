@@ -71,9 +71,9 @@ export const EntryCard = memo(
                 onToggleFavorite?.(entry.id);
               }}
               className={clsx(
-                'transition-all p-1.5 rounded-full z-10 relative',
+                'transition-transform duration-150 ease-out p-1.5 rounded-full z-10 relative transform',
                 entry.isFavorite
-                  ? 'opacity-100 text-primary bg-primary/10 hover:bg-primary/20'
+                  ? 'opacity-100 text-primary bg-primary/10 hover:bg-primary/20 heart-pop'
                   : 'opacity-0 group-hover:opacity-100 hover:bg-muted hover:text-primary',
                 isSelected && !entry.isFavorite && 'opacity-50'
               )}
