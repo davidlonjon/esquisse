@@ -54,7 +54,7 @@ export function FilterBar({ filters, onFiltersChange, availableTags }: FilterBar
         <details className="dropdown">
           <summary className="btn btn-xs btn-ghost">
             {filters.tags && filters.tags.length > 0
-              ? `${filters.tags.length} selected`
+              ? t('common.selected', { count: filters.tags.length })
               : t('common.any')}
           </summary>
           <ul className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow max-h-60 overflow-y-auto">

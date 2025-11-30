@@ -306,6 +306,8 @@
   "common": {
     "any": "Tous",
     "noTags": "Aucune étiquette disponible",
-    "clearFilters": "Effacer les filtres"
+    "clearFilters": "Effacer les filtres",
+    "selected": "{{count}} sélectionné",
+    "selected_other": "{{count}} sélectionnés"
   }
 }

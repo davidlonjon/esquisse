@@ -306,6 +306,8 @@
   "common": {
     "any": "Any",
     "noTags": "No tags available",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "selected": "{{count}} selected",
+    "selected_other": "{{count}} selected"
   }
 }
