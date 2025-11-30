@@ -8,7 +8,14 @@ import { EditorErrorToast, EditorHud, EditorStatus } from '@features/editor/comp
 import { useEditorController } from '@hooks/useEditorController';
 
 export function EditorPage() {
-  const { searchOpen } = useRouteContext({ from: '/' }) as { searchOpen?: () => void };
+  let searchOpen: (() => void) | undefined;
+  try {
+    const routeContext = useRouteContext({ from: '/' }) as { searchOpen?: () => void };
+    searchOpen = routeContext?.searchOpen;
+  } catch {
+    // Router context may be unavailable in isolated environments (e.g., unit tests)
+    searchOpen = undefined;
+  }
   const { t } = useTranslation();
   const controller = useEditorController();
   const isApiAvailable = typeof window !== 'undefined' && Boolean(window.api);
