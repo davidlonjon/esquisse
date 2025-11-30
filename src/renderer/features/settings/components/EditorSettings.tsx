@@ -1,20 +1,19 @@
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@features/settings';
-import { Badge, Input, Slider } from '@ui';
+import { Badge, Button, Slider } from '@ui';
 
 export function EditorSettings() {
   const { t } = useTranslation();
   const fontSize = useSettingsStore((state) => state.fontSize);
-  const fontFamily = useSettingsStore((state) => state.fontFamily);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
 
   const handleFontSizeChange = async (value: number) => {
     await updateSettings({ fontSize: value });
   };
 
-  const handleFontFamilyChange = async (value: string) => {
-    await updateSettings({ fontFamily: value });
+  const handleResetTypography = async () => {
+    await updateSettings({ fontSize: 16, fontFamily: 'system-ui' });
   };
 
   return (
@@ -43,17 +42,18 @@ export function EditorSettings() {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-base-content" htmlFor="font-family">
-            {t('settings.fields.fontFamily')}
-          </label>
-          <Input
-            id="font-family"
-            type="text"
-            value={fontFamily}
-            onChange={(event) => void handleFontFamilyChange(event.target.value)}
-            className="w-full sm:max-w-md"
-          />
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-base-content/60">
+            {t('settings.actions.resetEditorTypography')}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void handleResetTypography()}
+          >
+            {t('common.actions.reset')}
+          </Button>
         </div>
       </div>
     </section>

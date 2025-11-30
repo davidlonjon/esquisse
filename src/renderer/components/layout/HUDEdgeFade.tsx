@@ -9,7 +9,7 @@ export function HUDEdgeFade({ position }: HUDEdgeFadeProps) {
 
   return (
     <div
-      className={`pointer-events-none fixed left-0 right-0 ${position}-0 z-10 h-12 ${gradientDirection} from-base-100 to-transparent`}
+      className={`pointer-events-none fixed left-0 right-0 ${position}-0 z-10 h-12 ${gradientDirection} from-background to-transparent`}
     />
   );
 }

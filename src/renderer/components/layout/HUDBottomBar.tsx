@@ -22,7 +22,7 @@ export function HUDBottomBar({
 }: HUDBottomBarProps) {
   return (
     <>
-      <div className="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-gradient-to-t from-base-100 to-transparent" />
+      <div className="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent" />
 
       {/* Left - Help Menu */}
       <div className="pointer-events-auto">

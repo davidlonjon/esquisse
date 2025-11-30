@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { EditorSettings } from './EditorSettings';
@@ -21,7 +20,6 @@ vi.mock('@features/settings', () => ({
   useSettingsStore: (selector: (state: unknown) => unknown) => {
     const state = {
       fontSize: 16,
-      fontFamily: 'Inter, sans-serif',
       updateSettings: mockUpdateSettings,
     };
     return selector(state);
@@ -33,9 +31,6 @@ vi.mock('@ui', () => ({
     <div data-testid="badge" data-variant={variant}>
       {children}
     </div>
-  ),
-  Input: ({ value, onChange, id, type }: React.ComponentProps<'input'>) => (
-    <input type={type} value={value} onChange={onChange} id={id} />
   ),
   Slider: ({
     value,
@@ -53,6 +48,11 @@ vi.mock('@ui', () => ({
       max={max}
       data-testid="slider"
     />
+  ),
+  Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
+    <button type="button" onClick={onClick} data-testid="reset-button">
+      {children}
+    </button>
   ),
 }));
 
@@ -91,19 +91,6 @@ describe('EditorSettings', () => {
       expect(screen.getByText('12px')).toBeInTheDocument();
       expect(screen.getByText('28px')).toBeInTheDocument();
     });
-
-    it('should render font family field label', () => {
-      render(<EditorSettings />);
-
-      expect(screen.getByText('settings.fields.fontFamily')).toBeInTheDocument();
-    });
-
-    it('should render font family input with current value', () => {
-      render(<EditorSettings />);
-
-      const input = screen.getByLabelText('settings.fields.fontFamily') as HTMLInputElement;
-      expect(input).toHaveValue('Inter, sans-serif');
-    });
   });
 
   describe('Font Size Adjustment', () => {
@@ -136,42 +123,14 @@ describe('EditorSettings', () => {
     });
   });
 
-  describe('Font Family Customization', () => {
-    it('should call updateSettings when font family input changes', async () => {
-      const user = userEvent.setup();
+  describe('Reset Typography', () => {
+    it('should reset font settings to defaults when reset button is clicked', () => {
       render(<EditorSettings />);
 
-      const input = screen.getByLabelText('settings.fields.fontFamily');
-      await user.clear(input);
-      await user.type(input, 'Roboto');
+      const resetButton = screen.getByTestId('reset-button');
+      fireEvent.click(resetButton);
 
-      // Called for each character typed
-      expect(mockUpdateSettings).toHaveBeenCalled();
-    });
-
-    it('should handle empty font family', async () => {
-      const user = userEvent.setup();
-      render(<EditorSettings />);
-
-      const input = screen.getByLabelText('settings.fields.fontFamily');
-      await user.clear(input);
-
-      expect(mockUpdateSettings).toHaveBeenCalledWith({ fontFamily: '' });
-    });
-
-    it('should handle custom font family with multiple fonts', async () => {
-      const user = userEvent.setup();
-      render(<EditorSettings />);
-
-      const input = screen.getByLabelText('settings.fields.fontFamily');
-      await user.clear(input);
-      await user.type(input, 'Courier');
-
-      // Just check that updateSettings was called, don't check exact value
-      // since user.type triggers onChange for each character
-      expect(mockUpdateSettings).toHaveBeenCalled();
-      const calls = mockUpdateSettings.mock.calls;
-      expect(calls.length).toBeGreaterThan(0);
+      expect(mockUpdateSettings).toHaveBeenCalledWith({ fontSize: 16, fontFamily: 'system-ui' });
     });
   });
 
@@ -181,20 +140,6 @@ describe('EditorSettings', () => {
 
       const slider = screen.getByTestId('slider');
       expect(slider).toHaveAttribute('id', 'font-size');
-    });
-
-    it('should have accessible font family input with id', () => {
-      render(<EditorSettings />);
-
-      const input = screen.getByLabelText('settings.fields.fontFamily');
-      expect(input).toHaveAttribute('id', 'font-family');
-    });
-
-    it('should associate label with font family input', () => {
-      render(<EditorSettings />);
-
-      const label = screen.getByText('settings.fields.fontFamily').closest('label');
-      expect(label).toHaveAttribute('for', 'font-family');
     });
   });
 });

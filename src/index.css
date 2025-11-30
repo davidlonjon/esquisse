@@ -1,57 +1,144 @@
 @import url('tailwindcss');
+@import url('./renderer/fonts/fonts.css');
 @import url('./renderer/styles/daypicker-theme.css');
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: false;
+}
 
 @layer base {
   :root {
     --font-sans:
       'Inter', 'SF Pro Text', 'SF Pro Display', 'Segoe UI', 'Segoe UI Variable', system-ui,
       -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    --font-serif: 'Literata', 'Georgia', 'Times New Roman', serif;
     --font-mono:
       ui-monospace, 'SFMono-Regular', 'JetBrains Mono', 'Fira Code', 'Menlo', 'Consolas',
       'Liberation Mono', 'Courier New', monospace;
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+
+    /* Tailwind color variables */
+    --background: 32 27% 96%;
+    --foreground: 0 0% 13%;
+    --card: 32 27% 96%;
+    --card-foreground: 0 0% 13%;
+    --popover: 32 27% 96%;
+    --popover-foreground: 0 0% 13%;
+    --primary: 25 40% 28%;
+    --primary-foreground: 32 27% 96%;
+    --secondary: 32 15% 88%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 32 15% 88%;
+    --muted-foreground: 32 10% 50%;
+    --accent: 25 40% 28%;
+    --accent-foreground: 32 27% 96%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --border: 32 15% 85%;
+    --input: 32 15% 85%;
+    --ring: 25 40% 28%;
     --radius: 0.5rem;
+
+    /* DaisyUI color variables - MUST come after Tailwind variables to override */
+    --p: 25 40% 28% !important; /* primary - warm chestnut */
+    --pf: 32 27% 96% !important; /* primary-foreground */
+    --pc: 32 27% 96% !important; /* primary-content */
+    --s: 32 15% 88% !important; /* secondary */
+    --sf: 0 0% 13% !important; /* secondary-foreground */
+    --sc: 0 0% 13% !important; /* secondary-content */
+    --a: 25 40% 28% !important; /* accent - warm chestnut */
+    --af: 32 27% 96% !important; /* accent-foreground */
+    --ac: 32 27% 96% !important; /* accent-content */
+    --n: 0 0% 13% !important; /* neutral */
+    --nf: 32 27% 96% !important; /* neutral-foreground */
+    --nc: 32 27% 96% !important; /* neutral-content */
+    --b1: 32 27% 96% !important; /* base-100 */
+    --b2: 32 15% 88% !important; /* base-200 */
+    --b3: 32 15% 85% !important; /* base-300 */
+    --bc: 0 0% 13% !important; /* base-content */
+
+    /* DaisyUI v5 color tokens for default (root) light theme */
+    --color-primary: hsl(25 40% 28%);
+    --color-primary-content: hsl(32 27% 96%);
+    --color-accent: hsl(25 40% 28%);
+    --color-accent-content: hsl(32 27% 96%);
+    --color-secondary: hsl(32 15% 88%);
+    --color-secondary-content: hsl(0 0% 13%);
+    --color-neutral: hsl(0 0% 13%);
+    --color-neutral-content: hsl(32 27% 96%);
+  }
+
+  /* When ThemeProvider sets data-theme="light", override DaisyUI defaults */
+  [data-theme='light'] {
+    --color-primary: hsl(25 40% 28%);
+    --color-primary-content: hsl(32 27% 96%);
+    --color-accent: hsl(25 40% 28%);
+    --color-accent-content: hsl(32 27% 96%);
+    --color-secondary: hsl(32 15% 88%);
+    --color-secondary-content: hsl(0 0% 13%);
+    --color-neutral: hsl(0 0% 13%);
+    --color-neutral-content: hsl(32 27% 96%);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Tailwind color variables */
+    --background: 25 15% 12%;
+    --foreground: 32 27% 96%;
+    --card: 25 15% 12%;
+    --card-foreground: 32 27% 96%;
+    --popover: 25 15% 12%;
+    --popover-foreground: 32 27% 96%;
+    --primary: 25 45% 60%;
+    --primary-foreground: 25 15% 12%;
+    --secondary: 25 10% 22%;
+    --secondary-foreground: 32 27% 96%;
+    --muted: 25 10% 22%;
+    --muted-foreground: 32 15% 70%;
+    --accent: 25 45% 60%;
+    --accent-foreground: 25 15% 12%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 25 10% 22%;
+    --input: 25 10% 22%;
+    --ring: 25 45% 60%;
+
+    /* DaisyUI color variables - dark mode */
+    --p: 25 45% 60% !important; /* primary - light chestnut */
+    --pf: 25 15% 12% !important; /* primary-foreground */
+    --pc: 25 15% 12% !important; /* primary-content */
+    --s: 25 10% 22% !important; /* secondary */
+    --sf: 32 27% 96% !important; /* secondary-foreground */
+    --sc: 32 27% 96% !important; /* secondary-content */
+    --a: 25 45% 60% !important; /* accent - light chestnut */
+    --af: 25 15% 12% !important; /* accent-foreground */
+    --ac: 25 15% 12% !important; /* accent-content */
+    --n: 32 27% 96% !important; /* neutral */
+    --nf: 25 15% 12% !important; /* neutral-foreground */
+    --nc: 25 15% 12% !important; /* neutral-content */
+    --b1: 25 15% 12% !important; /* base-100 */
+    --b2: 25 10% 22% !important; /* base-200 */
+    --b3: 25 10% 28% !important; /* base-300 */
+    --bc: 32 27% 96% !important; /* base-content */
+
+    /* DaisyUI v5 color tokens for dark theme */
+    --color-primary: hsl(25 45% 60%);
+    --color-primary-content: hsl(25 15% 12%);
+    --color-accent: hsl(25 45% 60%);
+    --color-accent-content: hsl(25 15% 12%);
+    --color-secondary: hsl(25 10% 22%);
+    --color-secondary-content: hsl(32 27% 96%);
+    --color-neutral: hsl(32 27% 96%);
+    --color-neutral-content: hsl(25 15% 12%);
+  }
+
+  /* When ThemeProvider sets data-theme="dark", override DaisyUI defaults */
+  [data-theme='dark'] {
+    --color-primary: hsl(25 45% 60%);
+    --color-primary-content: hsl(25 15% 12%);
+    --color-accent: hsl(25 45% 60%);
+    --color-accent-content: hsl(25 15% 12%);
+    --color-secondary: hsl(25 10% 22%);
+    --color-secondary-content: hsl(32 27% 96%);
+    --color-neutral: hsl(32 27% 96%);
+    --color-neutral-content: hsl(25 15% 12%);
   }
 }
 

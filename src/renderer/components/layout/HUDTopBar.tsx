@@ -186,7 +186,7 @@ export function HUDTopBar({
           </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-base-100 to-transparent" />
+      <div className="pointer-events-none absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent" />
     </>
   );
 }

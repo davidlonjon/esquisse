@@ -60,7 +60,7 @@ const TagItem = memo(
         ref={itemRef}
         onClick={onClick}
         className={clsx(
-          'flex w-full items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors',
+          'flex w-full items-center justify-between px-4 py-3 rounded-lg text-sm transition-colors',
           isSelected && 'bg-primary/10 text-primary',
           isFocused && !isSelected && 'ring-1 ring-primary/50',
           !isSelected && !isFocused && 'hover:bg-base-200 text-base-content/70'
@@ -206,7 +206,7 @@ export function TagsOverlay({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex bg-base-100/95 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex bg-background/98 backdrop-blur-md">
       {/* Left sidebar - Tags */}
       <div className="w-64 flex-shrink-0 border-r border-base-200 flex flex-col overflow-hidden">
         <div className="p-4 border-b border-base-200">
@@ -231,7 +231,7 @@ export function TagsOverlay({
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 text-xs rounded-full"
                 >
                   #{tag}
                   <button onClick={() => onToggleTag(tag)} className="hover:text-primary/70">
@@ -255,7 +255,7 @@ export function TagsOverlay({
               </p>
             </div>
           ) : (
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {tagsWithCounts.map((tagWithCount, index) => (
                 <TagItem
                   key={tagWithCount.tag}

@@ -32,8 +32,8 @@ export function HUDButton({
   const variantStyles = {
     default: 'text-base-content/40 hover:bg-base-200',
     favorite: isActive
-      ? 'text-error bg-error/10 hover:bg-error/20'
-      : 'text-base-content/40 hover:text-error',
+      ? 'text-primary bg-primary/10 hover:bg-primary/20'
+      : 'text-base-content/40 hover:text-primary',
     mode: isActive
       ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400'
       : 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400',

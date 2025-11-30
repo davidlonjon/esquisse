@@ -58,8 +58,8 @@ export const EntryCard = memo(
           'group relative rounded-xl border p-5 transition-all',
           onClick && 'cursor-pointer',
           isSelected
-            ? 'border-primary ring-1 ring-primary bg-base-50 shadow-sm'
-            : 'border-base-200 bg-base-50 hover:border-primary/50 hover:shadow-sm'
+            ? 'border-primary ring-2 ring-primary/20 bg-card shadow-warm-lg'
+            : 'border-border bg-card hover:border-primary/30 hover:shadow-warm-lg'
         )}
       >
         <div className="mb-2 flex items-center justify-between">
@@ -73,8 +73,8 @@ export const EntryCard = memo(
               className={clsx(
                 'transition-all p-1.5 rounded-full z-10 relative',
                 entry.isFavorite
-                  ? 'opacity-100 text-error bg-error/10 hover:bg-error/20'
-                  : 'opacity-0 group-hover:opacity-100 hover:bg-base-200 hover:text-error',
+                  ? 'opacity-100 text-primary bg-primary/10 hover:bg-primary/20'
+                  : 'opacity-0 group-hover:opacity-100 hover:bg-muted hover:text-primary',
                 isSelected && !entry.isFavorite && 'opacity-50'
               )}
               title={t('tagsOverlay.favorite', 'Favorite')}
@@ -84,11 +84,16 @@ export const EntryCard = memo(
           )}
         </div>
 
-        <div className="mb-3 text-sm text-base-content/80 line-clamp-3">{plainText}</div>
+        <div className="mb-3 text-sm text-base-content/80 line-clamp-3 font-serif leading-relaxed">
+          {plainText}
+        </div>
 
         <div className="flex items-center gap-2 text-xs text-base-content/50">
           {entry.tags?.slice(0, 3).map((tag) => (
-            <span key={tag} className="bg-base-200 px-2 py-0.5 rounded">
+            <span
+              key={tag}
+              className="bg-primary/5 text-primary/80 border border-primary/20 px-2 py-0.5 rounded-full"
+            >
               #{tag}
             </span>
           ))}

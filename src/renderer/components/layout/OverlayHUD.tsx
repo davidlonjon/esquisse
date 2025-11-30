@@ -64,7 +64,7 @@ export function OverlayHUD({
       {/* Top HUD bar */}
       <div
         className={clsx(
-          'pointer-events-none fixed left-0 right-0 top-0 z-20 flex h-20 items-start justify-between bg-base-100 px-10 pt-3 transition-all duration-300 ease-out',
+          'pointer-events-none fixed left-0 right-0 top-0 z-20 flex h-20 items-start justify-between bg-background px-10 pt-3 transition-all duration-300 ease-out',
           showTop && !hudSuppressed ? 'opacity-100 translate-y-0' : '-translate-y-full opacity-0'
         )}
       >
@@ -90,7 +90,7 @@ export function OverlayHUD({
       {/* Bottom HUD bar */}
       <div
         className={clsx(
-          'pointer-events-none fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-between bg-base-100 px-10 transition-all duration-300 ease-out',
+          'pointer-events-none fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-between bg-background px-10 transition-all duration-300 ease-out',
           showBottom && !hudSuppressed ? 'opacity-100 translate-y-0' : 'translate-y-full opacity-0'
         )}
       >

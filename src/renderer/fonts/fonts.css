@@ -1,0 +1,85 @@
+/**
+ * Local font declarations for offline support
+ * Literata (serif) and Inter (sans-serif)
+ */
+
+/* Literata - Regular (400) */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./literata/Literata-Regular.ttf') format('truetype');
+}
+
+/* Literata - Regular Italic (400) */
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./literata/Literata-Italic.ttf') format('truetype');
+}
+
+/* Literata - Medium (500) */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./literata/Literata-Medium.ttf') format('truetype');
+}
+
+/* Literata - Bold (700) */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./literata/Literata-Bold.ttf') format('truetype');
+}
+
+/* Literata - Bold Italic (700) */
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./literata/Literata-BoldItalic.ttf') format('truetype');
+}
+
+/* Inter - Regular (400) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./inter/Inter_24pt-Regular.ttf') format('truetype');
+}
+
+/* Inter - Medium (500) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./inter/Inter_24pt-Medium.ttf') format('truetype');
+}
+
+/* Inter - SemiBold (600) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./inter/Inter_24pt-SemiBold.ttf') format('truetype');
+}
+
+/* Inter - Bold (700) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./inter/Inter_24pt-Bold.ttf') format('truetype');
+}

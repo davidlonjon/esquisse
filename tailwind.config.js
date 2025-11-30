@@ -11,6 +11,12 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
+      boxShadow: {
+        'warm-sm': '0 1px 2px 0 rgba(107, 68, 35, 0.05)',
+        'warm-md': '0 2px 8px 0 rgba(107, 68, 35, 0.08), 0 1px 3px 0 rgba(107, 68, 35, 0.06)',
+        'warm-lg': '0 10px 25px -5px rgba(107, 68, 35, 0.10), 0 4px 10px -2px rgba(107, 68, 35, 0.05)',
+        'warm-xl': '0 20px 40px -10px rgba(107, 68, 35, 0.15), 0 8px 16px -4px rgba(107, 68, 35, 0.08)',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -52,6 +58,11 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))'
         }
+      },
+      fontFamily: {
+        sans: 'var(--font-sans)',
+        serif: 'var(--font-serif)',
+        mono: 'var(--font-mono)',
       }
     }
   },

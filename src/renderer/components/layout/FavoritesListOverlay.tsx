@@ -101,12 +101,12 @@ export function FavoritesListOverlay({
     : t('favoritesList.keyboardHints.withEntries');
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-base-100/95 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-background/98 backdrop-blur-md">
       <div className="relative w-full max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-error fill-error" />
+            <Heart className="h-5 w-5 text-primary fill-primary" />
             <h2 className="text-xl font-semibold text-base-content">{t('favoritesList.title')}</h2>
             {!isEmpty && (
               <span className="text-sm text-base-content/50">({favoriteEntries.length})</span>
@@ -130,7 +130,7 @@ export function FavoritesListOverlay({
             <p className="text-sm text-base-content/40">{t('favoritesList.emptyHint')}</p>
           </div>
         ) : (
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 -m-1">
+          <div className="space-y-5 max-h-[70vh] overflow-y-auto p-1 -m-1">
             {favoriteEntries.map((entry, index) => (
               <EntryCard
                 key={entry.id}

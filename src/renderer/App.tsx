@@ -20,6 +20,7 @@ export default function App() {
   const loadSettings = useSettingsStore((state) => state.loadSettings);
   const theme = useSettingsStore((state) => state.theme);
   const language = useSettingsStore((state) => state.language);
+  const fontSize = useSettingsStore((state) => state.fontSize);
   const { setTheme } = useTheme();
   const currentEntryId = useEntryStore((state) => state.currentEntryId);
   const entryLookup = useEntryStore((state) => state.entryLookup);
@@ -46,6 +47,13 @@ export default function App() {
       void i18n.changeLanguage(language);
     }
   }, [language]);
+
+  // Apply editor font size from settings to CSS custom property
+  useEffect(() => {
+    if (typeof fontSize === 'number' && Number.isFinite(fontSize)) {
+      document.documentElement.style.setProperty('--editor-font-size', `${fontSize}px`);
+    }
+  }, [fontSize]);
 
   // Register settings shortcut (Cmd/Ctrl+,)
   // Using 'comma' instead of ',' for better compatibility
