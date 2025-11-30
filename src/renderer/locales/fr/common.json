@@ -293,6 +293,7 @@
     "noResults": "Aucun résultat trouvé",
     "noResultsHint": "Essayez une requête différente ou moins de filtres",
     "error": "La recherche a échoué",
+    "loading": "Recherche...",
     "actions": {
       "clearSearch": "Effacer la recherche"
     },

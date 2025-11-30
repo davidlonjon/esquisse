@@ -177,36 +177,46 @@ export function SearchOverlay({
 
         {/* Results area - fixed height */}
         <div className="flex-1 min-h-0 mb-6">
-          {/* Error state */}
-          {hasError && (
-            <div className="text-center py-12">
-              <Search className="h-12 w-12 mx-auto mb-4 text-error/50" />
-              <p className="text-error mb-2">{t('search.error')}</p>
-              {errorMessage && <p className="text-sm text-base-content/40">{errorMessage}</p>}
+          {/* Loading state */}
+          {isLoading ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-base-content/60">
+              <Loader2 className="h-6 w-6 animate-spin" aria-label={t('search.loading')} />
+              <p className="text-sm">{t('search.loading')}</p>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Error state */}
+              {hasError && (
+                <div className="text-center py-12">
+                  <Search className="h-12 w-12 mx-auto mb-4 text-error/50" />
+                  <p className="text-error mb-2">{t('search.error')}</p>
+                  {errorMessage && <p className="text-sm text-base-content/40">{errorMessage}</p>}
+                </div>
+              )}
 
-          {/* Empty state */}
-          {showEmptyState && (
-            <div className="text-center py-12">
-              <Search className="h-12 w-12 mx-auto mb-4 text-base-content/20" />
-              <p className="text-base-content/60 mb-2">{t('search.noResults')}</p>
-              <p className="text-sm text-base-content/40">{t('search.noResultsHint')}</p>
-            </div>
-          )}
+              {/* Empty state */}
+              {showEmptyState && (
+                <div className="text-center py-12">
+                  <Search className="h-12 w-12 mx-auto mb-4 text-base-content/20" />
+                  <p className="text-base-content/60 mb-2">{t('search.noResults')}</p>
+                  <p className="text-sm text-base-content/40">{t('search.noResultsHint')}</p>
+                </div>
+              )}
 
-          {/* Results list */}
-          {showResults && (
-            <div className="space-y-2 h-full overflow-y-auto p-1 -m-1">
-              {searchResults.map((result, index) => (
-                <SearchResultItem
-                  key={result.id}
-                  result={result}
-                  isSelected={index === selectedIndex}
-                  locale={locale}
-                />
-              ))}
-            </div>
+              {/* Results list */}
+              {showResults && (
+                <div className="space-y-2 h-full overflow-y-auto p-1 -m-1">
+                  {searchResults.map((result, index) => (
+                    <SearchResultItem
+                      key={result.id}
+                      result={result}
+                      isSelected={index === selectedIndex}
+                      locale={locale}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 

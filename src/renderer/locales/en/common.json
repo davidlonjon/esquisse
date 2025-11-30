@@ -293,6 +293,7 @@
     "noResults": "No results found",
     "noResultsHint": "Try a different query or fewer filters",
     "error": "Search failed",
+    "loading": "Searching...",
     "actions": {
       "clearSearch": "Clear search"
     },
